@@ -1,0 +1,21 @@
+{
+    "name": "unusualify/payable",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Unusualify\\Payable\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "require": {
+        "guzzlehttp/guzzle": "^7.0"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Unusualify\\Payable\\LaravelServiceProvider"
+            ]
+        }
+    }
+}
