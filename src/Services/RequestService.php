@@ -77,4 +77,8 @@ class RequestService extends URequest{
 
     $this->redirect_url = $redirect_url;
   }
+
+  public function getHeaders(){
+    return $this->headers;
+  }
 }

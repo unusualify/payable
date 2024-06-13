@@ -38,53 +38,75 @@ trait PaypalAPI
    * @see https://developer.paypal.com/docs/api/get-an-access-token-curl/
    * @see https://developer.paypal.com/docs/api/get-an-access-token-postman/
    */
+  
   public function getAccessToken()
   {
     $this->apiEndPoint = 'v1/oauth2/token';
-
     $this->options['auth'] = [$this->config['client_id'], $this->config['client_secret']];
-    $this->options[$this->httpBodyParam] = [
+    $this->options['request_body'] = [
       'grant_type' => 'client_credentials',
     ];
-    // dd($this->options);
+    $this->type = 'encoded';
+    $this->generateBasicAuthHeaders();
+    // dd($this->url, $this->apiEndPoint);
+    $this->verb = 'post';
     $response = $this->doPayPalRequest();
-    dd($response);
+    // dd($response);
     unset($this->options['auth']);
     unset($this->options[$this->httpBodyParam]);
     // dd($response);
-    if (isset($response['access_token'])) {
+    if (isset($response->access_token)) {
       $this->setAccessToken($response);
     }
 
     return $response;
   }
 
-  /**
-   * Set PayPal Rest API access token.
-   *
-   * @param array $response
-   *
-   * @return void
-   */
-  public function setAccessToken(array $response)
+  public function generateBasicAuthHeaders()
   {
-    $this->access_token = $response['access_token'];
-
-    $this->setPayPalAppId($response);
-
-    $this->setRequestHeader('Authorization', "{$response['token_type']} {$this->access_token}");
+    // dd($this->headers);
+    $this->headers['Authorization'] = 'Basic ' . base64_encode($this->options['auth'][0] . ':' . $this->options['auth'][1]);
   }
 
   /**
-   * Set PayPal App ID.
+   * Set PayPal Rest API access token.
    *
-   * @param array $response
+   * @param object $response
    *
    * @return void
    */
-  private function setPayPalAppId(array $response)
+  public function setAccessToken(object $response)
   {
-    $app_id = empty($response['app_id']) ? $this->config['app_id'] : $response['app_id'];
+    $this->access_token = $response->access_token;
+
+    $this->setPayPalAppId($response);
+    // dd($response->token_type, $this->access_token);
+    // dd($this->setRequestHeader('Authorization', 
+    //     "{$response->token_type} {$this->access_token}"), 
+    //     $response->token_type, $this->access_token);
+    $this->setRequestHeader('Authorization', "{$response->token_type} {$this->access_token}");
+
+    if(isset($_SESSION['PayPal-Request-Id'])){
+      $this->setRequestHeader('PayPal-Request-Id', "{$_SESSION['PayPal-Request-Id']}");
+    }else{
+      $_SESSION['PayPal-Request-Id'] = session()->getId();
+      $this->setRequestHeader('PayPal-Request-Id', "{$_SESSION['PayPal-Request-Id']}");
+    }
+    // dd($this->headers);
+  }
+  public function generateRequestId(){
+
+  }
+  /**
+   * Set PayPal App ID.
+   *
+   * @param object $response
+   *
+   * @return void
+   */
+  private function setPayPalAppId($response)
+  {
+    $app_id = empty($response->app_id) ? $this->config->app_id : $response->app_id;
 
     $this->config['app_id'] = $app_id;
   }
@@ -94,9 +116,9 @@ trait PaypalAPI
    *
    * @param int $size
    *
-   * @return \Srmklive\PayPal\Services\PayPal
+   * @return \Unusualify\Payable\Services\Paypal\PaypalService
    */
-  public function setPageSize(int $size): \Srmklive\PayPal\Services\PayPal
+  public function setPageSize(int $size): \Unusualify\Payable\Services\Paypal\PaypalService
   {
     $this->page_size = $size;
 
@@ -108,9 +130,9 @@ trait PaypalAPI
    *
    * @param int $size
    *
-   * @return \Srmklive\PayPal\Services\PayPal
+   * @return \Unusualify\Payable\Services\Paypal\PaypalService
    */
-  public function setCurrentPage(int $page): \Srmklive\PayPal\Services\PayPal
+  public function setCurrentPage(int $page): \Unusualify\Payable\Services\Paypal\PaypalService
   {
     $this->current_page = $page;
 
@@ -122,9 +144,9 @@ trait PaypalAPI
    *
    * @param bool $totals
    *
-   * @return \Srmklive\PayPal\Services\PayPal
+   * @return  \Unusualify\Payable\Services\PayPal\PaypalService
    */
-  public function showTotals(bool $totals): \Srmklive\PayPal\Services\PayPal
+  public function showTotals(bool $totals): \Unusualify\Payable\Services\Paypal\PaypalService
   {
     $this->show_totals = var_export($totals, true);
 

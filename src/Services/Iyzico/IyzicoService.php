@@ -16,11 +16,11 @@ class IyzicoService extends RequestService
 
   protected $prodUrl = 'https://sandbox-api.iyzipay.com/payment';
 
-  public $apiProdKey = 'sandbox-zwhSW4JMsA3GG3aAI4SjnLcyCEQHYtbA';
+  protected $apiProdKey = 'sandbox-zwhSW4JMsA3GG3aAI4SjnLcyCEQHYtbA';
 
-  public $apiProdSecret = 'sandbox-VS9QsDF9ECiagNLRV8YfoK766F8n76P8';
+  protected $apiProdSecret = 'sandbox-VS9QsDF9ECiagNLRV8YfoK766F8n76P8';
 
-  public $merchantId = '3395857';
+  protected $merchantId = '3395857';
 
   protected $url;
 

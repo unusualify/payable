@@ -21,10 +21,10 @@ trait Orders
     {
         $this->apiEndPoint = 'v2/checkout/orders';
 
-        $this->options['json'] = (object) $data;
-
+        $this->options['request_body'] = $data;
+        $this->type = 'json';
         $this->verb = 'post';
-
+        // dd($this->apiEndPoint);
         return $this->doPayPalRequest();
     }
 

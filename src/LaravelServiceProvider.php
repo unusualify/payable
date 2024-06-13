@@ -22,7 +22,7 @@ class LaravelServiceProvider extends ServiceProvider
             __DIR__ . '/../src/Database/Migrations'
         );
         // $this->loadViewsFrom(__DIR__ . '/views', 'unusual_form');
-
+        $this->loadRoutesFrom(__DIR__.'/Routes/web.php');
         $this->bootViews();
 
     }

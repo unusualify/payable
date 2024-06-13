@@ -20,6 +20,8 @@ class PaypalService extends RequestService
 
   protected $options;
   protected $httpBodyParam;
+  protected $verb;
+  protected $type;
   public $apiEndPoint;
   /**
    * PayPal constructor.
@@ -35,6 +37,7 @@ class PaypalService extends RequestService
     // Manage setConfig functio based on the needs of URequest class
     $this->setConfig($config);
     $this->url = $this->config['api_url'];
+    // dd($this->config);
     $this->httpBodyParam = 'form_params';
 
     $this->options = [];
@@ -52,7 +55,7 @@ class PaypalService extends RequestService
 
   public function doPaypalRequest(bool $decode = true){
     // dd($this->options);
-    $this->generateBasicAuthHeaders();
+    // $this->generateBasicAuthHeaders();
     try {
       /** Header must contain :
         * Authorization: Basic base64_encode('CLIENT_ID:CLIENT_SECRET') 
@@ -60,12 +63,26 @@ class PaypalService extends RequestService
         * content-type: application/x-www-form-urlencoded (it equals to encoded option in ) 
       **/
       // dd($this->headers);
-      $response = $this->postReq(
-        $this->config['api_url'],
-        $this->apiEndPoint,
-        ['grant_type' => 'client_credentials'],
-        $this->headers,
-        'encoded');
+      // dd($this->verb);
+      // dd($this->options);
+      if($this->verb == 'post'){
+        // dd($this->headers);
+        // dd($this->apiEndPoint);
+        // dd($this);
+        // if(isset($this->options['request_body']['intent'])){
+        //   dd($this->options['request_body'], $this->headers, $this->type);
+        // }
+        $response = $this->postReq(
+          $this->config['api_url'],
+          $this->apiEndPoint,
+          $this->options['request_body'],
+          $this->headers,
+          $this->type
+        );
+      }else{ //Get request
+        
+      }
+      
       // $this->apiUrl = collect([$this->config['api_url'], $this->apiEndPoint])->implode('/');
 
       // Perform PayPal HTTP API request.
@@ -79,16 +96,8 @@ class PaypalService extends RequestService
     }
       // Perform PayPal HTTP API request.
       //$response = $this->makeHttpRequest();
-    
   }
-
-  public function generateBasicAuthHeaders(){
-    $this->headers['Authorization'] = 'Basic ' . base64_encode($this->options['auth'][0].':'.$this->options['auth'][1]);
-  }
-
   public function makeHttpRequest(){
     //Not sure if it's needed anymore
   }
-  
-
 }

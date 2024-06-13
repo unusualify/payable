@@ -168,13 +168,17 @@ abstract class URequest implements URequestInterface
                 // dd($postFields, "{$url}{$endPoint}", $this->headers);
                 // dd($headers);
                 // dd($this, $this->client);
+                // dd($url,$endPoint);
+                // dd($postFields);
+                // dd($headers);
+                // dd(json_encode($postFields, JSON_UNESCAPED_SLASHES));
                 $res = $this->client->post("{$url}{$endPoint}", [
                     'headers' => $headers,
-                    'body' => $postFields
+                    'json' => $postFields
                 ]);
             } else if ($type == 'encoded') {
                 // dd($postFields);  
-                $res = $this->client->post("{$url}/{$endPoint}", [
+                $res = $this->client->post("{$url}{$endPoint}", [
                     'headers' => $headers,
                     'form_params' => $postFields
                 ]);
@@ -197,7 +201,8 @@ abstract class URequest implements URequestInterface
                     'body' => json_encode($postFields)
                 ]);
             }
-
+            // return $res;
+            // dd(json_decode($res->getBody()->getContents()));
             return json_decode($res->getBody()->getContents());
         }catch (\Exception $e){
             return response()->json(['error' => $e->getMessage()], 500);
@@ -206,6 +211,7 @@ abstract class URequest implements URequestInterface
 
     function getReq($url, $endPoint, $parameters = [], $headers = []){
         try{
+            dd($url, $headers);
             $res = $this->client->get(
                 "{$url}/{$endPoint}",
                 [
