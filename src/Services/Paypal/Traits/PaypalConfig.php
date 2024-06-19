@@ -10,9 +10,11 @@ trait PaypalConfig{
 
   //  Modify HERE according to RequestService requirements
   //  We should set api credentials from paypal config to related PaypalService Object
-  public function setConfig($config){
-    $api_config = empty($config) && function_exists('config') && !empty(config('paypal')) ?
-      config('paypal') : $config;
+  public function setConfig(){
+    // $api_config = empty($config) && function_exists('config') && !empty(config('paypal')) ?
+    //   config('paypal') : $config;
+    $api_config = config($this->getConfigName());
+    // dd($api_config);
     // Set Api Credentials
 
     $this->setApiCredentials($api_config);

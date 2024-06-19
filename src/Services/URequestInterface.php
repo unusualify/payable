@@ -49,5 +49,18 @@ interface URequestInterface
      * @return object
      */
     public function getReq(String $endPoint, Array $parameters, Array $headers);
- 
+    
+
+    /*
+     * Set Config for payment services
+     * 
+     * @param array $config  
+     */
+    public function setConfig();
+
+    /*
+     * Create config name based on the class name
+     * @return string configName
+     */
+    public function getConfigName();
 }
