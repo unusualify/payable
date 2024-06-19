@@ -8,6 +8,7 @@ use Unusualify\Payable\Facades\Zoho;
 use Unusualify\Payable\Facades\Movie;
 use Unusualify\Payable\Facades\Iyzico;
 use Unusualify\Payable\Facades\PayPal;
+use Unusualify\Payable\Services\GarantiPos\GarantiPosService;
 use Unusualify\Payable\Services\Iyzico\IyzipayService;
 
 // use Srmklive\PayPal\PayPalFacadeAccessor as PayPalClient;
@@ -28,7 +29,7 @@ class TestController extends Controller
     // dd($requestString);
     // dd(Iyzico::initThreeDS(), $threedsInit->initThreeDS());
     // dd('here');
-    $provider = PayPal::setProvider();
+    // $provider = PayPal::setProvider();
     // Data for paypal wallet payment
     $data = [
         'intent' => 'CAPTURE',
@@ -194,9 +195,9 @@ class TestController extends Controller
     // ];
     // $accessToken = $provider->getAccessToken();
     // dd($accessToken);
-    $createOrder = $provider->createOrder($data);
+    // $createOrder = $provider->createOrder($data);
 
-    dd($createOrder);
+    // dd($createOrder);
 
     //Example response of creteOrder request
 
@@ -227,10 +228,46 @@ class TestController extends Controller
      * Returned token is same as id in the initial response so patch Payment record based on that
      */
 
+    $garanti = new GarantiPosService();
+    $params = [
+      "cardname" => "Güneş Bizim",
+      "cardnumber" => "4543604278609073",
+      "cardexpiredatemonth" => "08",
+      "cardexpiredateyear" => "2028",
+      "cardcvv2" => "372",
+      "companyname" => "OLMADIK PROJELER",
+      "orderid" => "61f788af7a414",
+      "customeremailaddress" => "info@olmadikprojeler.com", 
+      "customeripaddress" => "172.19.0.1",
+      "txnamount" => "100",
+      "txncurrencycode" => 949,
+      "txninstallmentcount" => "",
+      "lang" => "tr",
+    ];
+    $garanti->pay($params);
+
+    // $this->companyName = $params['companyName'];
+    // $this->orderNo = $params['orderNo']; // Her işlemde yeni sipariş numarası gönderilmeli
+    // $this->amount = str_replace(array(",", "."), "", $params['amount']); // İşlem tutarı 1 TL için 1.00 gönderilmeli
+    // $this->installmentCount = $params['installmentCount'] > 1 ? $params['installmentCount'] : ""; // Taksit yapılmayacaksa boş gönderilmeli
+    // $this->currencyCode = $params['currencyCode'] ? $params['currencyCode'] : $this->currencyCode;
+
+    // $this->customerIP = $params['customerIP'];
+    // $this->customerEmail = $params['customerEmail'];
+    // $this->cardName = $params['cardName'];
+    // $this->cardNumber = $params['cardNumber'];
+    // $this->cardExpiredMonth = $params['cardExpiredMonth'];
+    // $this->cardExpiredYear = $params['cardExpiredYear'];
+    // $this->cardCVV = $params['cardCvv'];
+
+
   }
 
   public function paypalResponse(Request $request){
     dd($request->getQueryString());
   }
   
+  public function garantiResponse(Request $request){
+    dd($request);
+  }
 }

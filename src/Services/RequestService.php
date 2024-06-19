@@ -38,6 +38,9 @@ class RequestService extends URequest{
   protected $envVar;
   protected $redirect_url;
 
+  protected $config;
+  
+
   protected $headers = [ 
     'Authorization' => 'Bearer',
     'Content-Type' => 'application/json',
@@ -80,5 +83,17 @@ class RequestService extends URequest{
 
   public function getHeaders(){
     return $this->headers;
+  }
+
+  function setConfig(){
+    // dd($this->getConfigName());
+    $this->config = config($this->getConfigName());
+    // $this->setMode()
+    //Need mode for config
+  }
+
+  function getConfigName(){
+    // dd(strtolower(str_replace('Service', '', class_basename($this))));
+    return 'payment' . '.' .strtolower(str_replace('Service', '', class_basename($this)));
   }
 }

@@ -23,6 +23,9 @@ use Unusualify\Payable\Http\Controllers\TestController;
 Route::controller(TestController::class)->group(function(){
   Route::get('test-api',  'test')->name('payable.test');
 
-  Route::get('test-api/return', 'paypalResponse')->name('payable.test.paypal.return');
+  Route::get('test-api/paypal-return', 'paypalResponse')->name('payable.test.paypal.return');
+  Route::post('test-api/garanti-return', 'garantiResponse')->name('payable.test.garanti.return');
+
+
 });
 

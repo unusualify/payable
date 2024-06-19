@@ -178,4 +178,8 @@ class IyzicoService extends RequestService
     # print result
     dd($threedsInit);
   }
+
+  public function setConfig(array $config){
+    
+  }
 }

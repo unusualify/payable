@@ -35,6 +35,7 @@ class PaypalService extends RequestService
   {
     // Setting PayPal API Credentials
     // Manage setConfig functio based on the needs of URequest class
+    $this->getConfigName();
     $this->setConfig($config);
     $this->url = $this->config['api_url'];
     // dd($this->config);
@@ -48,6 +49,7 @@ class PaypalService extends RequestService
     parent::__construct(
       $this->mode,
     );
+    
 
   }
 

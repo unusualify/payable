@@ -152,7 +152,6 @@ abstract class URequest implements URequestInterface
         $this->apiSecret = $this->apiProdSecret;
     }
 
-
     function postReq($url, $endPoint, $postFields, $headers, $type)
     {
         try{
@@ -178,6 +177,10 @@ abstract class URequest implements URequestInterface
                 ]);
             } else if ($type == 'encoded') {
                 // dd($postFields);  
+                if (count($headers) < 1) {
+                    $headers['Content-Type'] = "application/x-www-form-urlencoded";
+                }
+                // dd($url.$endPoint);
                 $res = $this->client->post("{$url}{$endPoint}", [
                     'headers' => $headers,
                     'form_params' => $postFields
@@ -202,8 +205,14 @@ abstract class URequest implements URequestInterface
                 ]);
             }
             // return $res;
-            // dd(json_decode($res->getBody()->getContents()));
-            return json_decode($res->getBody()->getContents());
+            // dd($res->getBody()->getContents());
+            $safeData = $res->getBody()->getContents();
+            // dd($safeData);
+            if(json_decode($res->getBody()->getContents()) != null){
+                return $res->getBody()->getContents();
+            }
+            // dd($safeData);
+            return $safeData;
         }catch (\Exception $e){
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -241,4 +250,8 @@ abstract class URequest implements URequestInterface
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    abstract function setConfig();
+
+    abstract function getConfigName();
 }
