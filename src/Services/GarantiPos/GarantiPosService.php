@@ -112,8 +112,8 @@ class GarantiPosService extends RequestService{
         "terminalid" => $this->terminalID,
         "terminalmerchantid" => $this->merchantID,
 
-        "successurl" => route('payable.test.garanti.return') . '?action=success',
-        "errorurl" => route('payable.test.garanti.return') . '?action=error',
+        "successurl" => route('payable.garanti.return') . '?action=success',
+        "errorurl" => route('payable.garanti.return') . '?action=error',
      
         "txntimeoutperiod" => $this->timeOutPeriod,
         "addcampaigninstallment" => $this->addCampaignInstallment,
@@ -137,8 +137,7 @@ class GarantiPosService extends RequestService{
       $this->headers,
       'encoded',
     );
-    print_r($resp);
-    exit;
+    return print_r($resp);
     // dd($resp);
     // print_r($resp);
     // dd($resp);
@@ -167,8 +166,8 @@ class GarantiPosService extends RequestService{
       $this->params['orderid'],
       $this->params['txnamount'],
       $this->params['txncurrencycode'],
-      $this->params['successurl'],
-      $this->params['errorurl'],
+      route('payable.garanti.return') . $this->returnQueries['success'],
+      route('payable.garanti.return') . $this->returnQueries['error'],
       $this->params['txntype'],
       $this->params['txninstallmentcount'],
       $this->storeKey,

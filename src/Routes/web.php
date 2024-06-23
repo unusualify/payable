@@ -20,11 +20,13 @@ use Unusualify\Payable\Http\Controllers\TestController;
 // Auth::routes();
 // dd('here');
 
-Route::controller(TestController::class)->group(function(){
-  Route::get('test-api',  'test')->name('payable.test');
+Route::controller(TestController::class)->prefix('test-api')->group(function(){
+  Route::get('/',  'test')->name('payable.test');
 
-  Route::get('test-api/paypal-return', 'paypalResponse')->name('payable.test.paypal.return');
-  Route::post('test-api/garanti-return', 'garantiResponse')->name('payable.test.garanti.return');
+  Route::get('/paypal-return', 'paypalResponse')->name('payable.paypal.return');
+  Route::post('/garanti-return', 'garantiResponse')->name('payable.garanti.return');
+
+  Route::post('/teb-return', 'tebResponse')->name('payable.teb.return');
 
 
 });
