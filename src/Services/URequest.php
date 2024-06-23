@@ -73,6 +73,11 @@ abstract class URequest implements URequestInterface
      */
     protected $apiProdSecret;
 
+    protected $returnQueries = [
+        'success' => '?success=true',
+        'error' => '?error=true'
+    ];
+
     /**
      * API Token Created
      * @var String
@@ -180,7 +185,7 @@ abstract class URequest implements URequestInterface
                 if (count($headers) < 1) {
                     $headers['Content-Type'] = "application/x-www-form-urlencoded";
                 }
-                // dd($url.$endPoint);
+                // dd($url.$endPoint, $postFields, $headers);
                 $res = $this->client->post("{$url}{$endPoint}", [
                     'headers' => $headers,
                     'form_params' => $postFields
