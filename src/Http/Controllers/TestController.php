@@ -10,6 +10,7 @@ use Unusualify\Payable\Facades\Iyzico;
 use Unusualify\Payable\Facades\PayPal;
 use Unusualify\Payable\Services\GarantiPos\GarantiPosService;
 use Unusualify\Payable\Services\Iyzico\IyzipayService;
+use Unusualify\Payable\Services\TebCommonPos\TebCommonPosService;
 use Unusualify\Payable\Services\TebPos\TebPosService;
 
 // use Srmklive\PayPal\PayPalFacadeAccessor as PayPalClient;
@@ -245,11 +246,16 @@ class TestController extends Controller
       "txncurrencycode" => 949,
       "txninstallmentcount" => "0",
       "lang" => "tr",
+      "iscommission" => 0,
+      'previous_url' => url()->previous()
     ];
     // $garanti->pay($params);
 
-    $teb = new TebPosService();
-    $teb->pay($params);
+    // $teb = new TebPosService();
+    // $teb->pay($params);
+
+    $tebCommon = new TebCommonPosService();
+    $tebCommon->pay($params);
 
     // $this->companyName = $params['companyName'];
     // $this->orderNo = $params['orderNo']; // Her işlemde yeni sipariş numarası gönderilmeli
@@ -277,6 +283,10 @@ class TestController extends Controller
   }
 
   public function tebResponse(Request $request){
+    dd($request);
+  }
+
+  public function tebCommonResponse(Request $request){
     dd($request);
   }
 }
