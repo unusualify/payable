@@ -41,8 +41,6 @@ class TebPosService extends RequestService{
     $this->url = $tempConfig['url'];
     $this->merchantID = $tempConfig['merchant_id'];
     $this->storeKey = $tempConfig['store_key'];
-    
-
 
   }
 
@@ -85,7 +83,7 @@ class TebPosService extends RequestService{
     $response = $this->postReq($this->url,$endpoint,$data,[],'encoded');
     print($response);
     exit();
-    dd($response);
+    // dd($response);
     
 
   }

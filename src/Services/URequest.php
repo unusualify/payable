@@ -201,6 +201,15 @@ abstract class URequest implements URequestInterface
                     'headers' => $headers,
                     'body' => $postFields
                 ]);
+            } else if($type == 'multipart'){
+                if (count($headers) < 1) {
+                    $headers['Content-Type'] = "multipart/form-data";
+                }
+                // dd($headers);
+                $res = $this->client->post("{$url}{$endPoint}",[
+                    'multipart' => $postFields,
+                    // 'headers' => $headers
+                ]);
             }
             else {
                 

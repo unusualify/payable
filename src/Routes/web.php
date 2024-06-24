@@ -28,6 +28,8 @@ Route::controller(TestController::class)->prefix('test-api')->group(function(){
 
   Route::post('/teb-return', 'tebResponse')->name('payable.teb.return');
 
+  Route::post('/teb-common-return', 'tebCommonResponse')->name('payable.teb-common.return');
+
 
 });
 
