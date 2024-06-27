@@ -11,7 +11,7 @@ abstract class URequest implements URequestInterface
      * Invoice Operation Mode
      * @var String
      */
-    public $mode = 'test';
+    public $mode = 'sandbox';
     /** 
      * Test TOKEN URL
      * @var String
@@ -22,56 +22,24 @@ abstract class URequest implements URequestInterface
      * @var String
      */
     protected $prodTokenUrl;
+
     /**
      * Test API URL
      * @var String
      */
-    protected $testUrl;
-
-    /**
-     * Production API URL
-     * @var String
-     */
-    protected $prodUrl;
-
     protected $url;
 
     /**
      * API Key for service
      * @var String
      */
-    protected $apiKey;
-
-    /**
-     * API Test Key for service
-     * @var String
-     */
-    protected $apiTestKey;
-
-    /**
-     * API Production Key for service
-     * @var String
-     */
-    protected $apiProdKey;    
-
+    protected $apiKey;  
 
     /**
      * API Secret Hash for service
      * @var String
      */
     protected $apiSecret;
-
-    /**
-     * API Test Secret Hash for service
-     * @var String
-     */
-    protected $apiTestSecret;
-
-    /**
-     * API Prod Secret Hash for service
-     * @var String
-     */
-    protected $apiProdSecret;
 
     protected $returnQueries = [
         'success' => '?success=true',
@@ -89,35 +57,12 @@ abstract class URequest implements URequestInterface
     protected $headers;
     
     public function __construct(
-        $mode = 'sandbox',
-        $testTokenUrl = null,
-        $prodTokenUrl = null,
-        $testUrl = null,
-        $prodUrl = null,
-        $apiProdKey = null,
-        $apiTestKey = null,
-        $apiProdSecret = null,
-        $apiTestSecret = null,
-        $root_path = null,
-        $token_path = null,
-        $path = null,
-        $token_refresh_time = null,
+        $mode = 'sandbox',       
         $headers = null,
-        $envVar = null,
-        $redirect_url = null
+
         ) {
-            $this->setMode($mode);
             $this->setHeaders($headers);
             $this->client = new Client();
-    }
-
-    public function setMode($mode= 'sandbox')
-    {
-        if($mode == 'production'){
-            $this->setProd();
-        }else{
-            $this->setTest();
-        }
     }
 
     public function setHeaders($headers){
@@ -128,33 +73,6 @@ abstract class URequest implements URequestInterface
                 $this->headers[$key] = $this->headers[$key] . ' ' .$this->apiKey;
             }
         }
-    }
-
-    public function setTest()
-    {
-        $this->test();
-    }
-
-    private function test()
-    {
-        $this->mode = 'sandbox';
-        $this->url = $this->testUrl;
-        $this->apiKey = $this->apiTestKey;
-        $this->apiSecret = $this->apiTestSecret;
-
-    }
-
-    public function setProd()
-    {
-        $this->prod();
-    }
-    
-    private function prod()
-    {
-        $this->mode = 'production';
-        $this->url = $this->prodUrl;
-        $this->apiKey = $this->apiProdKey;
-        $this->apiSecret = $this->apiProdSecret;
     }
 
     function postReq($url, $endPoint, $postFields, $headers, $type)
@@ -170,17 +88,11 @@ abstract class URequest implements URequestInterface
                 }
                 $headers["Accept"] = "*/*";
                 // dd($postFields, "{$url}{$endPoint}", $this->headers);
-                // dd($headers);
-                // dd($this, $this->client);
-                // dd($url,$endPoint);
-                // dd($postFields);
-                // dd($headers);
-                // dd(json_encode($postFields, JSON_UNESCAPED_SLASHES));
                 $res = $this->client->post("{$url}{$endPoint}", [
                     'headers' => $headers,
-                    'json' => $postFields
+                    'body' => $postFields
                 ]);
-            } else if ($type == 'encoded') {
+            }else if ($type == 'encoded') {
                 // dd($postFields);  
                 if (count($headers) < 1) {
                     $headers['Content-Type'] = "application/x-www-form-urlencoded";
@@ -268,4 +180,10 @@ abstract class URequest implements URequestInterface
     abstract function setConfig();
 
     abstract function getConfigName();
+
+    abstract function setMode($mode);
+    
+    abstract function setLive();
+
+    abstract function setSandbox();
 }

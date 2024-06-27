@@ -3,8 +3,7 @@
 namespace Unusualify\Payable\Services\GarantiPos;
 
 use Unusualify\Payable\Services\RequestService;
-
-
+use Unusualify\Priceable\Facades\PriceService;
 
 class GarantiPosService extends RequestService{
 
@@ -67,15 +66,7 @@ class GarantiPosService extends RequestService{
 
   public function __construct($mode = null)
   {
-    parent::__construct(
-      envVar: 'GARANTI_POS_MODE',
-      apiProdKey: 'GARANTI_POS_API_KEY',
-      apiProdSecret: $this->apiProdSecret,
-      apiTestSecret: '',
-      apiTestKey: '',
-      prodUrl: $this->prodUrl,
-      headers: $this->headers,
-    );
+    parent::__construct();
 
     $this->setCredentials();
   }
@@ -86,7 +77,6 @@ class GarantiPosService extends RequestService{
   public function setCredentials()
   {
     $this->setConfig();
-    $this->mode = $this->config['mode'];
     $tempConfig = $this->config[$this->mode];
     // dd($this->mode, $this->config);
     $this->url = $tempConfig['url'];
@@ -123,7 +113,7 @@ class GarantiPosService extends RequestService{
     // dd($this);
   }
 
-  public function pay(array $params){
+  public function pay(array $params, int $priceID){
     $endpoint = 'servlet/gt3dengine';
     $this->params['txntimestamp'] = time();
     $this->params += $params;
@@ -137,26 +127,18 @@ class GarantiPosService extends RequestService{
       $this->headers,
       'encoded',
     );
-    return print_r($resp);
-    // dd($resp);
-    // print_r($resp);
-    // dd($resp);
-    // "cardname" => "Güneş Bizim",
-    // "cardnumber" => "4543 6042 7860 9073",
-    // "cardexpiredatemonth" => "08",
-    // "cardexpiredateyear" => "2028",
-    // "cardcvv2" => "372",
-    // "companyname" => "OLMADIK PROJELER",
-    // "orderid" => "61f788af7a414",
-    // "customeremailaddress" => "oguz.bukcuoglu@gmail.com",
-    // "customeripaddress" => "172.19.0.1",
-    // "txnamount" => "1000",
-    // "txncurrencycode" => 949,
-    // "txninstallmentcount" => "",
-    // "lang" => "tr",
-    // "txntimestamp" => 1718722545,
-    // "secure3dhash" => "9B8A27AA6621988C54F3A84A332706280681D334843EC4CE03D2E094F713CBEDA436CEF18EC38263EB750A5A3D70F7969DAFB18DF9F3313178E56785DA8E5EC5"
 
+    $currency = PriceService::find($priceID)->currency;
+
+    $this->createRecord((object)[
+      'serviceName' => $this->serviceName,
+      'paymentOrderId' => $this->params['orderid'],
+      'currency_id' => $currency->id,
+      'email' => '', //Add email to data
+      'installment' => $this->params['txninstallmentcount'],
+      'parameters' => $this->params
+    ]);
+    return print_r($resp);
   }
 
   public function generateHash(){

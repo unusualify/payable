@@ -2,7 +2,7 @@
 
 namespace Unusualify\Payable\Services\Iyzico\Requests;
 
-use Iyzipay\Constants;
+use Unusualify\Payable\Services\Iyzico\Constants;
 use Unusualify\Payable\Services\Iyzico\Models\JsonBuilder;
 use Unusualify\Payable\Services\Iyzico\Models\IyzicoModel;
 use Unusualify\Payable\Services\Iyzico\Models\RequestStringBuilder;

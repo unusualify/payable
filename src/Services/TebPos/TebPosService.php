@@ -3,7 +3,7 @@
 namespace Unusualify\Payable\Services\TebPos;
 
 use Unusualify\Payable\Services\RequestService;
-
+use Unusualify\Priceable\Facades\PriceService;
 
 class TebPosService extends RequestService{
 
@@ -16,15 +16,7 @@ class TebPosService extends RequestService{
   public function __construct($mode = null)
   {
 
-    parent::__construct(
-      envVar: '',
-      apiProdKey: '',
-      apiProdSecret: $this->apiProdSecret,
-      apiTestSecret: '',
-      apiTestKey: '',
-      prodUrl: $this->prodUrl,
-      headers: $this->headers,
-    );
+    parent::__construct();
 
     $this->setCredentials();
     
@@ -44,20 +36,12 @@ class TebPosService extends RequestService{
 
   }
 
-  public function pay(array $params){
+  public function pay(array $params, int $priceID){
     $endpoint = 'fim/est3Dgate';
 
     $this->rnd = microtime();
     $this->params += $params;
     $this->processType = 'Auth';
-    //array params should include following
-
-    /*
-    * orderId
-    * amount
-    * processType  = Auth 
-    * installment = 0,
-    */
     
     $hash = $this->generateHash();
     $data = [
@@ -80,10 +64,19 @@ class TebPosService extends RequestService{
       'lang' => $this->params['lang'],
       'firmaadi' => $this->params['companyname'],
     ];
+    $currency = PriceService::find($priceID)->currency;
+
+    $this->createRecord((object)[
+      'serviceName' => $this->serviceName,
+      'paymentOrderId' => $this->params['orderid'],
+      'currency_id' => $currency->id,
+      'email' => '', //Add email to data
+      'installment' => $this->params['txninstallmentcount'],
+      'parameters' => $data
+    ]);
     $response = $this->postReq($this->url,$endpoint,$data,[],'encoded');
     print($response);
     exit();
-    // dd($response);
     
 
   }
@@ -105,7 +98,6 @@ class TebPosService extends RequestService{
       $this->rnd,
       $this->storeKey
     ];
-    // dd(pack('H*', sha1(implode('', $map))));
     return base64_encode(pack('H*', sha1(implode('', $map))));
   }
 

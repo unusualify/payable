@@ -6,29 +6,7 @@ namespace Unusualify\Payable\Services;
 interface URequestInterface
 {
 
-    /**
-     * 
-     * Set Mode
-     *
-     * @return null
-     */
-    public function setMode(String $mode);
-
-    /**
-     * 
-     * Convert Mode to Test
-     *
-     * @return null
-     */
-    public function setTest();
-
-    /**
-     * 
-     * Convert Mode to Prod
-     *
-     * @return null
-     */
-    public function setProd();
+  
 
     /**
      * 
@@ -63,4 +41,29 @@ interface URequestInterface
      * @return string configName
      */
     public function getConfigName();
+
+
+    /**
+     * 
+     * Set Mode
+     *
+     * @return null
+     */
+    public function setMode(String $mode);
+
+    /**
+     * 
+     * Convert Mode to Sandbox
+     *
+     * @return null
+     */
+    public function setSandbox();
+
+    /**
+     * 
+     * Convert Mode to Live
+     *
+     * @return null
+     */
+    public function setLive();
 }

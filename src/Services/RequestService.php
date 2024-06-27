@@ -4,27 +4,11 @@ namespace Unusualify\Payable\Services;
 
 
 use Illuminate\Support\Str;
+use Unusualify\Payable\Facades\Payment;
 
 class RequestService extends URequest{
 
   public $mode;
-  protected $testTokenUrl;
-  protected $prodTokenUrl;
-
-  protected $testUrl;
-  protected $prodUrl;
-
-  public $apiProdKey;
-
-  public $apiTestKey; //Actual prod key
-
-  public $apiProdSecret;
-
-  public $apiTestSecret; //Actual prod key
-
-  public $apiKey;
-
-  public $apiSecret;
 
   protected $url;
 
@@ -35,10 +19,13 @@ class RequestService extends URequest{
   protected $path;
 
   protected $token_refresh_time; //by minute
-  protected $envVar;
+  
   protected $redirect_url;
 
   protected $config;
+
+  public $serviceName;
+
   
 
   protected $headers = [ 
@@ -46,39 +33,21 @@ class RequestService extends URequest{
     'Content-Type' => 'application/json',
   ];
 
-  public function __construct(
-    $testTokenUrl = null,
-    $prodTokenUrl = null,
-    $testUrl = null,
-    $prodUrl = null,
-    $apiProdKey = null,
-    $apiTestKey = null,
-    $apiProdSecret = null,
-    $apiTestSecret = null,
-    $root_path = null,
-    $token_path = null,
-    $path = null,
-    $token_refresh_time = null,
+  public function __construct(    
     $headers = null,
-    $envVar = null,
+
     $redirect_url = null
   ){
-    $this->mode = $this->mode == null ? (getenv($envVar) ? getenv($envVar) : 'test') : $this->mode;
     parent::__construct(
       mode : $this->mode,
       headers: $this->headers,
-      prodUrl: $prodUrl,
-      testUrl: $testUrl,
-      prodTokenUrl: $prodTokenUrl,
-      testTokenUrl: $testTokenUrl,
-      apiProdKey: $apiProdKey,
-      apiTestKey: $apiTestKey
     );
 
     $this->root_path = base_path();
     $this->path = "{$this->root_path}/{$this->token_path}";
 
     $this->redirect_url = $redirect_url;
+    $this->serviceName = str_replace('Service', '', class_basename($this));
   }
 
   public function getHeaders(){
@@ -86,14 +55,47 @@ class RequestService extends URequest{
   }
 
   function setConfig(){
-    // dd($this->getConfigName());
     $this->config = config($this->getConfigName());
-    // $this->setMode()
-    //Need mode for config
+    $this->mode = $this->config['mode'];
   }
 
   function getConfigName(){
-    // dd(strtolower(str_replace('Service', '', class_basename($this))));
-    return 'payment' . '.' .strtolower(str_replace('Service', '', class_basename($this)));
+    return 'payable' . '.services.' .strtolower(str_replace('Service', '', class_basename($this)));
+  }
+
+  function createRecord(object $data){
+
+    $payment = Payment::create(
+      [
+        'payment_gateway' => $data->serviceName,
+        'order_id' => $data->paymentOrderId,
+        'price' => $data->amount,
+        'currency_id' => $data->currencyId,
+        'email' => $data->email,
+        'installment' => $data->installment,
+        'parameters' => json_encode($data),
+      ]
+    );
+    return $payment;
+  }
+  static function updateRecord($order_id, $status, $response){
+    return Payment::where('order_id' ,$order_id)
+            ->update([
+              'status' => $status,
+              'response' => $response,
+              'parameters' => null,
+            ]);
+  }
+
+  public function setMode($mode){
+    
+  }
+
+  public function setLive(){
+
+  }
+  
+  public function setSandbox(){
+
   }
 }

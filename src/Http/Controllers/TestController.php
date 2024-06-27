@@ -7,6 +7,7 @@ use Illuminate\Routing\Controller;
 use Unusualify\Payable\Facades\Zoho;
 use Unusualify\Payable\Facades\Movie;
 use Unusualify\Payable\Facades\Iyzico;
+use Unusualify\Payable\Facades\Payment;
 use Unusualify\Payable\Facades\PayPal;
 use Unusualify\Payable\Services\GarantiPos\GarantiPosService;
 use Unusualify\Payable\Services\Iyzico\IyzipayService;
@@ -18,50 +19,9 @@ use Unusualify\Payable\Services\TebPos\TebPosService;
 
 class TestController extends Controller
 { 
-  public function test(){
-    // $requestString = '{"locale": "tr","binNumber":"542119","conversationId": "123456789"}';
-    // $requestString = '{"locale":"tr","binNumber":"542119","conversationId":"123456789"}';
-
-
-    //$requestString = '{"locale":"tr","conversationId":"123456789","price":"1.0","paidPrice":"1.2","installment":1,"paymentChannel":"WEB","basketId":"B67832","paymentGroup":"PRODUCT","paymentCard":{"cardHolderName":"John Doe","cardNumber":"5528790000000008","expireYear":"2030","expireMonth":"12","cvc":"123"},"buyer":{"id":"BY789","name":"John","surname":"Doe","identityNumber":"74300864791","email":"email@email.com","gsmNumber":"+905350000000","registrationDate":"2013-04-21 15:12:09","lastLoginDate":"2015-10-05 12:43:35","registrationAddress":"Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1","city":"Istanbul","country":"Turkey","zipCode":"34732","ip":"85.34.78.112"},"shippingAddress":{"address":"Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1","zipCode":"34742","contactName":"Jane Doe","city":"Istanbul","country":"Turkey"},"billingAddress":{"address":"Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1","zipCode":"34742","contactName":"Jane Doe","city":"Istanbul","country":"Turkey"},"basketItems":[{"id":"BI101","price":"0.3","name":"Binocular","category1":"Collectibles","category2":"Accessories","itemType":"PHYSICAL"},{"id":"BI102","price":"0.5","name":"Game code","category1":"Game","category2":"Online Game Items","itemType":"VIRTUAL"},{"id":"BI103","price":"0.2","name":"Usb","category1":"Electronics","category2":"Usb / Cable","itemType":"PHYSICAL"}],"currency":"TRY","callbackUrl":"https://www.merchant.com/callback"}';
-
-
-    // $threedsInit = new IyzipayService();
-    // dd($threedsInit->initThreeDS());
-    // dd($requestString);
-    // dd(Iyzico::initThreeDS(), $threedsInit->initThreeDS());
-    // dd('here');
-    // $provider = PayPal::setProvider();
-    // Data for paypal wallet payment
-    $data = [
-        'intent' => 'CAPTURE',
-        'purchase_units' => [
-            [
-                'amount' => [
-                    'currency_code' => 'USD',
-                    'value' => '100.00'
-                ],
-            ],
-        ],
-        'payment_source' => [
-            'paypal' => [
-                "name" => [
-                  "given_name" => 'John',
-                  'surname' => 'Doe'
-                ],
-                "email_address" => 'sb-crmtest@personal.example.com', //User's email address or empty
-                'experience_context' => [
-                    'payment_method_preference' => 'IMMEDIATE_PAYMENT_REQUIRED',
-                    'brand_name' => 'EXAMPLE INC',
-                    'locale' => 'en-US',
-                    'landing_page' => 'LOGIN',
-                    'user_action' => 'PAY_NOW',
-                    'return_url' => 'http://admin.crm.template/test-api/paypal-return?success=true',
-                    'cancel_url' => 'http://admin.crm.template/test-api/paypal-return?success=false',
-                ],
-            ],
-        ],
-      ];
+  public function testView(){
+   
+  
     /*
     Data for paypal credit / debit card payment
     $data = [
@@ -195,81 +155,7 @@ class TestController extends Controller
         ],
       ],
     ];
-    $accessToken = $provider->getAccessToken();
-    dd($accessToken);
-    $createOrder = $provider->createOrder($data);
-
-    dd($createOrder);
-
-    Example response of creteOrder request
-
-    {
-      "id": "5O190127TN364715T",
-      "status": "PAYER_ACTION_REQUIRED",
-      "payment_source": {
-        "paypal": {}
-      },
-      "links": [
-        {
-          "href": "https://api-m.paypal.com/v2/checkout/orders/5O190127TN364715T",
-          "rel": "self",
-          "method": "GET"
-        },
-        {
-          "href": "https://www.paypal.com/checkoutnow?token=5O190127TN364715T",
-          "rel": "payer-action",
-          "method": "GET"
-        }
-      ]
-    }
     */
-
-    /**
-     * TODO's after create order
-     * Create Payment record on database with the return id with the status of PENDING
-     * Redirect user to the paypal url
-     * Returned token is same as id in the initial response so patch Payment record based on that
-     */
-
-    $garanti = new GarantiPosService();
-    $params = [
-      "cardname" => "Güneş Bizim",
-      "cardnumber" => "4543604278609073",
-      "cardexpiredatemonth" => "06",
-      "cardexpiredateyear" => "2028",
-      "cardcvv2" => "372",
-      "companyname" => "OLMADIK PROJELER",
-      "orderid" => "61f788af7a414",
-      "customeremailaddress" => "info@olmadikprojeler.com", 
-      "customeripaddress" => "172.19.0.1",
-      "txnamount" => "100",
-      "txncurrencycode" => 949,
-      "txninstallmentcount" => "0",
-      "lang" => "tr",
-      "iscommission" => 0,
-      'previous_url' => url()->previous()
-    ];
-    // $garanti->pay($params);
-
-    // $teb = new TebPosService();
-    // $teb->pay($params);
-
-    $tebCommon = new TebCommonPosService();
-    $tebCommon->pay($params);
-
-    // $this->companyName = $params['companyName'];
-    // $this->orderNo = $params['orderNo']; // Her işlemde yeni sipariş numarası gönderilmeli
-    // $this->amount = str_replace(array(",", "."), "", $params['amount']); // İşlem tutarı 1 TL için 1.00 gönderilmeli
-    // $this->installmentCount = $params['installmentCount'] > 1 ? $params['installmentCount'] : ""; // Taksit yapılmayacaksa boş gönderilmeli
-    // $this->currencyCode = $params['currencyCode'] ? $params['currencyCode'] : $this->currencyCode;
-
-    // $this->customerIP = $params['customerIP'];
-    // $this->customerEmail = $params['customerEmail'];
-    // $this->cardName = $params['cardName'];
-    // $this->cardNumber = $params['cardNumber'];
-    // $this->cardExpiredMonth = $params['cardExpiredMonth'];
-    // $this->cardExpiredYear = $params['cardExpiredYear'];
-    // $this->cardCVV = $params['cardCvv'];
 
 
   }
@@ -287,6 +173,218 @@ class TestController extends Controller
   }
 
   public function tebCommonResponse(Request $request){
+    if($request->BankResponseCode == "00"){
+      // dd($request, $request->BankResponseCode);
+      TebCommonPosService::updateRecord($request->OrderId, 'COMPLETED' ,$request->all());
+      //Update payment model with the response field and remove parameters
+      // return view()
+      dd('success');
+    }else{
+      TebCommonPosService::updateRecord($request->OrderId, 'CANCELED', $request->all());
+      
+    }
     dd($request);
+  }
+
+  public function iyzicoResponse(Request $request){
+    dd($request);
+  }
+
+  public function testIyzico(){
+
+    $priceID = 1;
+    $params = [
+      "locale" => "tr",
+      "orderId" => "123456789",
+      "price" => "1.0",
+      "paidPrice" => "1.2",
+      "installment" => 1,
+      "paymentChannel" => "WEB",
+      "basketId" => "B67832",
+      "paymentGroup" => "PRODUCT",
+      "paymentCard" => [
+        "cardHolderName" => "John Doe",
+        "cardNumber" => "5528790000000008",
+        "expireYear" => "2030",
+        "expireMonth" => "12",
+        "cvc" => "123"
+      ],
+      "buyer" => [
+        "id" => "BY789",
+        "name" => "John",
+        "surname" => "Doe",
+        "identityNumber" => "74300864791",
+        "email" => "email@email.com",
+        "gsmNumber" => "+905350000000",
+        "registrationDate" => "2013-04-21 15:12:09",
+        "lastLoginDate" => "2015-10-05 12:43:35",
+        "registrationAddress" => "Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1",
+        "city" => "Istanbul",
+        "country" => "Turkey",
+        "zipCode" => "34732",
+        "ip" => "85.34.78.112"
+      ],
+      "shippingAddress" => [
+        "address" => "Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1",
+        "zipCode" => "34742",
+        "contactName" => "Jane Doe",
+        "city" => "Istanbul",
+        "country" => "Turkey"
+      ],
+      "billingAddress" => [
+        "address" => "Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1",
+        "zipCode" => "34742",
+        "contactName" => "Jane Doe",
+        "city" => "Istanbul",
+        "country" => "Turkey"
+      ],
+      "basketItems" => [
+        [
+          "id" => "BI101",
+          "price" => "0.3",
+          "name" => "Binocular",
+          "category1" => "Collectibles",
+          "category2" => "Accessories",
+          "itemType" => "PHYSICAL"
+        ],
+        [
+          "id" => "BI102",
+          "price" => "0.5",
+          "name" => "Game code",
+          "category1" => "Game",
+          "category2" => "Online Game Items",
+          "itemType" => "VIRTUAL"
+        ],
+        [
+          "id" => "BI103",
+          "price" => "0.2",
+          "name" => "Usb",
+          "category1" => "Electronics",
+          "category2" => "Usb / Cable",
+          "itemType" => "PHYSICAL"
+        ]
+      ],
+      "currency" => "TRY",
+    ];
+    $payment = Iyzico::initThreeDS($params, $priceID);
+
+    dd($payment);
+
+  }
+
+  public function testPaypal(){
+    $paypal = PayPal::setProvider();
+    // Data for paypal wallet payment
+    $data = [
+        'intent' => 'CAPTURE',
+        'purchase_units' => [
+            [
+                'amount' => [
+                    'currency_code' => 'USD',
+                    'value' => '100.00'
+                ],
+            ],
+        ],
+        'payment_source' => [
+            'paypal' => [
+                "name" => [
+                  "given_name" => 'John',
+                  'surname' => 'Doe'
+                ],
+                "email_address" => 'sb-crmtest@personal.example.com', //User's email address or empty
+                'experience_context' => [
+                    'payment_method_preference' => 'IMMEDIATE_PAYMENT_REQUIRED',
+                    'brand_name' => 'EXAMPLE INC',
+                    'locale' => 'en-US',
+                    'landing_page' => 'LOGIN',
+                    'user_action' => 'PAY_NOW',
+                    'return_url' => 'http://admin.crm.template/test-api/paypal-return?success=true',
+                    'cancel_url' => 'http://admin.crm.template/test-api/paypal-return?success=false',
+                ],
+            ],
+          ],
+      ];
+    $response = json_decode($paypal->createOrder($data));
+    dd(json_decode($paypal->createOrder($data)));
+    $redirectionUrl = json_decode($paypal->createOrder($data))->links[1]->href;
+
+    print(
+    "<script>window.open('" . $redirectionUrl . "', '_blank')</script>"
+    );
+    exit;
+    // dd($redirectionUrl);
+    
+  }
+
+  public function testGaranti(){
+    $garanti = new GarantiPosService();
+    $params = [
+      "cardname" => "Güneş Bizim",
+      "cardnumber" => "4155650100416111",
+      "cardexpiredatemonth" => "01",
+      "cardexpiredateyear" => "2050",
+      "cardcvv2" => "715",
+      "companyname" => "OLMADIK PROJELER",
+      "orderid" => "61f788af7a414",
+      "customeremailaddress" => "info@olmadikprojeler.com",
+      "customeripaddress" => "172.19.0.1",
+      "txnamount" => "100",
+      "txncurrencycode" => 949,
+      "txninstallmentcount" => "0",
+      "lang" => "tr",
+      "iscommission" => 0,
+      'previous_url' => url()->previous(),
+      'email' => 'test@test.com'
+    ];
+    $resp = $garanti->pay($params);
+  }
+
+  public function testTebCommon(){
+    $params = [
+      "cardname" => "Güneş Bizim",
+      "cardnumber" => "4155650100416111",
+      "cardexpiredatemonth" => "01",
+      "cardexpiredateyear" => "2050",
+      "cardcvv2" => "715",
+      "companyname" => "OLMADIK PROJELER",
+      "orderid" => "61f788af7a414",
+      "customeremailaddress" => "info@olmadikprojeler.com",
+      "customeripaddress" => "172.19.0.1",
+      "txnamount" => "100",
+      "txncurrencycode" => 949,
+      "txninstallmentcount" => "0",
+      "lang" => "tr",
+      "iscommission" => 0,
+      'previous_url' => url()->previous(),
+      'email' => 'test@test.com'
+    ];
+
+    $tebCommon = new TebCommonPosService();
+    $resp = $tebCommon->pay($params);
+    dd($resp);
+  }
+
+  public function testTeb(){
+    $params = [
+      "cardname" => "Güneş Bizim",
+      "cardnumber" => "4155650100416111",
+      "cardexpiredatemonth" => "01",
+      "cardexpiredateyear" => "2050",
+      "cardcvv2" => "715",
+      "companyname" => "OLMADIK PROJELER",
+      "orderid" => "61f788af7a414",
+      "customeremailaddress" => "info@olmadikprojeler.com",
+      "customeripaddress" => "172.19.0.1",
+      "txnamount" => "100",
+      "txncurrencycode" => 949,
+      "txninstallmentcount" => "0",
+      "lang" => "tr",
+      "iscommission" => 0,
+      'previous_url' => url()->previous(),
+      'email' => 'test@test.com'
+    ];
+
+    $teb = new TebPosService();
+    $teb->pay($params);
   }
 }
