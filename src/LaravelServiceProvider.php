@@ -18,12 +18,17 @@ class LaravelServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        if ($this->app->runningInConsole()) {
+            $this->publishes([
+                __DIR__ . '/Config/config.php' => config_path('payable.php'),
+            ], 'config');
+        }
         $this->loadMigrationsFrom(
             __DIR__ . '/../src/Database/Migrations'
         );
         // $this->loadViewsFrom(__DIR__ . '/views', 'unusual_form');
         $this->loadRoutesFrom(__DIR__.'/Routes/web.php');
-        $this->bootViews();
+        // $this->bootViews();
 
     }
 

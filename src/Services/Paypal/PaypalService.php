@@ -10,6 +10,8 @@ use Unusualify\Payable\Services\Paypal\Traits\PaypalAPI;
 // use Srmklive\PayPal\Traits\PayPalRequest as PayPalAPIRequest;
 use Unusualify\Payable\Services\Paypal\Traits\PayPalVerifyIPN;
 use Unusualify\Payable\Services\RequestService;
+use Unusualify\Priceable\Facades\PriceService;
+use Unusualify\Priceable\Models\Currency;
 
 class PaypalService extends RequestService
 {
@@ -38,14 +40,10 @@ class PaypalService extends RequestService
     $this->getConfigName();
     $this->setConfig($config);
     $this->url = $this->config['api_url'];
-    // dd($this->config);
     $this->httpBodyParam = 'form_params';
-
     $this->options = [];
-
     $this->setRequestHeader('Accept', 'application/json');
 
-    // dd($this->mode);
     parent::__construct(
       $this->mode,
     );
@@ -53,53 +51,47 @@ class PaypalService extends RequestService
 
   }
 
-  //  Recreate doPaypalRequest function in the PaypalService class
-
   public function doPaypalRequest(bool $decode = true){
-    // dd($this->options);
-    // $this->generateBasicAuthHeaders();
+
     try {
-      /** Header must contain :
-        * Authorization: Basic base64_encode('CLIENT_ID:CLIENT_SECRET') 
-        * body : {'grant_type':'client_credentials'}
-        * content-type: application/x-www-form-urlencoded (it equals to encoded option in ) 
-      **/
-      // dd($this->headers);
-      // dd($this->verb);
-      // dd($this->options);
       if($this->verb == 'post'){
-        // dd($this->headers);
-        // dd($this->apiEndPoint);
-        // dd($this);
-        // if(isset($this->options['request_body']['intent'])){
-        //   dd($this->options['request_body'], $this->headers, $this->type);
-        // }
         $response = $this->postReq(
-          $this->config['api_url'],
+          $this->url,
           $this->apiEndPoint,
           $this->options['request_body'],
           $this->headers,
           $this->type
         );
-      }else{ //Get request
+      }else{ //Get request 
         
       }
-      
-      // $this->apiUrl = collect([$this->config['api_url'], $this->apiEndPoint])->implode('/');
-
-      // Perform PayPal HTTP API request.
-      // $response = $this->makeHttpRequest();
       return $response;
-      // return ($decode === false) ? $response->getContents() : Utils::jsonDecode($response, true);
     } catch (RuntimeException $t) {
       $error = ($decode === false) || (Str::isJson($t->getMessage()) === false) ? $t->getMessage() : Utils::jsonDecode($t->getMessage(), true);
 
       return ['error' => $error];
     }
-      // Perform PayPal HTTP API request.
-      //$response = $this->makeHttpRequest();
+
   }
-  public function makeHttpRequest(){
-    //Not sure if it's needed anymore
+
+  public function createOrder(array $data , int $priceID)
+  {
+    $this->apiEndPoint = 'v2/checkout/orders';
+
+    $this->options['request_body'] = $data;
+    $this->type = 'json';
+    $this->verb = 'post';
+    $resp =  $this->doPayPalRequest();
+    $currency = PriceService::find($priceID)->currency;
+    $this->createRecord((object)[
+        'payment_gateway' => $this->serviceName,
+        'order_id' => $resp->id,
+        'price' => $data['purchase_units']['amount']['value'],
+        'currency_id' => $currency->id,
+        'email' => $data['payer']['email_address'],
+        'installment' => '0',
+        'parameters' => json_encode($data),
+      ]
+    );
   }
 }

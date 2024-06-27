@@ -5,22 +5,24 @@ namespace Unusualify\Payable\Services\Iyzico;
 use Unusualify\Payable\Services\RequestService;
 use Unusualify\Payable\Services\Iyzico\Models\Address;
 use Unusualify\Payable\Services\Iyzico\Models\BasketItem;
+use Unusualify\Payable\Services\Iyzico\Models\BasketItemType;
 use Unusualify\Payable\Services\Iyzico\Models\Buyer;
 use Unusualify\Payable\Services\Iyzico\Requests\CreatePaymentRequest;
 use Unusualify\Payable\Services\Iyzico\Models\Currency;
 use Unusualify\Payable\Services\Iyzico\Models\PaymentCard;
+use Unusualify\Priceable\Facades\PriceService;
 
 class IyzicoService extends RequestService
 {
 
 
-  protected $prodUrl = 'https://sandbox-api.iyzipay.com/payment';
+  public $prodUrl;
 
-  protected $apiProdKey = 'sandbox-zwhSW4JMsA3GG3aAI4SjnLcyCEQHYtbA';
+  public $apiProdKey;
 
-  protected $apiProdSecret = 'sandbox-VS9QsDF9ECiagNLRV8YfoK766F8n76P8';
+  public $apiProdSecret;
 
-  protected $merchantId = '3395857';
+  public $merchantId;
 
   protected $url;
 
@@ -49,6 +51,7 @@ class IyzicoService extends RequestService
     );
 
     $this->root_path = base_path();
+    $this->setCredentials();
   }
 
   public function generateHash($apiKey, $secretKey, $randomString, CreatePaymentRequest $request)
@@ -80,106 +83,106 @@ class IyzicoService extends RequestService
     return vsprintf("IYZWS %s:%s", array($this->apiKey, $authContent));
   }
 
-  public function initThreeDS()
+  public function initThreeDS(array $params, int $priceID)
   {
     $endpoint = "/3dsecure/initialize";
 
+    $currency = PriceService::find($priceID)->currency;
+    
+
     # create request class
     $request = new CreatePaymentRequest();
-    $request->setLocale('tr');
-    $request->setConversationId("123456789");
-    $request->setPrice("1");
-    $request->setPaidPrice("1.2");
-    $request->setCurrency(Currency::TL);
-    $request->setInstallment(1);
-    $request->setBasketId("B67832");
+    $request->setLocale($params['locale']);
+    $request->setConversationId($params['orderId']);
+    $request->setPrice($params['price']);
+    $request->setPaidPrice($params['paidPrice']);
+    $request->setCurrency($currency->iso_code);
+    $request->setInstallment($params['installment']);
+    $request->setBasketId($params['basketId']);
     $request->setPaymentChannel("WEB");
-    $request->setPaymentGroup("PRODUCT");
-    $request->setCallbackUrl("http://admin.crm.template/test-api");
+    $request->setPaymentGroup($params['paymentGroup']);
+    $request->setCallbackUrl($this->redirect_url);
 
     $paymentCard = new PaymentCard();
-    $paymentCard->setCardHolderName("John Doe");
-    $paymentCard->setCardNumber("5528790000000008");
-    $paymentCard->setExpireMonth("12");
-    $paymentCard->setExpireYear("2030");
-    $paymentCard->setCvc("123");
+    $paymentCard->setCardHolderName($params['paymentCard']['cardHolderName']);
+    $paymentCard->setCardNumber($params['paymentCard']['cardNumber']);
+    $paymentCard->setExpireMonth($params['paymentCard']['expireMonth']);
+    $paymentCard->setExpireYear($params['paymentCard']['expireYear']);
+    $paymentCard->setCvc($params['paymentCard']['cvc']);
     $paymentCard->setRegisterCard(0);
     $request->setPaymentCard($paymentCard);
 
     $buyer = new Buyer();
-    $buyer->setId("BY789");
-    $buyer->setName("John");
-    $buyer->setSurname("Doe");
-    $buyer->setGsmNumber("+905350000000");
-    $buyer->setEmail("email@email.com");
-    $buyer->setIdentityNumber("74300864791");
-    $buyer->setLastLoginDate("2015-10-05 12:43:35");
-    $buyer->setRegistrationDate("2013-04-21 15:12:09");
-    $buyer->setRegistrationAddress("Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1");
-    $buyer->setIp("85.34.78.112");
-    $buyer->setCity("Istanbul");
-    $buyer->setCountry("Turkey");
-    $buyer->setZipCode("34732");
+    $buyer->setId($params['buyer']['id']);
+    $buyer->setName($params['buyer']['name']);
+    $buyer->setSurname($params['buyer']['surname']);
+    $buyer->setGsmNumber($params['buyer']['gsmNumber']);
+    $buyer->setEmail($params['buyer']['email']);
+    $buyer->setIdentityNumber($params['buyer']['']);
+    $buyer->setLastLoginDate($params['buyer']['lastLoginDate']);
+    $buyer->setRegistrationDate($params['buyer']['registrationDate']);
+    $buyer->setRegistrationAddress($params['buyer']['registrationAddress']);
+    $buyer->setIp($params['buyer']['ip']);
+    $buyer->setCity($params['buyer']['city']);
+    $buyer->setCountry($params['buyer']['country']);
+    $buyer->setZipCode($params['buyer']['zipCode']);
     $request->setBuyer($buyer);
 
     $shippingAddress = new Address();
-    $shippingAddress->setContactName("Jane Doe");
-    $shippingAddress->setCity("Istanbul");
-    $shippingAddress->setCountry("Turkey");
-    $shippingAddress->setAddress("Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1");
-    $shippingAddress->setZipCode("34742");
+    $shippingAddress->setContactName($params['shippingAddress']['contactName']);
+    $shippingAddress->setCity($params['shippingAddress']['city']);
+    $shippingAddress->setCountry($params['shippingAddress']['country']);
+    $shippingAddress->setAddress($params['shippingAddress']['address']);
+    $shippingAddress->setZipCode($params['shippingAddress']['zipCode']);
     $request->setShippingAddress($shippingAddress);
 
     $billingAddress = new Address();
-    $billingAddress->setContactName("Jane Doe");
-    $billingAddress->setCity("Istanbul");
-    $billingAddress->setCountry("Turkey");
-    $billingAddress->setAddress("Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1");
-    $billingAddress->setZipCode("34742");
+    $billingAddress->setContactName($params['billingAddress']['contactName']);
+    $billingAddress->setCity($params['billingAddress']['city']);
+    $billingAddress->setCountry($params['billingAddress']['country']);
+    $billingAddress->setAddress($params['billingAddress']['address']);
+    $billingAddress->setZipCode($params['billingAddress']['zipCode']);
     $request->setBillingAddress($billingAddress);
 
     $basketItems = array();
-    $firstBasketItem = new BasketItem();
-    $firstBasketItem->setId("BI101");
-    $firstBasketItem->setName("Binocular");
-    $firstBasketItem->setCategory1("Collectibles");
-    $firstBasketItem->setCategory2("Accessories");
-    $firstBasketItem->setItemType(\Iyzipay\Model\BasketItemType::PHYSICAL);
-    $firstBasketItem->setPrice("0.3");
-    $basketItems[0] = $firstBasketItem;
+    foreach($params['basketItems'] as $item){
+      $basketItem = new BasketItem();
+      $basketItem->setId($params['basketItem']['id']);
+      $basketItem->setName($params['basketItem']['name']);
+      $basketItem->setCategory1($params['basketItem']['category1']);
+      $basketItem->setCategory2($params['basketItem']['category2']);
+      $basketItem->setItemType($params['basketItem']['itemType']);
+      $basketItem->setPrice($params['basketItem']['price']);
+    }
+    $this->createRecord((object)[
+      'payment_gateway' => $this->serviceName,
+      'order_id' => $params['orderId'],
+      'price' => '',
+      'currency_id' => $currency->id,
+      'email' => '',
+      'installment' => '',
+      'parameters' => json_encode('')
+    ]);
+    $resp = $this->postReq($this->url, $endpoint, $request->toJsonString(), $this->generateHeaders($request), 'raw');
 
-    $secondBasketItem = new BasketItem();
-    $secondBasketItem->setId("BI102");
-    $secondBasketItem->setName("Game code");
-    $secondBasketItem->setCategory1("Game");
-    $secondBasketItem->setCategory2("Online Game Items");
-    $secondBasketItem->setItemType("VIRTUAL");
-    $secondBasketItem->setPrice("0.5");
-    $basketItems[1] = $secondBasketItem;
-
-    $thirdBasketItem = new BasketItem();
-    $thirdBasketItem->setId("BI103");
-    $thirdBasketItem->setName("Usb");
-    $thirdBasketItem->setCategory1("Electronics");
-    $thirdBasketItem->setCategory2("Usb / Cable");
-    $thirdBasketItem->setItemType("PHYSICAL");
-    $thirdBasketItem->setPrice("0.2");
-    $basketItems[2] = $thirdBasketItem;
-    $request->setBasketItems($basketItems);
-
-    // return $request;
-    // dd($request);
-    # make request
-    // $threedsInitialize = \Iyzipay\Model\ThreedsInitialize::create($request, new IyzicoConfig($this->apiKey, $this->apiSecret, $this->url));
-    // dd($this->generateHeaders($request));
-    // dd($this->url, $endpoint, $request->toJsonString(), $this->generateHeaders($request));
-    $threedsInit = $this->postReq($this->url, $endpoint, $request->toJsonString(), $this->generateHeaders($request), 'json');
-
+    $threeDForm = base64_decode(json_decode($resp)->threeDSHtmlContent); 
     # print result
-    dd($threedsInit);
+    print($threeDForm);
+    exit;
+    // dd($threedsInit);
   }
 
-  public function setConfig(array $config){
-    
+  public function setCredentials(){
+    $this->setConfig();
+    $tempConfig = $this->config[$this->mode];
+
+    $this->url = $tempConfig['url'];
+    $this->apiKey = $tempConfig['api_key'];
+    $this->apiSecret = $tempConfig['api_secret'];
+    $this->merchantId = $this->config['merchant_id'];
+    $this->token_refresh_time = $this->config['token_refresh_time'];
+    $this->redirect_url = route('payable.iyzico.return');
+
+    // dd($this->config, $this);
   }
 }

@@ -25,7 +25,19 @@ trait Orders
         $this->type = 'json';
         $this->verb = 'post';
         // dd($this->apiEndPoint);
-        return $this->doPayPalRequest();
+        $resp =  $this->doPayPalRequest();
+        
+        $this->createRecord(
+            [
+                'payment_gateway' => $this->serviceName,
+                'order_id' => $resp->id,
+                'price' => $data['purchase_units']['amount']['value'],
+                'currency_id' => $data->currencyId,
+                'email' => $data->email,
+                'installment' => $data->installment,
+                'parameters' => json_encode($data),
+            ]
+        );
     }
 
     /**

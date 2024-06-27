@@ -4,7 +4,7 @@ namespace Unusualify\Payable\Services\TebCommonPos;
 
 use Carbon\Carbon;
 use Unusualify\Payable\Services\RequestService;
-
+use Unusualify\Priceable\Facades\PriceService;
 
 class TebCommonPosService extends RequestService
 {
@@ -21,11 +21,6 @@ public function __construct($mode = null)
 
     parent::__construct(
       envVar: '',
-      apiProdKey: '',
-      apiProdSecret: $this->apiProdSecret,
-      apiTestSecret: '',
-      apiTestKey: '',
-      prodUrl: $this->prodUrl,
       headers: $this->headers,
     );
 
@@ -59,7 +54,7 @@ public function __construct($mode = null)
     return $hash;
   }
 
-  public function startPaymentProcess(array $params){
+  public function startPaymentProcess(array $params, int $priceID){
     $endpoint = 'ThreeDPayment';
     $hash = $this->generateHash();
     $returnUrl = route('payable.teb-common.return');
@@ -70,7 +65,7 @@ public function __construct($mode = null)
     ];
 
     $this->params += $params;
-    
+    $currency = PriceService::find($priceID)->currency;
     
     $data = [
       'clientId' => $this->clientId,
@@ -83,7 +78,7 @@ public function __construct($mode = null)
       'isCommission' => $this->params['iscommission'],
       'amount' => $this->params['txnamount'],
       'totalAmount' => $this->params['txnamount'],
-      'currency' => $this->params['txncurrencycode'],
+      'currency' => $currency->iso_4217, 
       'installmentCount' => $this->params['txninstallmentcount'],
       'description' => '',
       'echo' => '',
@@ -95,6 +90,16 @@ public function __construct($mode = null)
     // dd($jsonResponse);
     // dd($response);
     if ($responseObject->Code == 0) {
+      $paymentData = [
+        'serviceName' => $this->serviceName,
+        'paymentOrderId' => $data['orderId'],
+        'amount' => $data['amount'],
+        'currencyId' => $data['currency'],
+        'email' => $this->params['email'],
+        'installment' => $data['installmentCount'],
+        'parameters' => $this->params
+      ]; 
+      $this->createRecord(array2Object($paymentData));
       return $responseObject->ThreeDSessionId;
     }else{
       return json_decode($responseObject);
@@ -102,10 +107,9 @@ public function __construct($mode = null)
     // dd($threeDSessionId);
   }
 
-  public function pay(array $params){
-    $threeDSessionId = $this->startPaymentProcess($params);
+  public function pay(array $params, int $priceID){
+    $threeDSessionId = $this->startPaymentProcess($params, $priceID);
     $endpoint = 'ProcessCardForm';
-
     $multipart = [
       [
         'name' => 'ThreeDSessionId',
