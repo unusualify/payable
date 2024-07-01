@@ -35,7 +35,8 @@ class TebPosService extends PaymentService{
 
   }
 
-  public function pay(array $params, int $priceID){
+  public function pay(array $params, int $priceID)
+  {
     $endpoint = 'fim/est3Dgate';
 
     $this->rnd = microtime();
@@ -80,12 +81,13 @@ class TebPosService extends PaymentService{
 
   }
 
-  public function amountFormat($price){
+  public function amountFormat($price)
+  {
     return number_format((float)$price, 2, ',', '');
-    // dd($price, strval($price), number_format((float)$price, 2, ',', ''));
   }
 
-  public function generateHash(){
+  public function generateHash()
+  {
     $map = [
       $this->merchantID,
       $this->params['orderid'],

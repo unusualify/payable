@@ -113,7 +113,8 @@ class GarantiPosService extends PaymentService{
     // dd($this);
   }
 
-  public function pay(array $params, int $priceID){
+  public function pay(array $params, int $priceID)
+  {
     $endpoint = 'servlet/gt3dengine';
     $this->params['txntimestamp'] = time();
     $this->params += $params;
@@ -141,7 +142,8 @@ class GarantiPosService extends PaymentService{
     return print_r($resp);
   }
 
-  public function generateHash(){
+  public function generateHash()
+  {
 
     $map = [
       $this->terminalID,
@@ -155,11 +157,11 @@ class GarantiPosService extends PaymentService{
       $this->storeKey,
       $this->generateSecurityData()
     ];
-    // dd($this->generateSecurityData());
     return strtoupper(hash('sha512', implode('', $map)));
   }
 
-  public function generateSecurityData(){
+  public function generateSecurityData()
+  {
     return strtoupper(sha1($this->provUserPassword . $this->terminalID));
   }
   

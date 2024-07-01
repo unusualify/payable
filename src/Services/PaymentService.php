@@ -35,9 +35,8 @@ class PaymentService extends URequest{
 
   public function __construct(    
     $headers = null,
-
-    $redirect_url = null
-  ){
+    $redirect_url = null)
+    {
     parent::__construct(
       mode : $this->mode,
       headers: $this->headers,
@@ -50,21 +49,25 @@ class PaymentService extends URequest{
     $this->serviceName = str_replace('Service', '', class_basename($this));
   }
 
-  public function getHeaders(){
+  public function getHeaders()
+  {
     return $this->headers;
   }
 
-  public function setConfig(){
+  public function setConfig()
+  {
     $this->config = config($this->getConfigName());
     // dd($this->config);
     $this->mode = $this->config['mode'];
   }
 
-  public function getConfigName(){
+  public function getConfigName()
+  {
     return 'payable' . '.services.' .strtolower(str_replace('Service', '', class_basename($this)));
   }
 
-  function createRecord(object $data){
+  function createRecord(object $data)
+  {
 
     $payment = Payment::create(
       [
@@ -79,7 +82,8 @@ class PaymentService extends URequest{
     );
     return $payment;
   }
-  static function updateRecord($order_id, $status, $response){
+  static function updateRecord($order_id, $status, $response)
+  {
     return Payment::where('order_id' ,$order_id)
             ->update([
               'status' => $status,
@@ -88,15 +92,8 @@ class PaymentService extends URequest{
             ]);
   }
 
-  public function setMode($mode){
+  public function setMode($mode)
+  {
     $this->mode = $mode;
-  }
-
-  public function setLive(){
-
-  }
-  
-  public function setSandbox(){
-
   }
 }

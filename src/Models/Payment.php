@@ -15,7 +15,7 @@ class Payment extends Model
    *
    * @var string
    */
-  protected $table = 'unfy_payments';
+  protected $table = config('payable.table');
 
   /**
    * The attributes that are mass assignable.

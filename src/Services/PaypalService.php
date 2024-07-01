@@ -48,7 +48,8 @@ class PaypalService extends PaymentService
 
   }
 
-  public function doPaypalRequest(bool $decode = true){
+  public function doPaypalRequest(bool $decode = true)
+  {
 
     try {
       if($this->verb == 'post'){

@@ -65,7 +65,8 @@ abstract class URequest implements URequestInterface
             $this->client = new Client();
     }
 
-    public function setHeaders($headers){
+    public function setHeaders($headers)
+    {
         $this->headers = $headers;
         foreach($this->headers as $key => $value){
             if(str_contains(strtolower($key), 'authorization')){
@@ -144,7 +145,8 @@ abstract class URequest implements URequestInterface
         }
     }
 
-    function getReq($url, $endPoint, $parameters = [], $headers = []){
+    function getReq($url, $endPoint, $parameters = [], $headers = [])
+    {
         try{
             dd($url, $headers);
             $res = $this->client->get(
@@ -162,7 +164,8 @@ abstract class URequest implements URequestInterface
         }
     }
 
-    function deleteReq($url, $endPoint, $parameters = [], $headers = []){
+    function deleteReq($url, $endPoint, $parameters = [], $headers = [])
+    {
         try {
             $res = $this->client->delete(
                 "{$url}/{$endPoint}",
@@ -182,8 +185,4 @@ abstract class URequest implements URequestInterface
     abstract function getConfigName();
 
     abstract function setMode($mode);
-    
-    abstract function setLive();
-
-    abstract function setSandbox();
 }

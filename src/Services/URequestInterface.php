@@ -47,20 +47,4 @@ interface URequestInterface
      * @return null
      */
     public function setMode(String $mode);
-
-    /**
-     * 
-     * Convert Mode to Sandbox
-     *
-     * @return null
-     */
-    public function setSandbox();
-
-    /**
-     * 
-     * Convert Mode to Live
-     *
-     * @return null
-     */
-    public function setLive();
 }

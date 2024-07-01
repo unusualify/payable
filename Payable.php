@@ -1,6 +1,6 @@
 <?php
 
-namespace Unusualify\Payable\Services;
+namespace Unusualify\Payable;
 
 class Payable {
 

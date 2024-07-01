@@ -157,19 +157,23 @@ class TestController extends Controller
 
   }
 
-  public function paypalResponse(Request $request){
+  public function paypalResponse(Request $request)
+  {
     dd($request->getQueryString());
   }
   
-  public function garantiResponse(Request $request){
+  public function garantiResponse(Request $request)
+  {
     dd($request);
   }
 
-  public function tebResponse(Request $request){
+  public function tebResponse(Request $request)
+  {
     dd($request);
   }
 
-  public function tebCommonResponse(Request $request){
+  public function tebCommonResponse(Request $request)
+  {
     if($request->BankResponseCode == "00"){
       // dd($request, $request->BankResponseCode);
       TebCommonPosService::updateRecord($request->OrderId, 'COMPLETED' ,$request->all());
@@ -183,11 +187,13 @@ class TestController extends Controller
     dd($request);
   }
 
-  public function iyzicoResponse(Request $request){
+  public function iyzicoResponse(Request $request)
+  {
     dd($request);
   }
 
-  public function testIyzico(){
+  public function testIyzico()
+  {
 
     $priceID = 1;
     $params = [
@@ -269,7 +275,8 @@ class TestController extends Controller
 
   }
 
-  public function testPaypal(){
+  public function testPaypal()
+  {
     $paypal = PayPal::setProvider();
     // Data for paypal wallet payment
     $data = [
@@ -313,7 +320,8 @@ class TestController extends Controller
     
   }
 
-  public function testGaranti(){
+  public function testGaranti()
+  {
     $garanti = new GarantiPosService();
     $params = [
       "cardname" => "Güneş Bizim",
@@ -336,7 +344,8 @@ class TestController extends Controller
     $resp = $garanti->pay($params);
   }
 
-  public function testTebCommon(){
+  public function testTebCommon()
+  {
     $params = [
       "cardname" => "Güneş Bizim",
       "cardnumber" => "4155650100416111",
@@ -361,7 +370,8 @@ class TestController extends Controller
     dd($resp);
   }
 
-  public function testTeb(){
+  public function testTeb()
+  {
     $params = [
       "cardname" => "Güneş Bizim",
       "cardnumber" => "4155650100416111",

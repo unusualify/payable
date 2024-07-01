@@ -4,7 +4,7 @@ namespace Unusualify\Payable\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Unusualify\Payable\Services\Payable;
+use Unusualify\Payable\Payable;
 use Unusualify\Payable\Facades\Zoho;
 use Unusualify\Payable\Facades\Movie;
 use Unusualify\Payable\Facades\Iyzico;
@@ -20,7 +20,8 @@ use Unusualify\Payable\Services\TebPos\TebPosService;
 
 class PaymentController extends Controller
 { 
-  public function testView(){
+  public function testView()
+  {
    
   
     /*
@@ -161,19 +162,23 @@ class PaymentController extends Controller
 
   }
 
-  public function paypalResponse(Request $request){
+  public function paypalResponse(Request $request)
+  {
     dd($request->getQueryString());
   }
   
-  public function garantiResponse(Request $request){
+  public function garantiResponse(Request $request)
+  {
     dd($request);
   }
 
-  public function tebResponse(Request $request){
+  public function tebResponse(Request $request)
+  {
     dd($request);
   }
 
-  public function tebCommonResponse(Request $request){
+  public function tebCommonResponse(Request $request)
+  {
     if($request->BankResponseCode == "00"){
       // dd($request, $request->BankResponseCode);
       TebCommonPosService::updateRecord($request->OrderId, 'COMPLETED' ,$request->all());
@@ -187,11 +192,13 @@ class PaymentController extends Controller
     dd($request);
   }
 
-  public function iyzicoResponse(Request $request){
+  public function iyzicoResponse(Request $request)
+  {
     dd($request);
   }
 
-  public function testIyzico(){
+  public function testIyzico()
+  {
 
     $priceID = 1;
     $params = [
@@ -273,7 +280,8 @@ class PaymentController extends Controller
 
   }
 
-  public function testPaypal(){
+  public function testPaypal()
+  {
     $paypal = PayPal::setProvider();
     // Data for paypal wallet payment
     $data = [
@@ -317,7 +325,8 @@ class PaymentController extends Controller
     
   }
 
-  public function testGaranti(){
+  public function testGaranti()
+  {
     $garanti = new GarantiPosService();
     $params = [
       "cardname" => "Güneş Bizim",
@@ -340,7 +349,8 @@ class PaymentController extends Controller
     $resp = $garanti->pay($params);
   }
 
-  public function testTebCommon(){
+  public function testTebCommon()
+  {
     $params = [
       "cardname" => "Güneş Bizim",
       "cardnumber" => "4155650100416111",
@@ -365,7 +375,8 @@ class PaymentController extends Controller
     dd($resp);
   }
 
-  public function testTeb(){
+  public function testTeb()
+  {
     $params = [
       "cardname" => "Güneş Bizim",
       "cardnumber" => "4155650100416111",
@@ -390,7 +401,8 @@ class PaymentController extends Controller
   }
 
 
-  public function pay(Request $request, $slug){
+  public function pay(Request $request, $slug)
+  {
     // $serviceName = $slug.'Service';
     
     $payable = new Payable($slug);

@@ -15,7 +15,7 @@ public $rnd;
 public $timeSpan;
 protected $params = [];
 
-public function __construct($mode = null)
+  public function __construct($mode = null)
   {
 
     parent::__construct(
@@ -30,7 +30,8 @@ public function __construct($mode = null)
     
   }
 
-  public function setCredentials(){
+  public function setCredentials()
+  {
     $this->setConfig();
 
     $this->mode = $this->config['mode'];
@@ -43,7 +44,8 @@ public function __construct($mode = null)
 
   }
 
-  public function generateHash(){
+  public function generateHash()
+  {
     $hashString = $this->apiPass . $this->clientId . $this->apiUser . $this->rnd . $this->timeSpan;
 
     $hashingBytes = hash("sha512", ($hashString), true);
@@ -52,7 +54,8 @@ public function __construct($mode = null)
     return $hash;
   }
 
-  public function startPaymentProcess(array $params, int $priceID){
+  public function startPaymentProcess(array $params, int $priceID)
+  {
     $endpoint = 'ThreeDPayment';
     $hash = $this->generateHash();
     $returnUrl = route('payable.teb-common.return');
@@ -85,8 +88,7 @@ public function __construct($mode = null)
 
     $response = $this->postReq($this->url, $endpoint, json_encode($data), $this->headers,'raw');
     $responseObject = json_decode($response);
-    // dd($jsonResponse);
-    // dd($response);
+
     if ($responseObject->Code == 0) {
       $paymentData = [
         'serviceName' => $this->serviceName,
@@ -102,10 +104,10 @@ public function __construct($mode = null)
     }else{
       return json_decode($responseObject);
     }
-    // dd($threeDSessionId);
   }
 
-  public function pay(array $params, int $priceID){
+  public function pay(array $params, int $priceID)
+  {
     $threeDSessionId = $this->startPaymentProcess($params, $priceID);
     $endpoint = 'ProcessCardForm';
     $multipart = [
@@ -134,7 +136,8 @@ public function __construct($mode = null)
     print($response);
   }
 
-  public function formatCardExpireDate($month, $year){
+  public function formatCardExpireDate($month, $year)
+  {
     return $month . substr($year, -2);
   }
 }

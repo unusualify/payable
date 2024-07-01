@@ -56,7 +56,8 @@ class IyzicoService extends PaymentService
     return base64_encode(sha1($hashStr, true));
   }
 
-  public function generateHeaders(CreatePaymentRequest $request){
+  public function generateHeaders(CreatePaymentRequest $request)
+  {
     $header = array(
       "Accept" =>  "application/json",
       "Content-type" => "application/json",
@@ -66,9 +67,6 @@ class IyzicoService extends PaymentService
     $header["Authorization"] = $this->prepareAuthorizationString($request, $rnd);
     $header["x-iyzi-rnd"] = $rnd;
     $header["x-iyzi-client-version"] = "iyzipay-php-2.0.54";
-    // array_push($header, "Authorization: " . $this->prepareAuthorizationString($request, $rnd));
-    // array_push($header, "x-iyzi-rnd: " . $rnd);
-    // array_push($header, "x-iyzi-client-version: " . "iyzipay-php-2.0.54");
 
     return $header;
   }
@@ -165,10 +163,10 @@ class IyzicoService extends PaymentService
     # print result
     print($threeDForm);
     exit;
-    // dd($threedsInit);
   }
 
-  public function setCredentials(){
+  public function setCredentials()
+  {
     $this->setConfig();
     $tempConfig = $this->config[$this->mode];
 
@@ -179,7 +177,6 @@ class IyzicoService extends PaymentService
     $this->token_refresh_time = $this->config['token_refresh_time'];
     $this->redirect_url = route('payable.iyzico.return');
 
-    // dd($this->config, $this);
   }
   
 }
