@@ -20,14 +20,14 @@ class LaravelServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__ . '/Config/config.php' => config_path('payable.php'),
+               __DIR__ . '/../config/config.php' => config_path('payable.php'),
             ], 'config');
         }
         $this->loadMigrationsFrom(
             __DIR__ . '/../src/Database/Migrations'
         );
         // $this->loadViewsFrom(__DIR__ . '/views', 'unusual_form');
-        $this->loadRoutesFrom(__DIR__.'/Routes/web.php');
+        $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
         // $this->bootViews();
 
     }

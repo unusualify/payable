@@ -1,11 +1,10 @@
 <?php
 
-namespace Unusualify\Payable\Services\TebPos;
+namespace Unusualify\Payable\Services;
 
-use Unusualify\Payable\Services\RequestService;
 use Unusualify\Priceable\Facades\PriceService;
 
-class TebPosService extends RequestService{
+class TebPosService extends PaymentService{
 
   protected $merchantID;
   protected $storeKey;

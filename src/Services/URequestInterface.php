@@ -5,9 +5,6 @@ namespace Unusualify\Payable\Services;
 
 interface URequestInterface
 {
-
-  
-
     /**
      * 
      * Post Curl Template

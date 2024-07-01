@@ -1,6 +1,6 @@
 <?php
 
-namespace Unusualify\Payable\Services\Iyzico;
+namespace Unusualify\Payable\Services;
 
 use Unusualify\Payable\Services\RequestService;
 use Unusualify\Payable\Services\Iyzico\Models\Address;
@@ -12,7 +12,7 @@ use Unusualify\Payable\Services\Iyzico\Models\Currency;
 use Unusualify\Payable\Services\Iyzico\Models\PaymentCard;
 use Unusualify\Priceable\Facades\PriceService;
 
-class IyzicoService extends RequestService
+class IyzicoService extends PaymentService
 {
 
 
@@ -43,10 +43,6 @@ class IyzicoService extends RequestService
   {
 
     parent::__construct(
-      envVar: 'IYZICO_MODE',
-      apiProdKey: $this->apiProdKey,
-      apiProdSecret:$this->apiProdSecret,
-      prodUrl: $this->prodUrl,
       headers: $this->headers
     );
 
@@ -83,7 +79,7 @@ class IyzicoService extends RequestService
     return vsprintf("IYZWS %s:%s", array($this->apiKey, $authContent));
   }
 
-  public function initThreeDS(array $params, int $priceID)
+  public function pay(array $params, int $priceID)
   {
     $endpoint = "/3dsecure/initialize";
 
@@ -185,4 +181,5 @@ class IyzicoService extends RequestService
 
     // dd($this->config, $this);
   }
+  
 }

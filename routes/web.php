@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Unusualify\Payable\Http\Controllers\PaymentController;
 use Unusualify\Payable\Http\Controllers\TestController;
 
 /*
@@ -14,12 +15,6 @@ use Unusualify\Payable\Http\Controllers\TestController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-// dd(
-//     unusualConfig('enabled.users-management')
-// );
-// Auth::routes();
-// dd('here');
-
 Route::controller(TestController::class)->prefix('test-api')->group(function(){
   Route::get('/',  'test')->name('payable.test');
 
@@ -32,7 +27,11 @@ Route::controller(TestController::class)->prefix('test-api')->group(function(){
 
   Route::post('/iyzico-return', 'iyzicoResponse')->name('payable.iyzico.return');
 
-
-
 });
+
+Route::controller(PaymentController::class)->prefix('pay')->group(function(){
+  
+  Route::get('/{slug}', 'pay')->name('payable.pay');
+});
+
 

@@ -6,7 +6,7 @@ namespace Unusualify\Payable\Services;
 use Illuminate\Support\Str;
 use Unusualify\Payable\Facades\Payment;
 
-class RequestService extends URequest{
+class PaymentService extends URequest{
 
   public $mode;
 
@@ -56,6 +56,7 @@ class RequestService extends URequest{
 
   function setConfig(){
     $this->config = config($this->getConfigName());
+    // dd($this->config);
     $this->mode = $this->config['mode'];
   }
 
@@ -88,7 +89,7 @@ class RequestService extends URequest{
   }
 
   public function setMode($mode){
-    
+    $this->mode = $mode;
   }
 
   public function setLive(){

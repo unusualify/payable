@@ -1,12 +1,11 @@
 <?php
 
-namespace Unusualify\Payable\Services\TebCommonPos;
+namespace Unusualify\Payable\Services;
 
 use Carbon\Carbon;
-use Unusualify\Payable\Services\RequestService;
 use Unusualify\Priceable\Facades\PriceService;
 
-class TebCommonPosService extends RequestService
+class TebCommonPosService extends PaymentService
 {
 
 protected $clientId;
@@ -20,7 +19,6 @@ public function __construct($mode = null)
   {
 
     parent::__construct(
-      envVar: '',
       headers: $this->headers,
     );
 

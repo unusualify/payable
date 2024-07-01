@@ -2,10 +2,10 @@
 
 namespace Unusualify\Payable\Services\GarantiPos;
 
-use Unusualify\Payable\Services\RequestService;
+use Unusualify\Payable\Services\PaymentService;
 use Unusualify\Priceable\Facades\PriceService;
 
-class GarantiPosService extends RequestService{
+class GarantiPosService extends PaymentService{
 
   public $version = "v0.01";
   

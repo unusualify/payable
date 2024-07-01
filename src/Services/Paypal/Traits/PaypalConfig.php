@@ -20,7 +20,7 @@ trait PaypalConfig{
     $this->setApiCredentials($api_config);
   }
 
-  public function setRequestHeader(string $key, string $value): \Unusualify\Payable\Services\PayPal\PayPalService{
+  public function setRequestHeader(string $key, string $value): \Unusualify\Payable\Services\PayPalService{
     $this->headers[$key] = $value;
     return $this;
   }
@@ -32,6 +32,7 @@ trait PaypalConfig{
         }
 
         // Setting Default PayPal Mode If not set
+        // dd($credentials['mode']);
         $this->setMode($credentials['mode']);
 
         // Set API configuration for the PayPal provider
@@ -107,7 +108,7 @@ trait PaypalConfig{
     $this->setOptions($credentials);
   }
 
-  public function setCurrency(string $currency = 'USD'): \Unusualify\Payable\Services\PayPal\PayPalService
+  public function setCurrency(string $currency = 'USD'): \Unusualify\Payable\Services\PayPalService
   {
     $allowedCurrencies = ['AUD', 'BRL', 'CAD', 'CZK', 'DKK', 'EUR', 'HKD', 'HUF', 'ILS', 'INR', 'JPY', 'MYR', 'MXN', 'NOK', 'NZD', 'PHP', 'PLN', 'GBP', 'SGD', 'SEK', 'CHF', 'TWD', 'THB', 'USD', 'RUB', 'CNY'];
 

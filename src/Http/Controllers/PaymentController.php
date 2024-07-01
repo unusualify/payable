@@ -4,17 +4,21 @@ namespace Unusualify\Payable\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Unusualify\Payable\Services\Payable;
+use Unusualify\Payable\Facades\Zoho;
+use Unusualify\Payable\Facades\Movie;
 use Unusualify\Payable\Facades\Iyzico;
+use Unusualify\Payable\Facades\Payment;
 use Unusualify\Payable\Facades\PayPal;
-use Unusualify\Payable\Services\GarantiPosService;
-use Unusualify\Payable\Services\IyzipayService;
-use Unusualify\Payable\Services\TebCommonPosService;
-use Unusualify\Payable\Services\TebPosService;
+use Unusualify\Payable\Services\GarantiPos\GarantiPosService;
+use Unusualify\Payable\Services\Iyzico\IyzipayService;
+use Unusualify\Payable\Services\TebCommonPos\TebCommonPosService;
+use Unusualify\Payable\Services\TebPos\TebPosService;
 
 // use Srmklive\PayPal\PayPalFacadeAccessor as PayPalClient;
 
 
-class TestController extends Controller
+class PaymentController extends Controller
 { 
   public function testView(){
    
@@ -263,7 +267,7 @@ class TestController extends Controller
       ],
       "currency" => "TRY",
     ];
-    $payment = Iyzico::initThreeDS($params, $priceID);
+    $payment = Iyzico::pay($params, $priceID);
 
     dd($payment);
 
@@ -383,5 +387,15 @@ class TestController extends Controller
 
     $teb = new TebPosService();
     $teb->pay($params);
+  }
+
+
+  public function pay(Request $request, $slug){
+    // $serviceName = $slug.'Service';
+    
+    $payable = new Payable($slug);
+    dd($request->getContent(), $request);
+    $payable->pay($request);
+
   }
 }

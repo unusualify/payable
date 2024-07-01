@@ -1,21 +1,18 @@
 <?php
 
-namespace Unusualify\Payable\Services\Paypal;
+namespace Unusualify\Payable\Services;
 
 use Exception;
 use GuzzleHttp\Utils;
 use RuntimeException;
 use Unusualify\Payable\PayPal\Str;
 use Unusualify\Payable\Services\Paypal\Traits\PaypalAPI;
-// use Srmklive\PayPal\Traits\PayPalRequest as PayPalAPIRequest;
 use Unusualify\Payable\Services\Paypal\Traits\PayPalVerifyIPN;
-use Unusualify\Payable\Services\RequestService;
 use Unusualify\Priceable\Facades\PriceService;
-use Unusualify\Priceable\Models\Currency;
 
-class PaypalService extends RequestService
+class PaypalService extends PaymentService
 {
-  use Traits\PaypalConfig;
+  use Paypal\Traits\PaypalConfig;
 
   use PayPalVerifyIPN;
   use PaypalAPI;
@@ -74,7 +71,7 @@ class PaypalService extends RequestService
 
   }
 
-  public function createOrder(array $data , int $priceID)
+  public function pay(array $data , int $priceID)
   {
     $this->apiEndPoint = 'v2/checkout/orders';
 
