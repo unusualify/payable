@@ -11,7 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create(config('payable.tables.payments', 'unfy_payments'), function (Blueprint $table) {
+        
+        Schema::create(config('payable.tables.payments', config('payable.table')), function (Blueprint $table) {
             $table->id();
             $table->string('payment_gateway');
             $table->string('order_id');
