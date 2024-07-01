@@ -54,13 +54,13 @@ class PaymentService extends URequest{
     return $this->headers;
   }
 
-  function setConfig(){
+  public function setConfig(){
     $this->config = config($this->getConfigName());
     // dd($this->config);
     $this->mode = $this->config['mode'];
   }
 
-  function getConfigName(){
+  public function getConfigName(){
     return 'payable' . '.services.' .strtolower(str_replace('Service', '', class_basename($this)));
   }
 
