@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Unusualify\Payable\Facades\Iyzico;
 use Unusualify\Payable\Facades\PayPal;
+use Unusualify\Payable\Payable;
 use Unusualify\Payable\Services\GarantiPosService;
 use Unusualify\Payable\Services\IyzipayService;
 use Unusualify\Payable\Services\TebCommonPosService;
@@ -189,6 +190,20 @@ class TestController extends Controller
 
   public function iyzicoResponse(Request $request)
   {
+    $payment = new Payable('iyzico');
+    // dd($request->all());
+    if($request->status == 'success'){
+      $params = [
+        'payment_id' => $request->paymentId,
+        'conversation_id' => $request->conversationId,
+        'conversation_data' => $request->conversationData
+      ];
+      // dd('here');
+      $payment->service->completePayment($params);
+      dd($params);
+      dd('finished');
+      // dd($payment->service->updateRecord($request->conversationId, 'COMPLETED',$request->all()), $request->all());
+    }
     dd($request);
   }
 
@@ -196,9 +211,10 @@ class TestController extends Controller
   {
 
     $priceID = 1;
+    $orderId = rand(100000,999999);
     $params = [
       "locale" => "tr",
-      "orderId" => "123456789",
+      "orderId" => $orderId,
       "price" => "1.0",
       "paidPrice" => "1.2",
       "installment" => 1,
@@ -243,24 +259,8 @@ class TestController extends Controller
       ],
       "basketItems" => [
         [
-          "id" => "BI101",
-          "price" => "0.3",
-          "name" => "Binocular",
-          "category1" => "Collectibles",
-          "category2" => "Accessories",
-          "itemType" => "PHYSICAL"
-        ],
-        [
-          "id" => "BI102",
-          "price" => "0.5",
-          "name" => "Game code",
-          "category1" => "Game",
-          "category2" => "Online Game Items",
-          "itemType" => "VIRTUAL"
-        ],
-        [
           "id" => "BI103",
-          "price" => "0.2",
+          "price" => "1.0",
           "name" => "Usb",
           "category1" => "Electronics",
           "category2" => "Usb / Cable",
@@ -269,8 +269,8 @@ class TestController extends Controller
       ],
       "currency" => "TRY",
     ];
-    $payment = Iyzico::initThreeDS($params, $priceID);
-
+    $payment = new Payable('iyzico');
+    $payment->pay($params, $priceID);
     dd($payment);
 
   }
@@ -393,5 +393,30 @@ class TestController extends Controller
 
     $teb = new TebPosService();
     $teb->pay($params);
+  }
+
+  public function cancel(Request $request, $slug, $payment_id, $conversation_id)
+  {
+    $payment = new Payable($slug);
+    dd($payment->service->cancel([
+      'ip' => '85.34.78.112',
+      'payment_id' => $payment_id,
+      'conversation_id' => $conversation_id,
+      'reason' => 'My reason',
+      'price' => '1.2',
+      'locale' => 'tr',
+    ]));
+  }
+
+  public function refund($slug, $payment_id, $conversation_id)
+  {
+    $payment = new Payable($slug);
+    dd($payment->service->refund([
+      'ip' => '85.34.78.112',
+      'payment_id' => $payment_id,
+      'conversation_id' => $conversation_id,
+      'price' => '1.2',
+      'locale' => 'tr',
+    ]));
   }
 }
