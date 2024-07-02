@@ -15,7 +15,6 @@ class Payment extends Model
    *
    * @var string
    */
-  protected $table = config('payable.table');
 
   /**
    * The attributes that are mass assignable.
@@ -33,5 +32,10 @@ class Payment extends Model
     'parameters',
     'response',
   ];
+
+  public function getTable()
+  {
+    return config('payable.table');
+  }
 
 }

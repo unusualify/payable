@@ -11,18 +11,18 @@ class Payable {
 
   public function __construct(string $slug)
   {
-
+    // dd($slug);
     $this->slug = $slug;
     $serviceName = $this->generateClassPath();
+    // dd($serviceName);
     $this->service = new $serviceName();
     // dd($this);
   }
 
 
-  public function generateClassPath(){
-    
-    return __NAMESPACE__ . '\\' . $this->toPascalCase($this->slug) . 'Service';
-
+  public function generateClassPath()
+  {
+    return __NAMESPACE__ . '\\Services\\' . $this->toPascalCase($this->slug) . 'Service';
   }
 
   public function toPascalCase(string $str)
@@ -35,8 +35,19 @@ class Payable {
     return $str;
   }
 
-  public function pay($params){
-    $this->service->pay($params);
+  public function pay($params, $priceId)
+  {
+    // dd($params);
+    $this->service->pay($params, $priceId);
+  }
+
+  public function cancel($params)
+  {
+    $this->service->cancel($params);
+  }
+
+  public function refund($params){
+    $this->service->refund($params);
   }
 
 

@@ -25,13 +25,24 @@ Route::controller(TestController::class)->prefix('test-api')->group(function(){
 
   Route::post('/teb-common-return', 'tebCommonResponse')->name('payable.teb-common.return');
 
+  Route::get('/iyzico', 'testIyzico')->name('payable.iyzico.pay');
+
+
   Route::post('/iyzico-return', 'iyzicoResponse')->name('payable.iyzico.return');
+  
+  Route::get('/cancel/{slug}/{payment_id}/{conversation_id}', 'cancel')->name('test.payable.cancel');
+  
+  Route::get('/refund/{slug}/{payment_id}/{conversation_id}', 'refund')->name('test.payable.refund');
+
 
 });
 
-Route::controller(PaymentController::class)->prefix('pay')->group(function(){
+Route::controller(PaymentController::class)->prefix('payable')->group(function(){
   
-  Route::get('/{slug}', 'pay')->name('payable.pay');
+  Route::get('/pay/{slug}', 'pay')->name('payable.pay');
+  Route::get('/cancel/{slug}/{payment_id}', 'cancel')->name('payable.cancel');
+  Route::get('/refund/{slug}/{payment_id}', 'refund')->name('payable.refund');
+  
 });
 
 

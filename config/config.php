@@ -29,19 +29,18 @@ return [
     ],
     'iyzico' => [
       'mode' => 'sandbox',
+      'merchant_id' => env('IYZICO_MERCHANT_ID'),
+      'token_refresh_time' => env('IYZICO_TOKEN_REFRESH_TIME'),
+
       'sandbox' => [
         'url' => env('IYZICO_TEST_URL'),
         'api_key' => env('IYZICO_TEST_API_KEY'),
         'api_secret' => env('IYZICO_TEST_API_SECRET'),
-        'token_refresh_time' => env('IYZICO_TEST_URL'),
-        'merchant_id' => env('IYZICO_TEST_URL'),
       ],
       'live' => [
         'url' => env('IYZICO_PROD_URL'),
-        'api_key' => env('IYZICO_TEST_URL'),
-        'api_secret' => env('IYZICO_TEST_URL'),
-        'token_refresh_time' => env('IYZICO_TEST_URL'),
-        'merchant_id' => env('IYZICO_TEST_URL'),
+        'api_key' => env('IYZICO_PROD_API_KEY'),
+        'api_secret' => env('IYZICO_PROD_API_SECRET'),
       ],
     ],
     'garantipos' => [

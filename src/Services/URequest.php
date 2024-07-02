@@ -78,6 +78,7 @@ abstract class URequest implements URequestInterface
 
     function postReq($url, $endPoint, $postFields, $headers, $type)
     {
+        // dd($url.$endPoint);
         try{
             if ($type == 'json') {
                 // dd($this->client);
@@ -108,6 +109,7 @@ abstract class URequest implements URequestInterface
                 if (count($headers) < 1) {
                     $headers['Content-Type'] = "text/plain";
                 }
+                // dd($headers);
                 // dd("{$url}{$endPoint}");
                 // dd($postFields, $headers);
                 $res = $this->client->post("{$url}{$endPoint}", [

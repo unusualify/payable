@@ -4,12 +4,9 @@ namespace Unusualify\Payable\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Unusualify\Payable\Payable;
-use Unusualify\Payable\Facades\Zoho;
-use Unusualify\Payable\Facades\Movie;
 use Unusualify\Payable\Facades\Iyzico;
-use Unusualify\Payable\Facades\Payment;
 use Unusualify\Payable\Facades\PayPal;
+use Unusualify\Payable\Payable;
 use Unusualify\Payable\Services\GarantiPos\GarantiPosService;
 use Unusualify\Payable\Services\Iyzico\IyzipayService;
 use Unusualify\Payable\Services\TebCommonPos\TebCommonPosService;
@@ -194,7 +191,9 @@ class PaymentController extends Controller
 
   public function iyzicoResponse(Request $request)
   {
-    dd($request);
+    dd($requxwest);
+
+    // if($request->)
   }
 
   public function testIyzico()
@@ -410,4 +409,22 @@ class PaymentController extends Controller
     $payable->pay($request);
 
   }
+
+  public function cancel(Request $request, $slug)
+  {
+
+    $payable = new Payable($slug);
+    dd($request->getContent(), $request);
+    $payable->service->cancel($request);
+  }
+
+  public function refund(Request $request, $slug)
+  {
+
+    $payable = new Payable($slug);
+    dd($request->getContent(), $request);
+    $payable->service->refund($request);
+  }
+
+
 }

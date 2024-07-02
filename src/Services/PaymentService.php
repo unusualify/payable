@@ -68,15 +68,15 @@ class PaymentService extends URequest{
 
   function createRecord(object $data)
   {
-
+    // dd($data->price);
     $payment = Payment::create(
       [
-        'payment_gateway' => $data->serviceName,
-        'order_id' => $data->paymentOrderId,
-        'price' => $data->amount,
-        'currency_id' => $data->currencyId,
+        'payment_gateway' => $data->payment_gateway,
+        'order_id' => $data->order_id,
+        'price' => $data->price,
+        'currency_id' => $data->currency_id,
         'email' => $data->email,
-        'installment' => $data->installment,
+        // 'installment' => $data->installment,
         'parameters' => json_encode($data),
       ]
     );
@@ -84,6 +84,8 @@ class PaymentService extends URequest{
   }
   static function updateRecord($order_id, $status, $response)
   {
+    // dd($order_id);
+    // dd($response);
     return Payment::where('order_id' ,$order_id)
             ->update([
               'status' => $status,

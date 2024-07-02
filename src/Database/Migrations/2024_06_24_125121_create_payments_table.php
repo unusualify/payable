@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('order_id');
             $table->integer('price');
             $table->integer('currency_id');
-            $table->enum('status', ['PENDING','CANCELLED','COMPLETED']);
+            $table->enum('status', ['PENDING','CANCELLED','COMPLETED','FAILED','REFUNDED']);
             $table->string('email');
             $table->integer('installment')->nullable();
             $table->json('parameters')->nullable();
