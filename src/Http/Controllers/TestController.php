@@ -4,6 +4,7 @@ namespace Unusualify\Payable\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Unusualify\Payable\Facades\Payment;
 use Unusualify\Payable\Payable;
 use Unusualify\Payable\Services\GarantiPosService;
 use Unusualify\Payable\Services\TebCommonPosService;
@@ -162,14 +163,12 @@ class TestController extends Controller
     if($allParams['success'] == true){
       $paypal = new Payable('paypal');
       $resp = $paypal->service->capturePayment($allParams['token']);
-      dd($resp);
-      // $paypal->service->updateRecord(
-      //   $allParams['token'],
-      //   'COMPLETED',
-      //   [
-      //     'payerId' => $allParams['PayerID']
-      //   ]
-      // );
+      // dd($resp);
+      $paypal->service->updateRecord(
+        $allParams['token'],
+        'COMPLETED',
+        json_encode($resp)
+      );
     }
     dd('here');
   }
@@ -420,22 +419,29 @@ class TestController extends Controller
     ]));
   }
 
-  public function refund($slug, $payment_id, $conversation_id)
+  public function refund($slug, $orderId, $conversation_id)
   {
     $payment = new Payable($slug);
     if($slug == 'iyzico'){
       dd($payment->service->refund([
         'ip' => '85.34.78.112',
-        'payment_id' => $payment_id,
+        'payment_id' => $orderId,
         'conversation_id' => $conversation_id,
         'price' => '1.2',
         'locale' => 'tr',
       ]));
     }else if($slug == 'paypal'){
       $payment->service->getAccessToken();
+      $captureId = json_decode(Payment::where('order_id', $orderId)->get()[0]->response)
+                  ->purchase_units[0]
+                  ->payments
+                  ->captures[0]
+                  ->id;
+      // dd($captureId);
       dd($payment->service->refund([
-        'capture_id' => $payment_id,
-        'amount' => '100.0',
+        'capture_id' => $captureId,
+        'order_id' => $orderId,
+        'amount' => '100.00',
         'priceID' => 1
       ]));
     }

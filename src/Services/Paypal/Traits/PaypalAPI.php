@@ -50,8 +50,8 @@ trait PaypalAPI
     $this->generateBasicAuthHeaders();
     // dd($this->url, $this->apiEndPoint);
     $this->verb = 'post';
-    $response = $this->doPayPalRequest();
-    // dd($response);
+    $response = json_decode($this->doPayPalRequest());
+    
     unset($this->options['auth']);
     unset($this->options[$this->httpBodyParam]);
     // dd($response);

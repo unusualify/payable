@@ -46,7 +46,7 @@ class PaypalService extends PaymentService
       $this->mode,
     );
 
-    // $this->getAccessToken();
+    $this->getAccessToken();
     
 
   }
@@ -112,16 +112,17 @@ class PaypalService extends PaymentService
     $this->verb = 'post';
 
     $this->type = 'json';
-
+    // dd($order_id);
+    // dd($this->doPayPalRequest());
     $resp = json_decode($this->doPayPalRequest());
-
+    // dd($resp);
     $data = [
       'payment_source' => $resp->payment_source,
       'purchase_units' => $resp->purchase_units,
       'payer' => $resp->payer,
       'links' => $resp->links
     ];
-    // dd($resp);
+    // dd($data);
       $this->updateRecord(
         $resp->id,
         'COMPLETED',
@@ -138,14 +139,37 @@ class PaypalService extends PaymentService
   {
     $this->apiEndPoint = "v2/payments/captures/{$params['capture_id']}/refund";
     $this->verb = 'post';
-    $this->type = 'json';
+    $this->type = 'raw';
 
     // $currency = Price::find($params['priceID'])->currency;
-    $this->options['request_body'] = [
-    ];
+    // dd($currency);
+    // $this->options['request_body'] = json_encode([
+    //   'amount' => [
+    //     'value' => $params['amount'],
+    //     'currency_code' => $currency->iso_4217
+    //   ],
+    //   'invoice_id' => $params['order_id'],
+    //   'note_to_payer' => "Refund of {$params['order_id']}"
+    // ]);
+    $this->options['request_body'] = '{}';
+    // dd($this->options['request_body']);
+    $this->headers['Content-Type'] = 'application/json';
+    
     // dd($this->options);
     $resp =  $this->doPayPalRequest();
 
-    dd($resp);
+    if(json_decode($resp)->status == 'COMPLETED'){
+      $this->updateRecord(
+        $params['order_id'],
+        'REFUNDED',
+        $resp
+      );
+      
+      return true;
+    }else{
+      return false;
+    }
+
+    // dd($resp);
   }
 }

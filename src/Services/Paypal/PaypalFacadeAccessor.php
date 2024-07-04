@@ -38,6 +38,7 @@ class PayPalFacadeAccessor
     // Set default provider. Defaults to ExpressCheckout
     self::$provider = new PayPalClient();
     self::$provider->getAccessToken();
+    // dd('here');
     return self::getProvider();
   }
 }
