@@ -76,7 +76,7 @@ abstract class URequest implements URequestInterface
         }
     }
 
-    function postReq($url, $endPoint, $postFields, $headers, $type)
+    function postReq($url, $endPoint, $postFields, $headers, $type, $mode = null)
     {
         // dd($url.$endPoint);
         try{
@@ -89,10 +89,13 @@ abstract class URequest implements URequestInterface
                     ];
                 }
                 $headers["Accept"] = "*/*";
+                if($mode == 'test'){
+                    // dd($postFields);
+                }
                 // dd($postFields, "{$url}{$endPoint}", $this->headers);
                 $res = $this->client->post("{$url}{$endPoint}", [
                     'headers' => $headers,
-                    'body' => $postFields
+                    'json' => $postFields
                 ]);
             }else if ($type == 'encoded') {
                 // dd($postFields);  
@@ -104,7 +107,6 @@ abstract class URequest implements URequestInterface
                     'headers' => $headers,
                     'form_params' => $postFields
                 ]);
-
             } else if ($type == 'raw'){
                 if (count($headers) < 1) {
                     $headers['Content-Type'] = "text/plain";

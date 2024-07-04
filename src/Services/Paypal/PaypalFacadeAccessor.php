@@ -3,7 +3,7 @@
 namespace Unusualify\Payable\Services\Paypal;
 
 use Exception;
-use Unusualify\Payable\Services\PayPal\PayPalService as PayPalClient;
+use Unusualify\Payable\Services\PaypalService as PayPalClient;
 
 class PayPalFacadeAccessor
 {

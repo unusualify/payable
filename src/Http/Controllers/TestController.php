@@ -4,11 +4,8 @@ namespace Unusualify\Payable\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Unusualify\Payable\Facades\Iyzico;
-use Unusualify\Payable\Facades\PayPal;
 use Unusualify\Payable\Payable;
 use Unusualify\Payable\Services\GarantiPosService;
-use Unusualify\Payable\Services\IyzipayService;
 use Unusualify\Payable\Services\TebCommonPosService;
 use Unusualify\Payable\Services\TebPosService;
 
@@ -160,7 +157,21 @@ class TestController extends Controller
 
   public function paypalResponse(Request $request)
   {
-    dd($request->getQueryString());
+    $allParams = $request->query();
+
+    if($allParams['success'] == true){
+      $paypal = new Payable('paypal');
+      $resp = $paypal->service->capturePayment($allParams['token']);
+      dd($resp);
+      // $paypal->service->updateRecord(
+      //   $allParams['token'],
+      //   'COMPLETED',
+      //   [
+      //     'payerId' => $allParams['PayerID']
+      //   ]
+      // );
+    }
+    dd('here');
   }
   
   public function garantiResponse(Request $request)
@@ -277,7 +288,8 @@ class TestController extends Controller
 
   public function testPaypal()
   {
-    $paypal = PayPal::setProvider();
+    $paypal = new Payable('paypal');
+    $paypal->service->getAccessToken();
     // Data for paypal wallet payment
     $data = [
         'intent' => 'CAPTURE',
@@ -308,9 +320,9 @@ class TestController extends Controller
             ],
           ],
       ];
-    $response = json_decode($paypal->createOrder($data));
-    dd(json_decode($paypal->createOrder($data)));
-    $redirectionUrl = json_decode($paypal->createOrder($data))->links[1]->href;
+    $response = $paypal->service->pay($data,1);
+    // dd($response);
+    $redirectionUrl = $response->links[1]->href;
 
     print(
     "<script>window.open('" . $redirectionUrl . "', '_blank')</script>"
@@ -411,12 +423,22 @@ class TestController extends Controller
   public function refund($slug, $payment_id, $conversation_id)
   {
     $payment = new Payable($slug);
-    dd($payment->service->refund([
-      'ip' => '85.34.78.112',
-      'payment_id' => $payment_id,
-      'conversation_id' => $conversation_id,
-      'price' => '1.2',
-      'locale' => 'tr',
-    ]));
+    if($slug == 'iyzico'){
+      dd($payment->service->refund([
+        'ip' => '85.34.78.112',
+        'payment_id' => $payment_id,
+        'conversation_id' => $conversation_id,
+        'price' => '1.2',
+        'locale' => 'tr',
+      ]));
+    }else if($slug == 'paypal'){
+      $payment->service->getAccessToken();
+      dd($payment->service->refund([
+        'capture_id' => $payment_id,
+        'amount' => '100.0',
+        'priceID' => 1
+      ]));
+    }
+
   }
 }

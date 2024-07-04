@@ -19,6 +19,8 @@ Route::controller(TestController::class)->prefix('test-api')->group(function(){
   Route::get('/',  'test')->name('payable.test');
 
   Route::get('/paypal-return', 'paypalResponse')->name('payable.paypal.return');
+  Route::get('/paypal', 'testPaypal')->name('payable.paypal.pay');
+
   Route::post('/garanti-return', 'garantiResponse')->name('payable.garanti.return');
 
   Route::post('/teb-return', 'tebResponse')->name('payable.teb.return');
@@ -26,8 +28,6 @@ Route::controller(TestController::class)->prefix('test-api')->group(function(){
   Route::post('/teb-common-return', 'tebCommonResponse')->name('payable.teb-common.return');
 
   Route::get('/iyzico', 'testIyzico')->name('payable.iyzico.pay');
-
-
   Route::post('/iyzico-return', 'iyzicoResponse')->name('payable.iyzico.return');
   
   Route::get('/cancel/{slug}/{payment_id}/{conversation_id}', 'cancel')->name('test.payable.cancel');
