@@ -34,6 +34,8 @@ Route::controller(TestController::class)->prefix('test-api')->group(function(){
   
   Route::get('/refund/{slug}/{payment_id}/{conversation_id}', 'refund')->name('test.payable.refund');
 
+  Route::get('/show/{slug}/{payment_id}/', 'show')->name('test.payable.show');
+
 
 });
 

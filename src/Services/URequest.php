@@ -158,10 +158,11 @@ abstract class URequest implements URequestInterface
 
     function getReq($url, $endPoint, $parameters = [], $headers = [])
     {
+        $headers['Accept'] = '*/*';
         try{
-            dd($url, $headers);
+            // dd("{$url}{$endPoint}", $headers);
             $res = $this->client->get(
-                "{$url}/{$endPoint}",
+                "{$url}{$endPoint}",
                 [
                     'query' => $parameters,
                     'headers' => $headers

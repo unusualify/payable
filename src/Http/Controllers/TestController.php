@@ -445,6 +445,11 @@ class TestController extends Controller
         'priceID' => 1
       ]));
     }
-
+  }
+  public function show(Request $request, $slug, $payment_id)
+  {
+    $payable = new Payable($slug);
+    $resp = $payable->service->showFromSource($payment_id);
+    dd($resp);
   }
 }

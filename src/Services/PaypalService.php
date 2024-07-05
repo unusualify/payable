@@ -69,7 +69,12 @@ class PaypalService extends PaymentService
           'test'
         );
       }else{ //Get request 
-        
+        $response = $this->getReq(
+          $this->url,
+          $this->apiEndPoint,
+          [],
+          $this->headers
+        );
       }
       return $response;
     } catch (RuntimeException $t) {
@@ -171,5 +176,15 @@ class PaypalService extends PaymentService
     }
 
     // dd($resp);
+  }
+
+  public function showFromSource($orderId){
+
+      $this->apiEndPoint = "v2/checkout/orders/{$orderId}";
+      $this->headers['Content-Type'] = 'application/json';
+      $this->verb = 'get';
+      $resp = $this->doPaypalRequest();
+    
+      return $resp;
   }
 }
