@@ -2,7 +2,7 @@
 
 namespace Unusualify\Payable\Services\Iyzico\Models;
 
-use Unusualify\Modularity\Http\Requests\Request;
+use Unusualify\Payable\Services\Iyzico\Requests\Request;
 
 class RequestStringBuilder
 {

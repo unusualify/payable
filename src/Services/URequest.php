@@ -160,7 +160,7 @@ abstract class URequest implements URequestInterface
     {
         $headers['Accept'] = '*/*';
         try{
-            // dd("{$url}{$endPoint}", $headers);
+            // dd("{$url}{$endPoint}", $headers, $parameters);
             $res = $this->client->get(
                 "{$url}{$endPoint}",
                 [
@@ -168,7 +168,9 @@ abstract class URequest implements URequestInterface
                     'headers' => $headers
                 ]
             );
-            // dd($res);
+            // dd(json_encode($res));
+            // dd($res,"{$url}{$endPoint}", $headers, $parameters, $res->getBody()->getContents());
+            // return $res;
             return json_decode($res->getBody()->getContents());
             
         }catch(\Exception $e){

@@ -2,6 +2,8 @@
 
 namespace Unusualify\Payable\Services;
 
+use Unusualify\Payable\Models\Payment;
+use Unusualify\Payable\Payable;
 use Unusualify\Payable\Services\Iyzico\Requests\CreateThreedsPaymentRequest;
 use Unusualify\Payable\Services\RequestService;
 use Unusualify\Payable\Services\Iyzico\Models\Address;
@@ -11,9 +13,12 @@ use Unusualify\Payable\Services\Iyzico\Models\Buyer;
 use Unusualify\Payable\Services\Iyzico\Requests\CreatePaymentRequest;
 use Unusualify\Payable\Services\Iyzico\Models\Currency;
 use Unusualify\Payable\Services\Iyzico\Models\PaymentCard;
+use Unusualify\Payable\Services\Iyzico\Models\RequestStringBuilder;
 use Unusualify\Payable\Services\Iyzico\Requests\CreateCancelRequest;
 use Unusualify\Payable\Services\Iyzico\Requests\CreateRefundRequest;
 use Unusualify\Payable\Services\Iyzico\Requests\CreateRefundRequestV2;
+use Unusualify\Payable\Services\Iyzico\Requests\ReportingPaymentDetailRequest;
+use Unusualify\Payable\Services\Iyzico\Requests\Request;
 use Unusualify\Priceable\Facades\PriceService;
 use Unusualify\Priceable\Models\Price;
 
@@ -43,6 +48,8 @@ class IyzicoService extends PaymentService
     'Authorization' => 'Bearer',
     'Content-Type' => 'application/json',
   ];
+  
+   //TODO: Subscription service will be added
 
   public function __construct($mode = null)
   {
@@ -57,11 +64,12 @@ class IyzicoService extends PaymentService
 
   public function generateHash($apiKey, $secretKey, $randomString, $request)
   {
+    // dd($request->toPKIRequestString());
     $hashStr = $apiKey . $randomString . $secretKey . $request->toPKIRequestString();
     return base64_encode(sha1($hashStr, true));
   }
 
-  public function generateHeaders($request)
+  public function generateHeaders($request = null)
   {
     $header = array(
       "Accept" =>  "application/json",
@@ -73,6 +81,22 @@ class IyzicoService extends PaymentService
     $header["x-iyzi-rnd"] = $rnd;
     $header["x-iyzi-client-version"] = "iyzipay-php-2.0.54";
     $this->headers = $header;
+    return $header;
+  }
+
+  public function generateHeadersV2($request = null, $uri)
+  {
+    $header = array(
+      "Accept" =>  "application/json",
+      "Content-type" => "application/json",
+    );
+    $rnd = uniqid();
+    // dd($uri,RequestStringBuilder::requestToStringQuery($request, 'reporting'));
+    $header["Authorization"] = $this->prepareAuthorizationStringV2(null, $rnd, ($uri . RequestStringBuilder::requestToStringQuery($request, 'reporting')));
+    $header["x-iyzi-rnd"] = $rnd;
+    $header["x-iyzi-client-version"] = "iyzipay-php-2.0.54";
+    $this->headers = $header;
+
     return $header;
   }
 
@@ -94,6 +118,48 @@ class IyzicoService extends PaymentService
     $this->merchantId = $this->config['merchant_id'];
     $this->token_refresh_time = $this->config['token_refresh_time'];
     $this->redirect_url = route('payable.iyzico.return');
+  }
+
+  public function prepareAuthorizationStringV2(Request $request = null, $randomString, $uri)
+  {
+    $hashStr = "apiKey:" . $this->apiKey . "&randomKey:" . $randomString . "&signature:" . $this->getHmacSHA256Signature($uri, $this->apiSecret, $randomString, $request);
+    // dd($hashStr);
+    $hashStr = base64_encode($hashStr);
+
+    return 'IYZWSv2'. ' ' .$hashStr;
+  }
+
+  public function getHmacSHA256Signature($uri, $secretKey, $randomString, Request $request = null)
+  {
+    $dataToEncrypt = $randomString . self::getPayload($uri, $request);
+    // dd($dataToEncrypt);
+    $hash = hash_hmac('sha256', $dataToEncrypt, $secretKey, true);
+    $token = bin2hex($hash);
+
+    return $token;
+  }
+
+  public function getPayload($uri, Request $request = null)
+  {
+
+    $startNumber  = strpos($uri, '/v2');
+    $endNumber    = strpos($uri, '?');
+    if (strpos($uri, "subscription") || strpos($uri, "ucs")) {
+      $endNumber = strlen($uri);
+      if (strpos($uri, '?')) {
+        $endNumber    = strpos($uri, '?');
+      }
+    }
+    $endNumber -=  $startNumber;
+
+    $uriPath      =  substr($uri, $startNumber, $endNumber);
+    // dd(!empty($request), $request->toJsonString(), $uriPath);
+    if (!empty($request) && $request->toJsonString() != '[]')
+      $uriPath = $uriPath . $request->toJsonString();
+
+    // dd($uriPath, $uri);
+
+    return $uriPath;
   }
 
   public function pay(array $params, int $priceID)
@@ -169,6 +235,7 @@ class IyzicoService extends PaymentService
       array_push($basketItems, $basketItem);
     }
     $request->setBasketItems($basketItems);
+
     $this->createRecord((object)[
       'payment_gateway' => $this->serviceName,
       'order_id' => $params['orderId'],
@@ -178,6 +245,7 @@ class IyzicoService extends PaymentService
       'installment' => '',
       'parameters' => json_encode('')
     ]);
+
     $resp = $this->postReq($this->url, $endpoint, $request->toJsonString(), $this->generateHeaders($request), 'raw');
     // dd($resp);
     $threeDForm = base64_decode(json_decode($resp)->threeDSHtmlContent); 
@@ -264,6 +332,25 @@ class IyzicoService extends PaymentService
       return false;
     }
     // dd($resp);
+  }
+
+
+  public function showFromSource($orderId){
+    $endpoint = 'v2/reporting/payment/details';
+
+    $request = new ReportingPaymentDetailRequest();
+
+    $order = Payment::where('order_id',$orderId)->get()[0];
+    $paymentId = json_decode($order->response)->paymentId;
+    $request->setPaymentConversationId($paymentId);
+    $request->setConversationId($orderId);
+    $request->setLocale('tr');
+    // dd($this->genereateHeadersV2($request, ($this->url . $endpoint)));
+    $resp = $this->getReq($this->url,$endpoint,[
+      'paymentId'=>$paymentId,
+    ], $this->generateHeadersV2($request, ($this->url . $endpoint)));
+
+    return $resp;
   }
   
 }

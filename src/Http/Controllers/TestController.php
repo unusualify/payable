@@ -446,10 +446,24 @@ class TestController extends Controller
       ]));
     }
   }
-  public function show(Request $request, $slug, $payment_id)
+  public function show(Request $request, $slug, $orderId)
   {
     $payable = new Payable($slug);
-    $resp = $payable->service->showFromSource($payment_id);
-    dd($resp);
+    $resp = $payable->service->showFromSource($orderId);
+
+    // $options = new \Iyzipay\Options();
+    // $options->setApiKey("sandbox-yXV7O7LjtOvxeKH401rxPoFEgG9ssY5o");
+    // $options->setSecretKey("sandbox-mB39zdn3bferW0AhDJAN05Z1rAUyAv6S");
+    // $options->setBaseUrl("https://sandbox-api.iyzipay.com");
+
+    // $request = new \Iyzipay\Request\ReportingPaymentDetailRequest();
+    // $request->setLocale(\Iyzipay\Model\Locale::TR);
+    // $request->setConversationId($orderId);
+    // $request->setPaymentConversationId($orderId);
+
+
+    // $resp = \Iyzipay\Model\ReportingPaymentDetail::create($request,$options);
+
+    dd(json_encode($resp));
   }
 }
