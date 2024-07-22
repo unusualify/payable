@@ -8,6 +8,6 @@ class Garanti extends Facade
 {
   protected static function getFacadeAccessor()
   {
-    return  \Unusualify\Payable\Services\GarantiPos\GarantiPosService::class;
+    return  \Unusualify\Payable\Services\GarantiPosService::class;
   }
 }

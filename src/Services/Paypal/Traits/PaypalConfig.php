@@ -121,10 +121,4 @@ trait PaypalConfig{
 
     return $this;
   }
-
-  public function setHttpClientConfiguration(){
-    
-  }
-
-
 }
