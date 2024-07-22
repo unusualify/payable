@@ -6,7 +6,7 @@ namespace Unusualify\Payable\Services;
 use Illuminate\Support\Str;
 use Unusualify\Payable\Facades\Payment;
 
-class PaymentService extends URequest{
+abstract class PaymentService extends URequest{
 
   public $mode;
 
@@ -66,19 +66,23 @@ class PaymentService extends URequest{
     return 'payable' . '.services.' .strtolower(str_replace('Service', '', class_basename($this)));
   }
 
-  function createRecord(object $data)
+  function createRecord(array $data)
   {
-    // dd($data->price);
+    // dd($data->paymentServiceId);
+    // dd($data);
     $payment = Payment::create(
-      [
-        'payment_gateway' => $data->payment_gateway,
-        'order_id' => $data->order_id,
-        'price' => $data->price,
-        'currency_id' => $data->currency_id,
-        'email' => $data->email,
-        // 'installment' => $data->installment,
-        'parameters' => json_encode($data),
-      ]
+      $data
+      // [
+      //   'payment_gateway' => $data['payment_gateway'],
+      //   'order_id' => $data['order_id'],
+      //   'price' => $data['price'],
+      //   // 'currency_id' => isset($data['currency_id']) ? $data['currency_id'] : null,
+      //   'email' => $data['email'],
+      //   // 'installment' => $data->installment,
+      //   'parameters' => json_encode($data),
+      //   'payment_service_id' => $data['payment_service_id'],
+      //   'price_id' => $data['price_id'],
+      // ]
     );
     return $payment;
   }
@@ -98,4 +102,6 @@ class PaymentService extends URequest{
   {
     $this->mode = $mode;
   }
+  
+  abstract function hydrateParams(array $params);
 }

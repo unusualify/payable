@@ -8,7 +8,7 @@ namespace Unusualify\Payable\Services\Paypal\Providers;
  */
 
 use Illuminate\Support\ServiceProvider;
-use Unusualify\Payable\Services\Paypal\PayPalService as PayPalClient;
+use Unusualify\Payable\Services\PayPalService as PayPalClient;
 
 class PayPalServiceProvider extends ServiceProvider
 {

@@ -30,18 +30,22 @@ Route::controller(TestController::class)->prefix('test-api')->group(function(){
   Route::get('/iyzico', 'testIyzico')->name('payable.iyzico.pay');
   Route::post('/iyzico-return', 'iyzicoResponse')->name('payable.iyzico.return');
   
-  Route::get('/cancel/{slug}/{payment_id}/{conversation_id}', 'cancel')->name('test.payable.cancel');
+  Route::get('/cancel/{payment_service_id}/{payment_id}/{conversation_id}', 'cancel')->name('test.payable.cancel');
   
-  Route::get('/refund/{slug}/{payment_id}/{conversation_id}', 'refund')->name('test.payable.refund');
+  Route::get('/refund/{payment_service_id}/{payment_id}/{conversation_id}', 'refund')->name('test.payable.refund');
+
+  Route::get('/show/{payment_service_id}/{order_id}', 'show')->name('test.payable.show');
+
+  Route::get('/test-relation', 'testRelation')->name('test.payable.relation');
 
 
 });
 
 Route::controller(PaymentController::class)->prefix('payable')->group(function(){
   
-  Route::get('/pay/{slug}', 'pay')->name('payable.pay');
-  Route::get('/cancel/{slug}/{payment_id}', 'cancel')->name('payable.cancel');
-  Route::get('/refund/{slug}/{payment_id}', 'refund')->name('payable.refund');
+  Route::get('/pay/{payment_service_id}', 'pay')->name('payable.pay');
+  Route::get('/cancel/{payment_service_id}/{payment_id}', 'cancel')->name('payable.cancel');
+  Route::get('/refund/{payment_service_id}/{payment_id}', 'refund')->name('payable.refund');
   
 });
 

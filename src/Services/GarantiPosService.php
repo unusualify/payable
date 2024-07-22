@@ -1,6 +1,6 @@
 <?php
 
-namespace Unusualify\Payable\Services\GarantiPos;
+namespace Unusualify\Payable\Services;
 
 use Unusualify\Payable\Services\PaymentService;
 use Unusualify\Priceable\Facades\PriceService;
@@ -131,7 +131,7 @@ class GarantiPosService extends PaymentService{
 
     $currency = PriceService::find($priceID)->currency;
 
-    $this->createRecord((object)[
+    $this->createRecord([
       'serviceName' => $this->serviceName,
       'paymentOrderId' => $this->params['orderid'],
       'currency_id' => $currency->id,
@@ -165,4 +165,8 @@ class GarantiPosService extends PaymentService{
     return strtoupper(sha1($this->provUserPassword . $this->terminalID));
   }
   
+  public function hydrateParams(array $params)
+  {
+    
+  }
 }

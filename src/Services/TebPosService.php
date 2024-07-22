@@ -66,8 +66,9 @@ class TebPosService extends PaymentService{
     ];
     $currency = PriceService::find($priceID)->currency;
 
-    $this->createRecord((object)[
-      'serviceName' => $this->serviceName,
+    $this->createRecord(
+      [
+      'payment_gateway' => $this->serviceName,
       'paymentOrderId' => $this->params['orderid'],
       'currency_id' => $currency->id,
       'email' => '', //Add email to data
@@ -100,6 +101,11 @@ class TebPosService extends PaymentService{
       $this->storeKey
     ];
     return base64_encode(pack('H*', sha1(implode('', $map))));
+  }
+
+  public function hydrateParams(array $params)
+  {
+    
   }
 
 }

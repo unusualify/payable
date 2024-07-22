@@ -50,12 +50,12 @@ class IyzicoResource
         return vsprintf("IYZWS %s:%s", array($options->getApiKey(), $authContent));
     }
 
-    // protected static function prepareAuthorizationStringV2($uri, Request $request = null, Options $options, $rnd)
-    // {
-    //     $hash = IyziAuthV2Generator::generateAuthContent($uri, $options->getApiKey(), $options->getSecretKey(), $rnd, $request);
+    protected static function prepareAuthorizationStringV2($uri, Request $request = null, Options $options, $rnd)
+    {
+        $hash = IyziAuthV2Generator::generateAuthContent($uri, $options->getApiKey(), $options->getSecretKey(), $rnd, $request);
 
-    //     return 'IYZWSv2'.' '.$hash;
-    // }
+        return 'IYZWSv2'.' '.$hash;
+    }
 
     public function getStatus()
     {

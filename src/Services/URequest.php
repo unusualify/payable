@@ -89,14 +89,19 @@ abstract class URequest implements URequestInterface
                     ];
                 }
                 $headers["Accept"] = "*/*";
-                if($mode == 'test'){
-                    // dd($postFields);
+                if ($mode == 'test') {
+                    // dd(
+                    //     json_encode($postFields),
+                    //     $headers,
+                    //     "{$url}{$endPoint}"
+                    // );
                 }
                 // dd($postFields, "{$url}{$endPoint}", $this->headers);
                 $res = $this->client->post("{$url}{$endPoint}", [
                     'headers' => $headers,
                     'json' => $postFields
                 ]);
+                // dd($postFields,$headers, "{$url}{$endPoint}" );
             }else if ($type == 'encoded') {
                 // dd($postFields);  
                 if (count($headers) < 1) {
@@ -110,6 +115,9 @@ abstract class URequest implements URequestInterface
             } else if ($type == 'raw'){
                 if (count($headers) < 1) {
                     $headers['Content-Type'] = "text/plain";
+                }
+                if ($mode == 'test') {
+                    // dd($postFields, $headers, "{$url}{$endPoint}");
                 }
                 // dd($headers);
                 // dd("{$url}{$endPoint}");
@@ -129,7 +137,6 @@ abstract class URequest implements URequestInterface
                 ]);
             }
             else {
-                
                 $res = $this->client->post("{$url}/{$endPoint}", [
                     'headers' => $headers,
                     'body' => json_encode($postFields)
@@ -151,16 +158,19 @@ abstract class URequest implements URequestInterface
 
     function getReq($url, $endPoint, $parameters = [], $headers = [])
     {
+        $headers['Accept'] = '*/*';
         try{
-            dd($url, $headers);
+            // dd("{$url}{$endPoint}", $headers, $parameters);
             $res = $this->client->get(
-                "{$url}/{$endPoint}",
+                "{$url}{$endPoint}",
                 [
                     'query' => $parameters,
                     'headers' => $headers
                 ]
             );
-            // dd($res);
+            // dd(json_encode($res));
+            // dd($res,"{$url}{$endPoint}", $headers, $parameters, $res->getBody()->getContents());
+            // return $res;
             return json_decode($res->getBody()->getContents());
             
         }catch(\Exception $e){
@@ -189,4 +199,6 @@ abstract class URequest implements URequestInterface
     abstract function getConfigName();
 
     abstract function setMode($mode);
+
+    abstract function hydrateParams(array $params);
 }

@@ -6,15 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+
+
 class Payment extends Model
 {
   use HasFactory, SoftDeletes;
-
-  /**
-   * The table associated with the model.
-   *
-   * @var string
-   */
 
   /**
    * The attributes that are mass assignable.
@@ -24,18 +20,20 @@ class Payment extends Model
   protected $fillable = [
     'payment_gateway',
     'order_id',
-    'price',
+    'amount',
     'currency_id',
     'status',
     'email', 
     'installment',
     'parameters',
     'response',
+    'payment_service_id',
+    'price_id'
   ];
 
   public function getTable()
   {
-    return config('payable.table');
+    return config('payable.table', parent::getTable());
   }
 
 }
