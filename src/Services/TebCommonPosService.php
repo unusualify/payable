@@ -90,16 +90,17 @@ protected $params = [];
     $responseObject = json_decode($response);
 
     if ($responseObject->Code == 0) {
-      $paymentData = [
-        'serviceName' => $this->serviceName,
-        'paymentOrderId' => $data['orderId'],
-        'amount' => $data['amount'],
-        'currencyId' => $data['currency'],
-        'email' => $this->params['email'],
-        'installment' => $data['installmentCount'],
-        'parameters' => $this->params
-      ]; 
-      $this->createRecord(array2Object($paymentData));
+      $this->createRecord(
+        [
+          'payment_gateway' => $this->serviceName,
+          'paymentOrderId' => $data['orderId'],
+          'amount' => $data['amount'],
+          'currencyId' => $data['currency'],
+          'email' => $this->params['email'],
+          'installment' => $data['installmentCount'],
+          'parameters' => $this->params
+        ]
+      );
       return $responseObject->ThreeDSessionId;
     }else{
       return json_decode($responseObject);
@@ -139,5 +140,10 @@ protected $params = [];
   public function formatCardExpireDate($month, $year)
   {
     return $month . substr($year, -2);
+  }
+
+  public function hydrateParams(array $params)
+  {
+    //TODO: 
   }
 }

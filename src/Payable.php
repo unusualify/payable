@@ -11,12 +11,9 @@ class Payable {
 
   public function __construct(string $slug)
   {
-    // dd($slug);
     $this->slug = $slug;
     $serviceName = $this->generateClassPath();
-    // dd($serviceName);
     $this->service = new $serviceName();
-    // dd($this);
   }
 
 
@@ -35,10 +32,9 @@ class Payable {
     return $str;
   }
 
-  public function pay($params, $priceId)
+  public function pay($params)
   {
-    // dd($params);
-    $this->service->pay($params, $priceId);
+    return $this->service->pay($this->removeExceptional($params));
   }
 
   public function cancel($params)
@@ -46,8 +42,36 @@ class Payable {
     $this->service->cancel($params);
   }
 
-  public function refund($params){
+  public function refund($params)
+  {
     $this->service->refund($params);
+  }
+
+  public function formatPrice($price)
+  {
+    $this->service->formatPrice($price);
+  }
+
+  public function removeExceptional($params)
+  {
+    $exceptionals = config('payable.exceptional_fields.'.$this->slug);
+    // dd($exceptionals, 'payable.exceptional_fields.' . $this->slug);
+    foreach($exceptionals as $index => $exception)
+    {
+      // dd(array_key_exists($exception, $params), $exception, $params);
+      if(array_key_exists($exception, $params))
+      {
+        // dd($index);
+        unset($params[$exception]);
+      }
+    }
+    // dd($params);
+    return $params;
+  }
+
+  public function formatAmount($amount)
+  {
+    return $this->service->formatAmount($amount);
   }
 
 

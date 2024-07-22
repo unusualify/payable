@@ -4,11 +4,14 @@ namespace Unusualify\Payable\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Modules\SystemPayment\Entities\Payment as EntitiesPayment;
 use Unusualify\Payable\Facades\Payment;
 use Unusualify\Payable\Payable;
 use Unusualify\Payable\Services\GarantiPosService;
 use Unusualify\Payable\Services\TebCommonPosService;
 use Unusualify\Payable\Services\TebPosService;
+use Unusualify\Priceable\Models\Currency;
+use Unusualify\Priceable\Models\Price;
 
 // use Srmklive\PayPal\PayPalFacadeAccessor as PayPalClient;
 
@@ -220,11 +223,16 @@ class TestController extends Controller
   public function testIyzico()
   {
 
-    $priceID = 1;
+    $price = Price::find(13);
     $orderId = rand(100000,999999);
+    // dd($price->currency);
     $params = [
       "locale" => "tr",
-      "orderId" => $orderId,
+      "order_id" => $orderId,
+      'payment_service_id' => 1,
+      'price_id' => $price->id,
+      "currency" => $price->currency,
+      'installment' => '0',
       "price" => "1.0",
       "paidPrice" => "1.2",
       "installment" => 1,
@@ -277,26 +285,28 @@ class TestController extends Controller
           "itemType" => "PHYSICAL"
         ]
       ],
-      "currency" => "TRY",
     ];
     $payment = new Payable('iyzico');
-    $payment->pay($params, $priceID);
+    $payment->pay($params);
     dd($payment);
 
   }
 
   public function testPaypal()
   {
-    $paypal = new Payable('paypal');
-    $paypal->service->getAccessToken();
+    $payable = new Payable('paypal');
+    $price = Price::find(13);
+
+    // $paypal->service->getAccessToken();
     // Data for paypal wallet payment
     $data = [
         'intent' => 'CAPTURE',
         'purchase_units' => [
             [
                 'amount' => [
-                    'currency_code' => 'USD',
-                    'value' => '100.00'
+                    'currency_code' => $price->currency->iso_4217,
+                    'value' => $payable->formatAmount($price->display_price)
+
                 ],
             ],
         ],
@@ -318,8 +328,12 @@ class TestController extends Controller
                 ],
             ],
           ],
+        'amount' => '100',
+        'installment' => '0',
+        'payment_service_id' => 2,
+        'price_id' => 13
       ];
-    $response = $paypal->service->pay($data,1);
+    $response = $payable->pay($data);
     // dd($response);
     $redirectionUrl = $response->links[1]->href;
 
@@ -465,5 +479,11 @@ class TestController extends Controller
     // $resp = \Iyzipay\Model\ReportingPaymentDetail::create($request,$options);
 
     dd(json_encode($resp));
+  }
+
+  public function testRelation(){
+    $payment = EntitiesPayment::find(81);
+    
+    dd($payment->currency);
   }
 }

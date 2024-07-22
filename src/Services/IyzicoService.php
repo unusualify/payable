@@ -19,7 +19,6 @@ use Unusualify\Payable\Services\Iyzico\Requests\CreateRefundRequest;
 use Unusualify\Payable\Services\Iyzico\Requests\CreateRefundRequestV2;
 use Unusualify\Payable\Services\Iyzico\Requests\ReportingPaymentDetailRequest;
 use Unusualify\Payable\Services\Iyzico\Requests\Request;
-use Unusualify\Priceable\Facades\PriceService;
 use Unusualify\Priceable\Models\Price;
 
 class IyzicoService extends PaymentService
@@ -162,20 +161,16 @@ class IyzicoService extends PaymentService
     return $uriPath;
   }
 
-  public function pay(array $params, int $priceID)
+  public function pay(array $params)
   {
     $endpoint = "/payment/3dsecure/initialize";
 
-    $currency = Price::find($priceID)->currency;
-    
-
-    # create request class
     $request = new CreatePaymentRequest();
     $request->setLocale($params['locale']);
-    $request->setConversationId($params['orderId']);
+    $request->setConversationId($params['order_id']);
     $request->setPrice($params['price']);
     $request->setPaidPrice($params['paidPrice']);
-    $request->setCurrency($currency->iso_code);
+    $request->setCurrency($params['currency']->iso_4217);
     $request->setInstallment($params['installment']);
     $request->setBasketId($params['basketId']);
     $request->setPaymentChannel("WEB");
@@ -224,7 +219,7 @@ class IyzicoService extends PaymentService
     $request->setBillingAddress($billingAddress);
 
     $basketItems = array();
-    foreach($params['basketItems'] as $item){
+    foreach ($params['basketItems'] as $item) {
       $basketItem = new BasketItem();
       $basketItem->setId($item['id']);
       $basketItem->setName($item['name']);
@@ -235,16 +230,10 @@ class IyzicoService extends PaymentService
       array_push($basketItems, $basketItem);
     }
     $request->setBasketItems($basketItems);
-
-    $this->createRecord((object)[
-      'payment_gateway' => $this->serviceName,
-      'order_id' => $params['orderId'],
-      'price' => $params['paidPrice'],
-      'currency_id' => $currency->id,
-      'email' => '',
-      'installment' => '',
-      'parameters' => json_encode('')
-    ]);
+    $recordParams = $this->hydrateParams($params);
+    $this->createRecord(
+      $recordParams  
+    );
 
     $resp = $this->postReq($this->url, $endpoint, $request->toJsonString(), $this->generateHeaders($request), 'raw');
     // dd($resp);
@@ -270,7 +259,7 @@ class IyzicoService extends PaymentService
     $resp = $this->postReq($this->url, $endpoint, $request->toJsonString(), $this->generateHeaders($request), 'raw');
 
     if ((json_decode($resp))->status == 'success') {
-      $this->updateRecord(
+      return $this->updateRecord(
         $params['conversation_id'],
         'CANCELLED',
         $resp
@@ -278,14 +267,12 @@ class IyzicoService extends PaymentService
     }
     
     dd($resp, $request->toJsonString(), $this->headers);
-
   }
   
 
   public function completePayment($params)
   {
     $endpoint = '/payment/3dsecure/auth';
-
     $request = new CreateThreedsPaymentRequest();
 
     $request->setPaymentId($params['payment_id']);
@@ -295,7 +282,7 @@ class IyzicoService extends PaymentService
     $resp = $this->postReq($this->url, $endpoint, $request->toJsonString(), $this->generateHeaders($request), 'raw');
 
     if((json_decode($resp))->status == 'success'){
-      $this->updateRecord(
+      return $this->updateRecord(
         $params['conversation_id'],
         'COMPLETED',
         $resp
@@ -322,7 +309,7 @@ class IyzicoService extends PaymentService
     $resp = $this->postReq($this->url, $endpoint, $request->toJsonString(), $this->generateHeaders($request), 'raw');
 
     if ((json_decode($resp))->status == 'success') {
-      $this->updateRecord(
+      return $this->updateRecord(
         $params['conversation_id'],
         'REFUNDED',
         $resp
@@ -351,6 +338,22 @@ class IyzicoService extends PaymentService
     ], $this->generateHeadersV2($request, ($this->url . $endpoint)));
 
     return $resp;
+  }
+
+  public function hydrateParams(array $params)
+  {
+    $recordParams = [
+      'amount' => $params['price'],
+      'email' => $params['buyer']['email'],
+      'installment' => $params['installment'],
+      'payment_service_id' => $params['payment_service_id'],
+      'price_id' => $params['price_id'],
+      'parameters' => json_encode($params),
+      'order_id' => $params['order_id']
+    ];
+
+    return $recordParams;
+      
   }
   
 }

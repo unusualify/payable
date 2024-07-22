@@ -199,4 +199,6 @@ abstract class URequest implements URequestInterface
     abstract function getConfigName();
 
     abstract function setMode($mode);
+
+    abstract function hydrateParams(array $params);
 }

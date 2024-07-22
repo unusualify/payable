@@ -87,31 +87,32 @@ class PaypalService extends PaymentService
 
   }
 
-  public function pay(array $data , int $priceID)
+  public function pay(array $params)
   {
     $this->apiEndPoint = 'v2/checkout/orders';
+    $allParams = $this->hydrateParams($params);
 
-    $this->options['request_body'] = $data;
+    // dd($allParams);
+    $this->options['request_body'] = $allParams['request_params'];
     $this->type = 'json';
     $this->verb = 'post';
+    // dd($this->doPaypalRequest());
     $resp =  json_decode($this->doPayPalRequest());
+
+    $allParams['record_params']['order_id'] = $resp->id;
     // dd($resp, $resp->id);
     // dd($data);
-    $currency = Price::find($priceID)->currency;
-    $this->createRecord((object)[
-        'payment_gateway' => $this->serviceName,
-        'order_id' => $resp->id,
-        'price' => $data['purchase_units'][0]['amount']['value'],
-        'currency_id' => $currency->id,
-        'email' => $data['payment_source']['paypal']['email_address'],
-        'installment' => '0',
-        'parameters' => json_encode($data),
-      ]
+    // $currency = Price::find($priceID)->currency;
+    // dd($resp);
+    // dd(((int)$params['purchase_units'][0]['amount']['value']));
+    $this->createRecord(
+      $allParams['record_params']
     );
     return $resp;
   }
 
-  public function capturePayment($order_id, array $data = []){
+  public function capturePayment($order_id, array $data = [])
+  {
     $this->apiEndPoint = "v2/checkout/orders/{$order_id}/capture";
 
     $this->options['request_body'] = (object) $data;
@@ -140,9 +141,8 @@ class PaypalService extends PaymentService
     // return $this->doPayPalRequest();
   }
 
-  public function refund(array $params)
-
   // string $capture_id, string $invoice_id, float $amount, string $note, $priceID
+  public function refund(array $params)  
   {
     $this->apiEndPoint = "v2/payments/captures/{$params['capture_id']}/refund";
     $this->verb = 'post';
@@ -165,7 +165,8 @@ class PaypalService extends PaymentService
     // dd($this->options);
     $resp =  $this->doPayPalRequest();
 
-    if(json_decode($resp)->status == 'COMPLETED'){
+    if(json_decode($resp)->status == 'COMPLETED')
+    {
       $this->updateRecord(
         $params['order_id'],
         'REFUNDED',
@@ -180,13 +181,44 @@ class PaypalService extends PaymentService
     // dd($resp);
   }
 
-  public function showFromSource($orderId){
+  public function showFromSource($orderId)
+  {
 
       $this->apiEndPoint = "v2/checkout/orders/{$orderId}";
       $this->headers['Content-Type'] = 'application/json';
       $this->verb = 'get';
       $resp = $this->doPaypalRequest();
-    
+
       return $resp;
+  }
+
+  public function hydrateParams(array $params)
+  {
+
+    $recordParams = [
+      'amount' => $params['amount'],
+      'email' => $params['payment_source']['paypal']['email_address'],
+      'installment' => $params['installment'],
+      'payment_service_id' => $params['payment_service_id'],
+      'price_id' => $params['price_id'],
+      'email' => $params['payment_source']['paypal']['email_address'],
+      'parameters' => json_encode($params),
+    ];
+
+    unset(
+      $params['amount'],
+      $params['installment'],
+      $params['payment_service_id'],
+      $params['price_id']);
+    
+    return [
+      'record_params' => $recordParams,
+      'request_params' => $params,
+    ];
+  }
+
+  public function formatAmount($amount)
+  {
+    return number_format((float)$amount / 100 , 2, '.', '');
   }
 }
