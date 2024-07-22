@@ -6,7 +6,7 @@
  */
 
 return [
-  "table" => "unfy_payable",
+  "table" => "unfy_payments",
   "services" => [
     'paypal' => [
       'mode'    => env('PAYPAL_MODE', 'sandbox'), // Can only be 'sandbox' Or 'live'. If empty or invalid, 'live' will be used.
