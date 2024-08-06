@@ -112,6 +112,7 @@ class TebPosService extends PaymentService{
     {
 
         $schema = [
+
             "cardname" => "_USER_cardname",
             "cardnumber" => "_USER_cardno",
             "cardexpiredatemonth" => "_USER_exp_month",
