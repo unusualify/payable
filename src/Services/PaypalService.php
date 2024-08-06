@@ -49,7 +49,7 @@ class PaypalService extends PaymentService
     );
 
     $this->getAccessToken();
-    
+
 
   }
 
@@ -70,7 +70,7 @@ class PaypalService extends PaymentService
           $this->type,
           'test'
         );
-      }else{ //Get request 
+      }else{ //Get request
         $response = $this->getReq(
           $this->url,
           $this->apiEndPoint,
@@ -142,7 +142,7 @@ class PaypalService extends PaymentService
   }
 
   // string $capture_id, string $invoice_id, float $amount, string $note, $priceID
-  public function refund(array $params)  
+  public function refund(array $params)
   {
     $this->apiEndPoint = "v2/payments/captures/{$params['capture_id']}/refund";
     $this->verb = 'post';
@@ -161,7 +161,7 @@ class PaypalService extends PaymentService
     $this->options['request_body'] = '{}';
     // dd($this->options['request_body']);
     $this->headers['Content-Type'] = 'application/json';
-    
+
     // dd($this->options);
     $resp =  $this->doPayPalRequest();
 
@@ -172,7 +172,7 @@ class PaypalService extends PaymentService
         'REFUNDED',
         $resp
       );
-      
+
       return true;
     }else{
       return false;
@@ -210,7 +210,7 @@ class PaypalService extends PaymentService
       $params['installment'],
       $params['payment_service_id'],
       $params['price_id']);
-    
+
     return [
       'record_params' => $recordParams,
       'request_params' => $params,
@@ -220,5 +220,42 @@ class PaypalService extends PaymentService
   public function formatAmount($amount)
   {
     return number_format((float)$amount / 100 , 2, '.', '');
+  }
+
+  public function getSchema(){
+        $schema = [
+            'intent' => 'CAPTURE',
+            'purchase_units' => [
+                [
+                    'amount' => [
+                        'currency_code' => '_SYSTEM_currency_code_4217',
+                        'value' =>'_SYSTEM_amount'
+
+                    ],
+                ],
+            ],
+            'payment_source' => [
+                'paypal' => [
+                    "name" => [
+                        "given_name" => '_SYSTEM_name',
+                        'surname' => '_SYSTEM_surname'
+                    ],
+                    "email_address" => '_SYSTEM_email', //User's email address or empty
+                    'experience_context' => [
+                        'payment_method_preference' => 'IMMEDIATE_PAYMENT_REQUIRED',
+                        'brand_name' => '_SYSTEM_brand',
+                        'locale' => '_SYSTEM_locale', //en-Us
+                        'landing_page' => 'LOGIN',
+                        'user_action' => 'PAY_NOW',
+                        'return_url' => '_SYSTEM_return',
+                        'cancel_url' => '_SYSTEM_cancel',
+                    ],
+                ],
+            ],
+            'amount' => '_SYSTEM_amount',
+            'installment' => '0',
+        ];
+
+        return $schema;
   }
 }

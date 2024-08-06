@@ -8,7 +8,7 @@ use Unusualify\Priceable\Facades\PriceService;
 class GarantiPosService extends PaymentService{
 
   public $version = "v0.01";
-  
+
   protected $terminalID ; //Terminal id
 
   protected $merchantID;
@@ -22,7 +22,7 @@ class GarantiPosService extends PaymentService{
   protected $garantiPayProvUserPassword; // GarantiPay için prov user password
 
   protected $paymentType;  // Payment type - for credit cards: "creditcard", for GarantiPay : "garantipay"
- 
+
   protected $storeKey;
 
   public $timeOutPeriod = "180";
@@ -39,7 +39,7 @@ class GarantiPosService extends PaymentService{
 
   public $debugPaymentUrl = "https://eticaret.garanti.com.tr/destek/postback.aspx";
 
-  
+
 
   // GarantiPay tanımlamalar
   public $garantiPay = "Y"; // Usage of GarantiPay: Y/N
@@ -94,7 +94,7 @@ class GarantiPosService extends PaymentService{
         "paymenttype" => $this->paymentType,
         "secure3dsecuritylevel" => "3D_PAY",
         "txntype" => "sales",
-       
+
         "apiversion" => $tempConfig['api_version'],
         "mode" => $this->mode,
         "terminalprovuserid" => $this->provUserID,
@@ -104,7 +104,7 @@ class GarantiPosService extends PaymentService{
 
         "successurl" => route('payable.garanti.return') . '?action=success',
         "errorurl" => route('payable.garanti.return') . '?action=error',
-     
+
         "txntimeoutperiod" => $this->timeOutPeriod,
         "addcampaigninstallment" => $this->addCampaignInstallment,
         "totallinstallmentcount" => $this->totalInstallamentCount,
@@ -120,7 +120,7 @@ class GarantiPosService extends PaymentService{
     $this->params += $params;
     $this->params['secure3dhash'] = $this->generateHash();
     $this->headers['Content-Type'] ='application/x-www-form-urlencoded';
-    
+
     $resp = $this->postReq(
       $this->url,
       $endpoint,
@@ -164,9 +164,33 @@ class GarantiPosService extends PaymentService{
   {
     return strtoupper(sha1($this->provUserPassword . $this->terminalID));
   }
-  
+
   public function hydrateParams(array $params)
   {
-    
+
+  }
+
+  public function getSchema(){
+
+    $schema = [
+      "cardname" => "_USER_cardname",
+      "cardnumber" => "_USER_cardno",
+      "cardexpiredatemonth" => "_USER_exp_month",
+      "cardexpiredateyear" => "_USER_exp_year",
+      "cardcvv2" => "_USER_cvv",
+      "companyname" => "_SYSTEM_brand",
+      "orderid" => "_SYSTEM_order_id",
+      "customeremailaddress" => "_SYSTEM_email",
+      "customeripaddress" => "_SYSTEM_ip",
+      "txnamount" => "_SYSTEM_amount",
+      "txncurrencycode" => "_SYSTEM_currency_no_4217",
+      "txninstallmentcount" => "0",
+      "lang" => "_SYSTEM_locale",
+      "iscommission" => 0,
+      'previous_url' => '_SYSTEM_previous_url',
+      'email' => '_SYSTEM_email'
+    ];
+
+    return $schema;
   }
 }
