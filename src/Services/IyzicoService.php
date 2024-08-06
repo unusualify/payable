@@ -47,7 +47,7 @@ class IyzicoService extends PaymentService
     'Authorization' => 'Bearer',
     'Content-Type' => 'application/json',
   ];
-  
+
    //TODO: Subscription service will be added
 
   public function __construct($mode = null)
@@ -232,12 +232,12 @@ class IyzicoService extends PaymentService
     $request->setBasketItems($basketItems);
     $recordParams = $this->hydrateParams($params);
     $this->createRecord(
-      $recordParams  
+      $recordParams
     );
 
     $resp = $this->postReq($this->url, $endpoint, $request->toJsonString(), $this->generateHeaders($request), 'raw');
     // dd($resp);
-    $threeDForm = base64_decode(json_decode($resp)->threeDSHtmlContent); 
+    $threeDForm = base64_decode(json_decode($resp)->threeDSHtmlContent);
     # print result
     print($threeDForm);
     exit;
@@ -253,7 +253,7 @@ class IyzicoService extends PaymentService
     $request->setIp($params['ip']);
     $request->setPaymentId($params['payment_id']);
     $request->setConversationId($params['conversation_id']);
-    
+
     // dd($this->generateHeaders($request));
 
     $resp = $this->postReq($this->url, $endpoint, $request->toJsonString(), $this->generateHeaders($request), 'raw');
@@ -265,10 +265,10 @@ class IyzicoService extends PaymentService
         $resp
       );
     }
-    
+
     dd($resp, $request->toJsonString(), $this->headers);
   }
-  
+
 
   public function completePayment($params)
   {
@@ -300,7 +300,7 @@ class IyzicoService extends PaymentService
     $endpoint = '/payment/refund';
 
     $request = new CreateRefundRequest();
-    
+
     $request->setPaymentTransactionId($params['payment_id']);
     $request->setPrice($params['price']);
 
@@ -353,7 +353,71 @@ class IyzicoService extends PaymentService
     ];
 
     return $recordParams;
-      
+
   }
-  
+
+    public function getSchema()
+    {
+
+        $schema = [
+            "locale" => "tr",
+            "order_id" => '_SYSTEM_order_id',
+            "currency" => '_SYSTEM_currency_code_4217',
+            'installment' => '0',
+            "price" => "_SYSTEM_amount_notax",
+            "paidPrice" => "_SYSTEM_amount",
+            "installment" => 1,
+            "paymentChannel" => "WEB",
+            "basketId" => "_SYSTEM_basket_id",
+            "paymentGroup" => "PRODUCT",
+            "paymentCard" => [
+                "cardHolderName" => "_USER_cardname",
+                "cardNumber" => "_USER_cardno",
+                "expireYear" => "_USER_exp_month",
+                "expireMonth" => "_USER_exp_year",
+                "cvc" => "_USER_cvv"
+            ],
+            "buyer" => [
+                "id" => "_SYSTEM_buyer_id",
+                "name" => "John",
+                "surname" => "Doe",
+                "identityNumber" => "74300864791",
+                "email" => "_SYSTEM_email",
+                "gsmNumber" => "_SYSTEM_tel",
+                "registrationDate" => "_SYSTEM_reg_date",
+                "lastLoginDate" => "_SYSTEM_login_date",
+                "registrationAddress" => "_SYSTEM_address",
+                "city" => "_SYSTEM_city",
+                "country" => "_SYSTEM_country",
+                "zipCode" => "_SYSTEM_zip",
+                "ip" => "_SYSTEM_ip"
+            ],
+            "shippingAddress" => [
+                "address" => "_SYSTEM_address",
+                "zipCode" => "_SYSTEM_zip",
+                "contactName" => "_SYSTEM_full_name",
+                "city" => "_SYSTEM_city",
+                "country" => "_SYSTEM_country"
+            ],
+            "billingAddress" => [
+                "address" => "_SYSTEM_address",
+                "zipCode" => "_SYSTEM_zip",
+                "contactName" => "_SYSTEM_full_name",
+                "city" => "_SYSTEM_city",
+                "country" => "_SYSTEM_country"
+            ],
+            "basketItems" => [
+                [
+                    "id" => "_SYSTEM_item_id",
+                    "price" => "_SYSTEM_amount",
+                    "name" => "_SYSTEM_product_name",
+                    "category1" => "_SYSTEM_product_cat",
+                    "category2" => "_SYSTEM_product_cat_2",
+                    "itemType" => "_SYSTEM_item_type"
+                ]
+            ],
+        ];
+
+        return $schema;
+    }
 }

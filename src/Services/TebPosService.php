@@ -18,7 +18,7 @@ class TebPosService extends PaymentService{
     parent::__construct();
 
     $this->setCredentials();
-    
+
   }
   /*
   * Set proper .env variables to proper attributes
@@ -42,7 +42,7 @@ class TebPosService extends PaymentService{
     $this->rnd = microtime();
     $this->params += $params;
     $this->processType = 'Auth';
-    
+
     $hash = $this->generateHash();
     $data = [
       'pan' => $this->params['cardnumber'],
@@ -78,7 +78,7 @@ class TebPosService extends PaymentService{
     $response = $this->postReq($this->url,$endpoint,$data,[],'encoded');
     print($response);
     exit();
-    
+
 
   }
 
@@ -105,7 +105,32 @@ class TebPosService extends PaymentService{
 
   public function hydrateParams(array $params)
   {
-    
+
   }
+
+    public function getSchema()
+    {
+
+        $schema = [
+            "cardname" => "_USER_cardname",
+            "cardnumber" => "_USER_cardno",
+            "cardexpiredatemonth" => "_USER_exp_month",
+            "cardexpiredateyear" => "_USER_exp_year",
+            "cardcvv2" => "_USER_cvv",
+            "companyname" => "_SYSTEM_brand",
+            "orderid" => "_SYSTEM_order_id",
+            "customeremailaddress" => "_SYSTEM_email",
+            "customeripaddress" => "_SYSTEM_ip",
+            "txnamount" => "_SYSTEM_amount",
+            "txncurrencycode" => "_SYSTEM_currency_no_4217",
+            "txninstallmentcount" => "0",
+            "lang" => "_SYSTEM_locale",
+            "iscommission" => 0,
+            'previous_url' => '_SYSTEM_previous_url',
+            'email' => '_SYSTEM_email'
+        ];
+
+        return $schema;
+    }
 
 }
