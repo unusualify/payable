@@ -19,21 +19,21 @@ abstract class PaymentService extends URequest{
   protected $path;
 
   protected $token_refresh_time; //by minute
-  
+
   protected $redirect_url;
 
   protected $config;
 
   public $serviceName;
 
-  
 
-  protected $headers = [ 
+
+  protected $headers = [
     'Authorization' => 'Bearer',
     'Content-Type' => 'application/json',
   ];
 
-  public function __construct(    
+  public function __construct(
     $headers = null,
     $redirect_url = null)
     {
@@ -97,11 +97,10 @@ abstract class PaymentService extends URequest{
               'parameters' => null,
             ]);
   }
-
   public function setMode($mode)
   {
     $this->mode = $mode;
   }
-  
+
   abstract function hydrateParams(array $params);
 }
