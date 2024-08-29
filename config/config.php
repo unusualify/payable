@@ -7,6 +7,8 @@
 
 return [
     'table' => 'unfy_payments',
+    'session_key' => 'payable',
+    'return_url' => route('payment.response'),
     'services' => [
         'paypal' => [
             'mode'    => env('PAYPAL_MODE', 'sandbox'), // Can only be 'sandbox' Or 'live'. If empty or invalid, 'live' will be used.
