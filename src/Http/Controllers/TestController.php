@@ -17,10 +17,10 @@ use Unusualify\Priceable\Models\Price;
 
 
 class TestController extends Controller
-{ 
+{
   public function testView(){
-   
-  
+
+
     /*
     Data for paypal credit / debit card payment
     $data = [
@@ -175,7 +175,7 @@ class TestController extends Controller
     }
     dd('here');
   }
-  
+
   public function garantiResponse(Request $request)
   {
     dd($request);
@@ -196,7 +196,7 @@ class TestController extends Controller
       dd('success');
     }else{
       TebCommonPosService::updateRecord($request->OrderId, 'CANCELED', $request->all());
-      
+
     }
     dd($request);
   }
@@ -227,64 +227,46 @@ class TestController extends Controller
     $orderId = rand(100000,999999);
     // dd($price->currency);
     $params = [
-      "locale" => "tr",
-      "order_id" => $orderId,
-      'payment_service_id' => 1,
-      'price_id' => $price->id,
-      "currency" => $price->currency,
-      'installment' => '0',
-      "price" => "1.0",
-      "paidPrice" => "1.2",
-      "installment" => 1,
-      "paymentChannel" => "WEB",
-      "basketId" => "B67832",
-      "paymentGroup" => "PRODUCT",
-      "paymentCard" => [
-        "cardHolderName" => "John Doe",
-        "cardNumber" => "5528790000000008",
-        "expireYear" => "2030",
-        "expireMonth" => "12",
-        "cvc" => "123"
-      ],
-      "buyer" => [
-        "id" => "BY789",
-        "name" => "John",
-        "surname" => "Doe",
-        "identityNumber" => "74300864791",
-        "email" => "email@email.com",
-        "gsmNumber" => "+905350000000",
-        "registrationDate" => "2013-04-21 15:12:09",
-        "lastLoginDate" => "2015-10-05 12:43:35",
-        "registrationAddress" => "Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1",
-        "city" => "Istanbul",
-        "country" => "Turkey",
-        "zipCode" => "34732",
-        "ip" => "85.34.78.112"
-      ],
-      "shippingAddress" => [
-        "address" => "Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1",
-        "zipCode" => "34742",
-        "contactName" => "Jane Doe",
-        "city" => "Istanbul",
-        "country" => "Turkey"
-      ],
-      "billingAddress" => [
-        "address" => "Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1",
-        "zipCode" => "34742",
-        "contactName" => "Jane Doe",
-        "city" => "Istanbul",
-        "country" => "Turkey"
-      ],
-      "basketItems" => [
-        [
-          "id" => "BI103",
-          "price" => "1.0",
-          "name" => "Usb",
-          "category1" => "Electronics",
-          "category2" => "Usb / Cable",
-          "itemType" => "PHYSICAL"
-        ]
-      ],
+        "locale" => "tr",
+        "order_id" => $orderId,
+        'payment_service_id' => 1,
+        'price_id' => $price->id,
+        "currency" => $price->currency,
+        'installment' => '0',
+        "price" => "1.0",
+        "paid_price" => "1.2",
+        "installment" => 1,
+        "payment_channel" => "WEB",
+        "basket_id" => "B67832",
+        "payment_group" => "PRODUCT",
+        "card_name" => "John Doe",
+        "card_no" => "5528790000000008",
+        "card_year" => "2030",
+        "card_month" => "12",
+        "card_cvv" => "123",
+        "user_id" => "BY789",
+        "user_name" => "John",
+        "user_surname" => "Doe",
+        "user_email" => "email@email.com",
+        "user_gsm" => "+905350000000",
+        "user_registration_date" => "2013-04-21 15:12:09",
+        "user_last_login_date" => "2015-10-05 12:43:35",
+        "user_registration_address" => "Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1",
+        "user_city" => "Istanbul",
+        "user_country" => "Turkey",
+        "user_zip_code" => "34732",
+        "user_ip" => "85.34.78.112",
+        "user_address" => "Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1",
+        "items" => [
+            [
+            "id" => "BI103",
+            "price" => "1.0",
+            "name" => "Usb",
+            "category1" => "Electronics",
+            "category2" => "Usb / Cable",
+            "type" => "PHYSICAL"
+            ]
+        ],
     ];
     $payment = new Payable('iyzico');
     $payment->pay($params);
@@ -342,7 +324,7 @@ class TestController extends Controller
     );
     exit;
     // dd($redirectionUrl);
-    
+
   }
 
   public function testGaranti()
@@ -483,7 +465,7 @@ class TestController extends Controller
 
   public function testRelation(){
     $payment = EntitiesPayment::find(81);
-    
+
     dd($payment->currency);
   }
 }

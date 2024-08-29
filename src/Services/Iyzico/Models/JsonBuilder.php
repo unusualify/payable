@@ -77,7 +77,7 @@ class JsonBuilder
 
     public static function jsonEncode($jsonObject)
     {
-        return json_encode($jsonObject);
+        return json_encode($jsonObject,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
     }
 
     public static function jsonDecode($rawResult)
