@@ -9,7 +9,9 @@
     },
     "minimum-stability": "dev",
     "require": {
-        "guzzlehttp/guzzle": "^7.0"
+        "guzzlehttp/guzzle": "^7.0",
+        "oobook/post-redirector": "^1.0"
+
     },
     "extra": {
         "laravel": {
