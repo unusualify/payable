@@ -10,30 +10,30 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Payment extends Model
 {
-  use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes;
 
-  /**
-   * The attributes that are mass assignable.
-   *
-   * @var array
-   */
-  protected $fillable = [
-    'payment_gateway',
-    'order_id',
-    'amount',
-    'currency_id',
-    'status',
-    'email', 
-    'installment',
-    'parameters',
-    'response',
-    'payment_service_id',
-    'price_id'
-  ];
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'payment_gateway',
+        'order_id',
+        'amount',
+        'currency_id',
+        'status',
+        'email',
+        'installment',
+        'parameters',
+        'response',
+        'payment_service_id',
+        'price_id'
+    ];
 
-  public function getTable()
-  {
-    return config('payable.table', parent::getTable());
-  }
+    public function getTable()
+    {
+        return config('payable.table', parent::getTable());
+    }
 
 }
