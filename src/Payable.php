@@ -64,14 +64,15 @@ class Payable {
     {
         $exceptionals = config('payable.exceptional_fields.'.$this->slug);
         // dd($exceptionals, 'payable.exceptional_fields.' . $this->slug);
-        foreach($exceptionals as $index => $exception){
-            // dd(array_key_exists($exception, $params), $exception, $params);
-            if(array_key_exists($exception, $params))
-            {
-                // dd($index);
-                unset($params[$exception]);
+        if($exceptionals)
+            foreach($exceptionals as $index => $exception){
+                // dd(array_key_exists($exception, $params), $exception, $params);
+                if(array_key_exists($exception, $params))
+                {
+                    // dd($index);
+                    unset($params[$exception]);
+                }
             }
-        }
         // dd($params);
         return $params;
     }
