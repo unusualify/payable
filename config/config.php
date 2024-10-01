@@ -101,6 +101,17 @@ return [
                 'api_user' => env('TEB_COMMON_API_USER', ''),
                 'api_password' => env('TEB_COMMON_API_PASS', ''),
             ]
+        ],
+        'buckaroo' => [
+            'mode' => env('BUCKAROO_MODE',''),
+            'sandbox' => [
+                'website_key' => env('BUCKAROO_SANDBOX_WEBSITE_KEY',''),
+                'secret_key' => env('BUCKAROO_SANDBOX_SECRET_KEY',''),
+            ],
+            'live' => [
+                'website_key' => env('BUCKAROO_SANDBOX_WEBSITE_KEY',''),
+                'secret_key' => env('BUCKAROO_SANDBOX_SECRET_KEY',''),
+            ]
         ]
     ],
 ];

@@ -113,7 +113,7 @@ class GarantiPosService extends PaymentService{
     // dd($this);
   }
 
-  public function pay(array $params, int $priceID)
+  public function pay(array $params)
   {
     $endpoint = 'servlet/gt3dengine';
     $this->params['txntimestamp'] = time();

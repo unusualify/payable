@@ -58,6 +58,7 @@ abstract class PaymentService extends URequest{
 
     public function setConfig()
     {
+        // dd($this->getConfigName());
         $this->config = config($this->getConfigName());
         // dd($this->config);
         $this->mode = $this->config['mode'];
@@ -95,7 +96,7 @@ abstract class PaymentService extends URequest{
 
         $paymentParams = json_decode($payment->parameters, true);
         $custom_fields = $paymentParams['custom_fields'] ?? null;
-        // dd($custom_fields);
+        // dd($payment, $paymentParams, $custom_fields);
         $updated = $payment->update([
             'status' => $status,
             'response' => $response,

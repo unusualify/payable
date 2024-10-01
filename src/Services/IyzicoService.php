@@ -172,7 +172,7 @@ class IyzicoService extends PaymentService
         $recordParams = $this->hydrateParams($params);
         // dd($request);
         $payment = $this->createRecord(
-        $recordParams
+            $recordParams
         );
         // dd($payment->id);
         $request = new CreatePaymentRequest();
@@ -299,6 +299,11 @@ class IyzicoService extends PaymentService
                 return [
                     'status' => 'success',
                     'custom_fields' => $custom_fields
+                ];
+            else
+                return [
+                    'status' => 'success',
+                    'custom_fields' => null
                 ];
         }else{
             return [

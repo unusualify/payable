@@ -123,8 +123,13 @@ class PaypalService extends PaymentService
         // $currency = Price::find($priceID)->currency;
         // dd($resp);
         // dd(((int)$params['purchase_units'][0]['amount']['value']));
-
-        return $resp;
+        $redirectionUrl = $resp->links[1]->href;
+        if($redirectionUrl)
+            print(
+            "<script>window.open('" . $redirectionUrl . "', '_self')</script>"
+            );
+        exit;
+        // return $resp;
     }
 
     public function capturePayment($params, array $data = [])
