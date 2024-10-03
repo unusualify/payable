@@ -8,7 +8,7 @@ trait PayPalVerifyIPN
 {
   protected $webhook_id;
 
-  public function setWebHookID(string $webhook_id): \Unusualify\Payable\PayPal\PayPal
+  public function setWebHookID(string $webhook_id): \Unusualify\Payable\Services\PaypalService
   {
     $this->webhook_id = $webhook_id;
 

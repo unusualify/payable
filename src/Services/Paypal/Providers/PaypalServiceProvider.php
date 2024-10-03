@@ -1,6 +1,6 @@
 <?php
 
-namespace Unusualify\Payable\Services\Paypal\Providers;
+namespace Unusualify\Payable\Services\PayPal\Providers;
 
 /*
  * Class PayPalServiceProvider

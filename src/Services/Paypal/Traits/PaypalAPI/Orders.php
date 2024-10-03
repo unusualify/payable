@@ -1,6 +1,6 @@
 <?php
 
-namespace Unusualify\Payable\Services\Paypal\Traits\PaypalAPI;
+namespace Unusualify\Payable\Services\PayPal\Traits\PaypalAPI;
 
 trait Orders
 {
@@ -26,7 +26,7 @@ trait Orders
         $this->verb = 'post';
         // dd($this->apiEndPoint);
         $resp =  $this->doPayPalRequest();
-        
+
         $this->createRecord(
             [
                 'payment_gateway' => $this->serviceName,

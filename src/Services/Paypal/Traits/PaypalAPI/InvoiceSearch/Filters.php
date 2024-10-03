@@ -1,6 +1,6 @@
 <?php
 
-namespace Unusualify\Payable\Services\Paypal\Traits\PaypalAPI\InvoiceSearch;
+namespace Unusualify\Payable\Services\PayPal\Traits\PaypalAPI\InvoiceSearch;
 
 use Carbon\Carbon;
 

@@ -19,6 +19,6 @@ class PayPal extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return \Unusualify\Payable\Services\Paypal\PayPalFacadeAccessor::class;
+        return \Unusualify\Payable\Services\PayPal\PayPalFacadeAccessor::class;
     }
 }

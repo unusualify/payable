@@ -1,6 +1,6 @@
 <?php
 
-namespace Unusualify\Payable\Services\Paypal\Traits\PaypalAPI\Subscriptions;
+namespace Unusualify\Payable\Services\PayPal\Traits\PaypalAPI\Subscriptions;
 
 use Carbon\Carbon;
 use Illuminate\Support\Str;
