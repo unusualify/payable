@@ -1,6 +1,6 @@
 <?php
 
-namespace Unusualify\Payable\Services\Paypal\Traits\PaypalAPI\BillingPlans;
+namespace Unusualify\Payable\Services\PayPal\Traits\PaypalAPI\BillingPlans;
 
 use Throwable;
 

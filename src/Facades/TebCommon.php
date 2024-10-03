@@ -4,7 +4,7 @@ namespace Unusualify\Payable\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
-class Garanti extends Facade
+class TebCommon extends Facade
 {
   protected static function getFacadeAccessor()
   {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Unusualify\Payable\Services\Paypal\Traits;
+namespace Unusualify\Payable\Services\PayPal\Traits;
 
 trait PaypalAPI
 {
@@ -116,9 +116,9 @@ trait PaypalAPI
      *
      * @param int $size
      *
-     * @return \Unusualify\Payable\Services\Paypal\PaypalService
+     * @return \Unusualify\Payable\Services\PayPal\PaypalService
      */
-    public function setPageSize(int $size): \Unusualify\Payable\Services\Paypal\PaypalService
+    public function setPageSize(int $size): \Unusualify\Payable\Services\PayPal\PaypalService
     {
         $this->page_size = $size;
 
@@ -130,9 +130,9 @@ trait PaypalAPI
      *
      * @param int $size
      *
-     * @return \Unusualify\Payable\Services\Paypal\PaypalService
+     * @return \Unusualify\Payable\Services\PayPal\PaypalService
      */
-    public function setCurrentPage(int $page): \Unusualify\Payable\Services\Paypal\PaypalService
+    public function setCurrentPage(int $page): \Unusualify\Payable\Services\PayPal\PaypalService
     {
         $this->current_page = $page;
 
@@ -146,7 +146,7 @@ trait PaypalAPI
      *
      * @return  \Unusualify\Payable\Services\PayPal\PaypalService
      */
-    public function showTotals(bool $totals): \Unusualify\Payable\Services\Paypal\PaypalService
+    public function showTotals(bool $totals): \Unusualify\Payable\Services\PayPal\PaypalService
     {
         $this->show_totals = var_export($totals, true);
 

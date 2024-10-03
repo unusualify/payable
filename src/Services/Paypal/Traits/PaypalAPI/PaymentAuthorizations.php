@@ -1,6 +1,6 @@
 <?php
 
-namespace Unusualify\Payable\Services\Paypal\Traits\PaypalAPI;
+namespace Unusualify\Payable\Services\PayPal\Traits\PaypalAPI;
 
 trait PaymentAuthorizations
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Unusualify\Payable\PayPal;
+namespace Unusualify\Payable\Services\PayPal;
 
 use GuzzleHttp\Utils;
 

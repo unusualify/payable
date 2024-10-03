@@ -1,6 +1,6 @@
 <?php
 
-namespace Unusualify\Payable\Services\Paypal\Traits\PaypalAPI\Orders;
+namespace Unusualify\Payable\Services\PayPal\Traits\PaypalAPI\Orders;
 
 use Throwable;
 

@@ -8,14 +8,14 @@ use Illuminate\Http\Request;
 use RuntimeException;
 use Unusualify\Payable\Models\Payment;
 use Unusualify\Payable\PayPal\Str;
-use Unusualify\Payable\Services\Paypal\Traits\PaypalAPI;
-use Unusualify\Payable\Services\Paypal\Traits\PayPalVerifyIPN;
+use Unusualify\Payable\Services\PayPal\Traits\PaypalAPI;
+use Unusualify\Payable\Services\PayPal\Traits\PayPalVerifyIPN;
 use Unusualify\Priceable\Facades\PriceService;
 use Unusualify\Priceable\Models\Price;
 
 class PaypalService extends PaymentService
 {
-    use Paypal\Traits\PaypalConfig;
+    use PayPal\Traits\PaypalConfig;
 
     use PayPalVerifyIPN;
     use PaypalAPI;

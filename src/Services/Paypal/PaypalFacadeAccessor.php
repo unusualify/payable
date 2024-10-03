@@ -1,6 +1,6 @@
 <?php
 
-namespace Unusualify\Payable\Services\Paypal;
+namespace Unusualify\Payable\Services\PayPal;
 
 use Exception;
 use Unusualify\Payable\Services\PaypalService as PayPalClient;
