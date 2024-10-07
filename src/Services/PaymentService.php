@@ -60,7 +60,7 @@ abstract class PaymentService extends URequest{
     {
         // dd($this->getConfigName());
         $this->config = config($this->getConfigName());
-        // dd($this->config);
+        // dd($this->config,$this->getConfigName());
         $this->mode = $this->config['mode'];
     }
 
@@ -72,7 +72,7 @@ abstract class PaymentService extends URequest{
     function createRecord(array $data)
     {
         // dd($data->paymentServiceId);
-        // dd($data);
+       	// dd($data);
         $payment = Payment::create(
         $data
         // [

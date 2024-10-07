@@ -3,7 +3,8 @@
 namespace Unusualify\Payable\Services;
 
 use Unusualify\Payable\Services\PaymentService;
-use Unusualify\Priceable\Facades\PriceService;
+use Illuminate\Http\Request as HttpRequest;
+
 
 class GarantiPosService extends PaymentService{
 
@@ -129,31 +130,33 @@ class GarantiPosService extends PaymentService{
       'encoded',
     );
 
-    $currency = PriceService::find($priceID)->currency;
-
+	// dd($this->params);
     $this->createRecord([
       'serviceName' => $this->serviceName,
-      'paymentOrderId' => $this->params['orderid'],
-      'currency_id' => $currency->id,
+      'order_id' => $this->params['order_id'],
+      'currency_id' => $this->params['currency']->id,
+	  'amount' => $this->params['paid_price'],
       'email' => '', //Add email to data
-      'installment' => $this->params['txninstallmentcount'],
-      'parameters' => $this->params
+	  'price_id' => $this->params['price_id'],
+	  'payment_service_id' => $this->params['payment_service_id'],
+      'installment' => $this->params['installment'],
+      'parameters' => json_encode($this->params)
     ]);
     return print_r($resp);
   }
 
   public function generateHash()
   {
-
+	// dd($this->params);
     $map = [
       $this->terminalID,
-      $this->params['orderid'],
-      $this->params['txnamount'],
-      $this->params['txncurrencycode'],
-      route('payable.garanti.return') . $this->returnQueries['success'],
-      route('payable.garanti.return') . $this->returnQueries['error'],
+      $this->params['order_id'],
+      $this->params['paid_price'],
+      $this->params['currency']->iso_4217_number,
+      route('payable.response').'?payment_service=garanti-pos',
+      route('payable.response').'?payment_service=garanti-pos',
       $this->params['txntype'],
-      $this->params['txninstallmentcount'],
+      $this->params['installment'],
       $this->storeKey,
       $this->generateSecurityData()
     ];
@@ -193,4 +196,62 @@ class GarantiPosService extends PaymentService{
 
     return $schema;
   }
+
+    public function handleResponse(HttpRequest $request){
+        dd($request);
+        // [
+        //     "mdstatus" => "7"
+        //     "mderrormessage" => "Guvenlik Kodu hatali"
+        //     "errmsg" => "Guvenlik Kodu hatali"
+        //     "clientid" => "30691297"
+        //     "oid" => "91A2E85FA4084FBB8A53C8EDF9ACEF24"
+        //     "response" => "Error"
+        //     "procreturncode" => "99"
+        //     "user_country" => "Default Country"
+        //     "currency" => array:6 [▶]
+        //     "user_address" => "123 Main St"
+        //     "card_no" => "4543604278609073"
+        //     "installment" => "1"
+        //     "terminalmerchantid" => "7000679"
+        //     "txntype" => "sales"
+        //     "refreshtime" => "180"
+        //     "card_month" => "06"
+        //     "user_registration_date" => "2024-10-05 11:24:09"
+        //     "mode" => "sandbox"
+        //     "card_cvv" => "123"
+        //     "user_name" => "Administrator"
+        //     "price_id" => "19"
+        //     "user_city" => "Default City"
+        //     "user_ip" => "127.0.0.1"
+        //     "custom_fields" => array:1 [▶]
+        //     "terminalid" => "30691297"
+        //     "order_id" => "ORD-6703bd3183647"
+        //     "secure3dhash" => "16182A74E2627732FB63487658BD733977D84FCEBB2458D0D4032BCBC6F99BFF02C1487A5F6EB2FAA8DDF7B6D7093163CAFF7A6E9AE627EA75BA1D581F20A6B3"
+        //     "paymenttype" => "creditcard"
+        //     "terminalprovuserid" => "PROVAUT"
+        //     "items" => array:1 [▶]
+        //     "locale" => "en"
+        //     "user_id" => "1"
+        //     "basket_id" => "6703bd31838e2"
+        //     "errorurl" => "https://business.b2press.com/test-api/garanti-return?action=error"
+        //     "payment_service_id" => "3"
+        //     "payment_group" => "PRODUCT"
+        //     "price" => "8333"
+        //     "totallinstallmentcount" => "0"
+        //     "paid_price" => "10000"
+        //     "successurl" => "https://business.b2press.com/test-api/garanti-return?action=success"
+        //     "secure3dsecuritylevel" => "3D_PAY"
+        //     "card_year" => "2028"
+        //     "txntimeoutperiod" => "180"
+        //     "terminaluserid" => "PROVAUT"
+        //     "user_last_login_date" => "2024-10-07 10:51:29"
+        //     "addcampaigninstallment" => "N"
+        //     "user_zip_code" => "12345"
+        //     "txntimestamp" => "1728298289"
+        //     "card_name" => "Gunes Bizim"
+        //     "installmentonlyforcommercialcard" => "N"
+        //     "user_email" => "software-dev@unusualgrowth.com"
+        //     "apiversion" => "512"
+        // ]
+    }
 }
