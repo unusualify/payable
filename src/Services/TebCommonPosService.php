@@ -3,7 +3,7 @@
 namespace Unusualify\Payable\Services;
 
 use Carbon\Carbon;
-use Unusualify\Priceable\Facades\PriceService;
+use Illuminate\Http\Request as HttpRequest;
 
 class TebCommonPosService extends PaymentService
 {
@@ -27,7 +27,7 @@ protected $params = [];
     $this->timeSpan =
     Carbon::now()->setTimezone('Europe/Istanbul')->format('YmdHis');
     $this->rnd = (string) rand(100000, 999999);
-    
+
   }
 
   public function setCredentials()
@@ -36,7 +36,7 @@ protected $params = [];
 
     $this->mode = $this->config['mode'];
     $tempConfig = $this->config[$this->mode];
-    
+
     $this->url = $tempConfig['url'];
     $this->clientId = $tempConfig['client_id'];
     $this->apiUser = $tempConfig['api_user'];
@@ -54,11 +54,11 @@ protected $params = [];
     return $hash;
   }
 
-  public function startPaymentProcess(array $params, int $priceID)
+  public function startPaymentProcess(array $params)
   {
     $endpoint = 'ThreeDPayment';
     $hash = $this->generateHash();
-    $returnUrl = route('payable.teb-common.return');
+    $returnUrl = route('payable.response').'?payment_service=teb-common-pos'.'&price_id='.$this->params;
 
     $this->headers = [
       'Content-Type' => 'application/json',
@@ -66,8 +66,8 @@ protected $params = [];
     ];
 
     $this->params += $params;
-    $currency = PriceService::find($priceID)->currency;
-    
+    // $currency = PriceService::find($priceID)->currency;
+
     $data = [
       'clientId' => $this->clientId,
       'apiUser' => $this->apiUser,
@@ -75,30 +75,32 @@ protected $params = [];
       'timeSpan' => $this->timeSpan,
       'hash' => $hash,
       'callbackUrl' => $returnUrl,
-      'orderId' => $this->params['orderid'],
-      'isCommission' => $this->params['iscommission'],
-      'amount' => $this->params['txnamount'],
-      'totalAmount' => $this->params['txnamount'],
-      'currency' => $currency->iso_4217, 
-      'installmentCount' => $this->params['txninstallmentcount'],
+      'orderId' => $this->params['order_id'],
+      'isCommission' => 0,
+      'amount' => $this->params['paid_price'],
+      'totalAmount' => $this->params['paid_price'],
+      'currency' => $this->params['currency']->iso_4217_number,
+      'installmentCount' => $this->params['installment'],
       'description' => '',
       'echo' => '',
       'extraParameters' => ''
     ];
-
+    // dd($data, $this->params['currency']);
     $response = $this->postReq($this->url, $endpoint, json_encode($data), $this->headers,'raw');
     $responseObject = json_decode($response);
-
+    // dd($responseObject, $response);
     if ($responseObject->Code == 0) {
       $this->createRecord(
         [
-          'payment_gateway' => $this->serviceName,
-          'paymentOrderId' => $data['orderId'],
-          'amount' => $data['amount'],
-          'currencyId' => $data['currency'],
-          'email' => $this->params['email'],
-          'installment' => $data['installmentCount'],
-          'parameters' => $this->params
+            'serviceName' => $this->serviceName,
+            'order_id' => $this->params['order_id'],
+            'currency_id' => $this->params['currency']->id,
+            'amount' => $this->params['paid_price'],
+            'email' => '', //Add email to data
+            'price_id' => $this->params['price_id'],
+            'payment_service_id' => $this->params['payment_service_id'],
+            'installment' => $this->params['installment'],
+            'parameters' => json_encode($this->params)
         ]
       );
       return $responseObject->ThreeDSessionId;
@@ -107,10 +109,11 @@ protected $params = [];
     }
   }
 
-  public function pay(array $params, int $priceID)
+  public function pay(array $params)
   {
-    $threeDSessionId = $this->startPaymentProcess($params, $priceID);
+    $threeDSessionId = $this->startPaymentProcess($params);
     $endpoint = 'ProcessCardForm';
+    // dd($params);
     $multipart = [
       [
         'name' => 'ThreeDSessionId',
@@ -118,19 +121,19 @@ protected $params = [];
       ],
       [
         'name' => 'CardHolderName',
-        'contents' =>  $this->params['cardname'],
+        'contents' =>  $this->params['card_name'],
       ],
       [
         'name' => 'CardNo',
-        'contents' =>   $this->params['cardnumber'],
+        'contents' =>   $this->params['card_no'],
       ],
       [
         'name' => 'ExpireDate',
-        'contents' =>   $this->formatCardExpireDate($this->params['cardexpiredatemonth'], $this->params['cardexpiredateyear']),
+        'contents' =>   $this->formatCardExpireDate($this->params['card_month'], $this->params['card_year']),
       ],
       [
         'name' => 'Cvv',
-        'contents' =>   $this->params['cardcvv2'],
+        'contents' =>   $this->params['card_cvv'],
       ],
     ];
     $response = $this->postReq($this->url,$endpoint,$multipart,[],'multipart');
@@ -144,6 +147,54 @@ protected $params = [];
 
   public function hydrateParams(array $params)
   {
-    //TODO: 
   }
+  public function handleResponse(HttpRequest $request){
+    //TODO: retrieve paid item id from request
+
+    if($request->MdStatus == 1 && $request->BankResponseCode == '00'){
+
+        $params = [
+            'status' => 'success',
+            'id' => $request->query('payment_id'),
+            'service_payment_id' => $request->paymentId,
+            'order_id' => $request->conversationId,
+            'order_data' => $request->conversationData
+        ];
+
+        $response = $this->updateRecord(
+            $params['id'],
+            'COMPLETED',
+            $resp
+        );
+        $params['custom_fields']= $response['custom_fields'];
+        dd($params);
+    }else{
+
+        $params = [
+            'status' => 'fail',
+            'payment_id' => $request->paymentId,
+            'conversation_id' => $request->conversationId,
+            'conversation_data' => $request->conversationData
+        ];
+        $response = $this->updateRecord(
+            $params['id'],
+            'COMPLETED',
+            $resp
+        );
+    }
+
+    return $this->generatePostForm($params, route(config('payable.return_url')));
+
+    // [
+    //   "ClientId" => "1000000031"
+    //   "OrderId" => "ORD-6703c1081be43"
+    //   "MdStatus" => "1"
+    //   "ThreeDSessionId" => "P8A6AF94A670F48D396637ADABCF4AD200151EAE48E874FA0B80C5E3C1B6D9CDC"
+    //   "BankResponseCode" => "00"
+    //   "BankResponseMessage" => "İşlem onaylandı"
+    //   "RequestStatus" => "1"
+    //   "HashParameters" => "ClientId,ApiUser,OrderId,MdStatus,BankResponseCode,BankResponseMessage,RequestStatus"
+    //   "Hash" => "0EnLRun4qsYVI6QTfWMW+VK4wBSqkOxPdBqDJVxuzRlqDwSbGTf75wo4uassPX+69zGCEF4ZBOZ+Qlw5xq568w=="
+    // ]
+}
 }
