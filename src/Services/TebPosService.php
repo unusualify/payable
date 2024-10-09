@@ -142,27 +142,60 @@ class TebPosService extends PaymentService{
 
     public function handleResponse(HttpRequest $request){
         dd($request);
-            //     [
-            //   "amount" => "10000"
-            //   "clientid" => "400757361"
-            //   "Ecom_Payment_Card_ExpDate_Month" => "06"
-            //   "Ecom_Payment_Card_ExpDate_Year" => "2028"
-            //   "ErrMsg" => "Wrong security code"
-            //   "ErrorCode" => "3D-1004"
-            //   "failUrl" => "https://business.b2press.com/payable/return?payment_service=teb-pos"
-            //   "firmaadi" => null
-            //   "islemtipi" => "Auth"
-            //   "lang" => "en"
-            //   "maskedCreditCard" => "4543 60** **** 9073"
-            //   "MaskedPan" => "454360***9073"
-            //   "oid" => "ORD-6703a77527c27"
-            //   "okUrl" => "https://business.b2press.com/payable/return?payment_service=teb-pos"
-            //   "ProcReturnCode" => "99"
-            //   "Response" => "Declined"
-            //   "storetype" => "3d_pay_hosting"
-            //   "taksit" => "1"
-            //   "traceId" => "6703a7750e3073523a579676ae097952"
-            // ]
+
+        if($request->MdStatus == 1 && $request->BankResponseCode == '00'){
+            $params = [
+                'status' => 'success',
+                'id' => $request->query('payment_id'),
+                'service_payment_id' => $request->paymentId,
+                'order_id' => $request->conversationId,
+                'order_data' => $request->conversationData
+            ];
+
+            $response = $this->updateRecord(
+                $params['id'],
+                'COMPLETED',
+                $resp
+            );
+            $params['custom_fields']= $response['custom_fields'];
+            dd($params);
+        }else{
+
+            $params = [
+                'status' => 'fail',
+                'payment_id' => $request->paymentId,
+                'conversation_id' => $request->conversationId,
+                'conversation_data' => $request->conversationData
+            ];
+            $response = $this->updateRecord(
+                $params['id'],
+                'COMPLETED',
+                $resp
+            );
+        }
+        return $this->generatePostForm($params, route(config('payable.return_url')));
+
+        //     [
+        //   "amount" => "10000"
+        //   "clientid" => "400757361"
+        //   "Ecom_Payment_Card_ExpDate_Month" => "06"
+        //   "Ecom_Payment_Card_ExpDate_Year" => "2028"
+        //   "ErrMsg" => "Wrong security code"
+        //   "ErrorCode" => "3D-1004"
+        //   "failUrl" => "https://business.b2press.com/payable/return?payment_service=teb-pos"
+        //   "firmaadi" => null
+        //   "islemtipi" => "Auth"
+        //   "lang" => "en"
+        //   "maskedCreditCard" => "4543 60** **** 9073"
+        //   "MaskedPan" => "454360***9073"
+        //   "oid" => "ORD-6703a77527c27"
+        //   "okUrl" => "https://business.b2press.com/payable/return?payment_service=teb-pos"
+        //   "ProcReturnCode" => "99"
+        //   "Response" => "Declined"
+        //   "storetype" => "3d_pay_hosting"
+        //   "taksit" => "1"
+        //   "traceId" => "6703a7750e3073523a579676ae097952"
+        // ]
     }
 
 }

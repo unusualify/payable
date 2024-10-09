@@ -27,7 +27,7 @@ protected $params = [];
     $this->timeSpan =
     Carbon::now()->setTimezone('Europe/Istanbul')->format('YmdHis');
     $this->rnd = (string) rand(100000, 999999);
-    
+
   }
 
   public function setCredentials()
@@ -36,7 +36,7 @@ protected $params = [];
 
     $this->mode = $this->config['mode'];
     $tempConfig = $this->config[$this->mode];
-    
+
     $this->url = $tempConfig['url'];
     $this->clientId = $tempConfig['client_id'];
     $this->apiUser = $tempConfig['api_user'];
@@ -67,7 +67,7 @@ protected $params = [];
 
     $this->params += $params;
     // $currency = PriceService::find($priceID)->currency;
-    
+
     $data = [
       'clientId' => $this->clientId,
       'apiUser' => $this->apiUser,
@@ -79,7 +79,7 @@ protected $params = [];
       'isCommission' => 0,
       'amount' => $this->params['paid_price'],
       'totalAmount' => $this->params['paid_price'],
-      'currency' => $this->params['currency']->iso_4217_number, 
+      'currency' => $this->params['currency']->iso_4217_number,
       'installmentCount' => $this->params['installment'],
       'description' => '',
       'echo' => '',
@@ -147,15 +147,44 @@ protected $params = [];
 
   public function hydrateParams(array $params)
   {
-    //TODO: 
   }
   public function handleResponse(HttpRequest $request){
-    dd($request);
+    //TODO: retrieve paid item id from request
+
     if($request->MdStatus == 1 && $request->BankResponseCode == '00'){
 
+        $params = [
+            'status' => 'success',
+            'id' => $request->query('payment_id'),
+            'service_payment_id' => $request->paymentId,
+            'order_id' => $request->conversationId,
+            'order_data' => $request->conversationData
+        ];
+
+        $response = $this->updateRecord(
+            $params['id'],
+            'COMPLETED',
+            $resp
+        );
+        $params['custom_fields']= $response['custom_fields'];
+        dd($params);
     }else{
 
+        $params = [
+            'status' => 'fail',
+            'payment_id' => $request->paymentId,
+            'conversation_id' => $request->conversationId,
+            'conversation_data' => $request->conversationData
+        ];
+        $response = $this->updateRecord(
+            $params['id'],
+            'COMPLETED',
+            $resp
+        );
     }
+
+    return $this->generatePostForm($params, route(config('payable.return_url')));
+
     // [
     //   "ClientId" => "1000000031"
     //   "OrderId" => "ORD-6703c1081be43"

@@ -198,7 +198,39 @@ class GarantiPosService extends PaymentService{
   }
 
     public function handleResponse(HttpRequest $request){
-        dd($request);
+        //TODO: retrieve paid item id from request
+
+        if($request->MdStatus == 1 && $request->BankResponseCode == '00'){
+            $params = [
+                'status' => 'success',
+                'id' => $request->query('payment_id'),
+                'service_payment_id' => $request->paymentId,
+                'order_id' => $request->conversationId,
+                'order_data' => $request->conversationData
+            ];
+
+            $response = $this->updateRecord(
+                $params['id'],
+                'COMPLETED',
+                $resp
+            );
+            $params['custom_fields']= $response['custom_fields'];
+            dd($params);
+        }else{
+            $params = [
+                'status' => 'fail',
+                'payment_id' => $request->paymentId,
+                'conversation_id' => $request->conversationId,
+                'conversation_data' => $request->conversationData
+            ];
+            $response = $this->updateRecord(
+                $params['id'],
+                'COMPLETED',
+                $resp
+            );
+        }
+        return $this->generatePostForm($params, route(config('payable.return_url')));
+
         // [
         //     "mdstatus" => "7"
         //     "mderrormessage" => "Guvenlik Kodu hatali"
