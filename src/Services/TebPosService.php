@@ -61,12 +61,15 @@ class TebPosService extends PaymentService{
             'rnd' => $this->rnd,
             'hash' => $hash,
             'islemtipi' => $this->processType,
-            'taksit' => $this->params['installment'],
-            'currency' => $this->params['currency']->iso_4217_code,
+            // 'taksit' => $this->params['installment'],
+            'taksit' => '',
+            'currency' => $this->params['currency']->iso_4217_number,
             'storetype' => '3d_pay_hosting',
             'lang' => $this->params['locale'],
             'firmaadi' => '',
         ];
+
+        // dd($data,$this->params['currency']);
         // $currency = PriceService::find($priceID)->currency;
 
         $this->createRecord(
@@ -81,6 +84,7 @@ class TebPosService extends PaymentService{
             'amount' => $this->params['paid_price'],
             'parameters' => json_encode($data)
         ]);
+        // dd($this->url,$endpoint);
         $response = $this->postReq($this->url,$endpoint,$data,[],'encoded');
         print($response);
         exit();

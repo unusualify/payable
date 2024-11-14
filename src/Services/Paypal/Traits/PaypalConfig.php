@@ -1,5 +1,5 @@
 <?php
-namespace Unusualify\Payable\Services\PayPal\Traits;
+namespace Unusualify\Payable\Services\Paypal\Traits;
 
 use RuntimeException;
 
@@ -31,11 +31,11 @@ trait PaypalConfig{
             $this->throwConfigurationException();
         }
 
-        // Setting Default PayPal Mode If not set
+        // Setting Default Paypal Mode If not set
         // dd($credentials['mode']);
         $this->setMode($credentials['mode']);
 
-        // Set API configuration for the PayPal provider
+        // Set API configuration for the Paypal provider
         $this->setApiProviderConfiguration($credentials);
 
         // Set default currency.
@@ -81,7 +81,7 @@ trait PaypalConfig{
    */
   private function setApiProviderConfiguration(array $credentials): void
   {
-    // Setting PayPal API Credentials
+    // Setting Paypal API Credentials
     if (empty($credentials[$this->mode])) {
       $this->throwConfigurationException();
     }
@@ -114,7 +114,7 @@ trait PaypalConfig{
 
     // Check if provided currency is valid.
     if (!in_array($currency, $allowedCurrencies, true)) {
-      throw new RuntimeException('Currency is not supported by PayPal.');
+      throw new RuntimeException('Currency is not supported by Paypal.');
     }
 
     $this->currency = $currency;

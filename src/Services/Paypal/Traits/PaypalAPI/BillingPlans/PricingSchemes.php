@@ -1,6 +1,6 @@
 <?php
 
-namespace Unusualify\Payable\Services\PayPal\Traits\PaypalAPI\BillingPlans;
+namespace Unusualify\Payable\Services\Paypal\Traits\PaypalAPI\BillingPlans;
 
 use Throwable;
 
@@ -18,9 +18,9 @@ trait PricingSchemes
      *
      * @throws Throwable
      *
-     * @return \Srmklive\PayPal\Services\PayPal
+     * @return \Srmklive\Paypal\Services\Paypal
      */
-    public function addPricingScheme(string $interval_unit, int $interval_count, float $price, bool $trial = false): \Srmklive\PayPal\Services\PayPal
+    public function addPricingScheme(string $interval_unit, int $interval_count, float $price, bool $trial = false)
     {
         $this->pricing_schemes[] = $this->addPlanBillingCycle($interval_unit, $interval_count, $price, $trial);
 

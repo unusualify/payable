@@ -1,11 +1,11 @@
 <?php
 
-namespace Unusualify\Payable\Services\PayPal\Traits\PaypalAPI;
+namespace Unusualify\Payable\Services\Paypal\Traits\PaypalAPI;
 
 trait Trackers
 {
     /**
-     * Adds tracking information, with or without tracking numbers, for multiple PayPal transactions.
+     * Adds tracking information, with or without tracking numbers, for multiple Paypal transactions.
      *
      * @param array $data
      *
@@ -27,7 +27,7 @@ trait Trackers
     }
 
     /**
-     * Adds tracking information for a PayPal transaction.
+     * Adds tracking information for a Paypal transaction.
      *
      * @param array $data
      *

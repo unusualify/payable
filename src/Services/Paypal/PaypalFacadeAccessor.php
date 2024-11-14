@@ -1,25 +1,25 @@
 <?php
 
-namespace Unusualify\Payable\Services\PayPal;
+namespace Unusualify\Payable\Services\Paypal;
 
 use Exception;
 use Unusualify\Payable\Services\PaypalService as PayPalClient;
 
-class PayPalFacadeAccessor
+class PaypalFacadeAccessor
 {
   /**
-   * PayPal API provider object.
+   * Paypal API provider object.
    *
    * @var
    */
   public static $provider;
 
   /**
-   * Get specific PayPal API provider object to use.
+   * Get specific Paypal API provider object to use.
    *
    * @throws Exception
    *
-   * @return \Srmklive\PayPal\Services\PayPal
+   * @return \Srmklive\Paypal\Services\Paypal
    */
   public static function getProvider()
   {
@@ -27,11 +27,11 @@ class PayPalFacadeAccessor
   }
 
   /**
-   * Set PayPal API Client to use.
+   * Set Paypal API Client to use.
    *
    * @throws \Exception
    *
-   * @return \Srmklive\PayPal\Services\PayPal
+   * @return \Srmklive\Paypal\Services\Paypal
    */
   public static function setProvider()
   {

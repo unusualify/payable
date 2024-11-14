@@ -1,11 +1,11 @@
 <?php
 
-namespace Unusualify\Payable\Services\PayPal\Traits\PaypalAPI;
+namespace Unusualify\Payable\Services\Paypal\Traits\PaypalAPI;
 
 trait WebHooksVerification
 {
     /**
-     * Verify a web hook from PayPal.
+     * Verify a web hook from Paypal.
      *
      * @param array $data
      *

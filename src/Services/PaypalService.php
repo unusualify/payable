@@ -7,15 +7,15 @@ use GuzzleHttp\Utils;
 use Illuminate\Http\Request;
 use RuntimeException;
 use Unusualify\Payable\Models\Payment;
-use Unusualify\Payable\PayPal\Str;
-use Unusualify\Payable\Services\PayPal\Traits\PaypalAPI;
-use Unusualify\Payable\Services\PayPal\Traits\PayPalVerifyIPN;
+use Unusualify\Payable\Services\Paypal\Str;
+use Unusualify\Payable\Services\Paypal\Traits\PaypalAPI;
+use Unusualify\Payable\Services\Paypal\Traits\PayPalVerifyIPN;
 use Unusualify\Priceable\Facades\PriceService;
 use Unusualify\Priceable\Models\Price;
 
 class PaypalService extends PaymentService
 {
-    use PayPal\Traits\PaypalConfig;
+    use Paypal\Traits\PaypalConfig;
 
     use PayPalVerifyIPN;
     use PaypalAPI;
@@ -26,7 +26,7 @@ class PaypalService extends PaymentService
     protected $type;
     public $apiEndPoint;
     /**
-     * PayPal constructor.
+     * Paypal constructor.
      *
      * @param array $config
      *
@@ -37,7 +37,7 @@ class PaypalService extends PaymentService
 
     public function __construct(array $config = [])
     {
-        // Setting PayPal API Credentials
+        // Setting Paypal API Credentials
         // Manage setConfig functio based on the needs of URequest class
         $this->getConfigName();
         $this->setConfig($config);

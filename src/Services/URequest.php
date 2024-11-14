@@ -107,6 +107,7 @@ abstract class URequest implements URequestInterface
                 if (count($headers) < 1) {
                     $headers['Content-Type'] = "application/x-www-form-urlencoded";
                 }
+                // dd($postFields);
                 // dd($url.$endPoint, $postFields, $headers);
                 $res = $this->client->post("{$url}{$endPoint}", [
                     'headers' => $headers,

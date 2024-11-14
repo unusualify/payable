@@ -1,10 +1,10 @@
 <?php
 
-namespace Unusualify\Payable\Services\PayPal\Providers;
+namespace Unusualify\Payable\Services\Paypal\Providers;
 
 /*
  * Class PayPalServiceProvider
- * @package Srmklive\PayPal
+ * @package Srmklive\Paypal
  */
 
 use Illuminate\Support\ServiceProvider;

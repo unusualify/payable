@@ -1,9 +1,9 @@
 <?php
 
-namespace Unusualify\Payable\Services\PayPal\Traits\PaypalAPI;
+namespace Unusualify\Payable\Services\Paypal\Traits\PaypalAPI;
 
 use GuzzleHttp\Psr7;
-use Srmklive\PayPal\Services\VerifyDocuments;
+use Srmklive\Paypal\Services\VerifyDocuments;
 
 trait DisputesActions
 {

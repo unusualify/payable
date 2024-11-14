@@ -4,6 +4,7 @@ namespace Unusualify\Payable\Services;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request as HttpRequest;
+use Unusualify\Payable\Models\Payment;
 
 class TebCommonPosService extends PaymentService
 {
@@ -24,8 +25,7 @@ protected $params = [];
 
     $this->setCredentials();
 
-    $this->timeSpan =
-    Carbon::now()->setTimezone('Europe/Istanbul')->format('YmdHis');
+    $this->timeSpan = Carbon::now()->setTimezone('Europe/Istanbul')->format('YmdHis');
     $this->rnd = (string) rand(100000, 999999);
 
   }
@@ -58,7 +58,7 @@ protected $params = [];
   {
     $endpoint = 'ThreeDPayment';
     $hash = $this->generateHash();
-    $returnUrl = route('payable.response').'?payment_service=teb-common-pos'.'&price_id='.$this->params;
+    // dd($params);
 
     $this->headers = [
       'Content-Type' => 'application/json',
@@ -67,6 +67,22 @@ protected $params = [];
 
     $this->params += $params;
     // $currency = PriceService::find($priceID)->currency;
+    $payment = $this->createRecord(
+        [
+            'serviceName' => $this->serviceName,
+            'order_id' => $this->params['order_id'],
+            'currency_id' => $this->params['currency']->id,
+            'amount' => $this->params['paid_price'],
+            'email' => '', //Add email to data
+            'price_id' => $this->params['price_id'],
+            'payment_service_id' => $this->params['payment_service_id'],
+            'installment' => $this->params['installment'],
+            'parameters' => json_encode($this->params)
+        ]
+        // 
+    );
+
+    $returnUrl = route('payable.response').'?payment_service=teb-common-pos'.'&payment_id='.$payment->id;
 
     $data = [
       'clientId' => $this->clientId,
@@ -90,19 +106,7 @@ protected $params = [];
     $responseObject = json_decode($response);
     // dd($responseObject, $response);
     if ($responseObject->Code == 0) {
-      $this->createRecord(
-        [
-            'serviceName' => $this->serviceName,
-            'order_id' => $this->params['order_id'],
-            'currency_id' => $this->params['currency']->id,
-            'amount' => $this->params['paid_price'],
-            'email' => '', //Add email to data
-            'price_id' => $this->params['price_id'],
-            'payment_service_id' => $this->params['payment_service_id'],
-            'installment' => $this->params['installment'],
-            'parameters' => json_encode($this->params)
-        ]
-      );
+        // dd($this->params);
       return $responseObject->ThreeDSessionId;
     }else{
       return json_decode($responseObject);
@@ -148,39 +152,51 @@ protected $params = [];
   public function hydrateParams(array $params)
   {
   }
+  
   public function handleResponse(HttpRequest $request){
-    //TODO: retrieve paid item id from request
-
+    // dd($request);
     if($request->MdStatus == 1 && $request->BankResponseCode == '00'){
 
         $params = [
             'status' => 'success',
-            'id' => $request->query('payment_id'),
+            'id' => $request->input('payment_id'),
             'service_payment_id' => $request->paymentId,
             'order_id' => $request->conversationId,
             'order_data' => $request->conversationData
         ];
-
-        $response = $this->updateRecord(
+        // dd($params['id']);
+        $custom_fields = $this->updateRecord(
             $params['id'],
             'COMPLETED',
-            $resp
+            $request->all()
         );
-        $params['custom_fields']= $response['custom_fields'];
-        dd($params);
+        // dd($custom_fields);
+        
+        $params['custom_fields'] = $custom_fields;
+        // dd($params);
     }else{
-
+        // dd($request->all());
+        $payment = Payment::where('order_id',$request->input('OrderId'))->first();
+        // dd($payment);
         $params = [
             'status' => 'fail',
+            'id' => $payment->id,
             'payment_id' => $request->paymentId,
             'conversation_id' => $request->conversationId,
             'conversation_data' => $request->conversationData
         ];
+        // dd($this->updateRecord(
+        //     $params['id'],
+        //     'COMPLETED',
+        //     $request->all()
+        // ));
         $response = $this->updateRecord(
             $params['id'],
             'COMPLETED',
-            $resp
+            $request->all()
         );
+        // dd($response);
+        $params['custom_fields'] = $response;
     }
 
     return $this->generatePostForm($params, route(config('payable.return_url')));
@@ -196,5 +212,5 @@ protected $params = [];
     //   "HashParameters" => "ClientId,ApiUser,OrderId,MdStatus,BankResponseCode,BankResponseMessage,RequestStatus"
     //   "Hash" => "0EnLRun4qsYVI6QTfWMW+VK4wBSqkOxPdBqDJVxuzRlqDwSbGTf75wo4uassPX+69zGCEF4ZBOZ+Qlw5xq568w=="
     // ]
-}
+    }
 }

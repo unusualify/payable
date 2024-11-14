@@ -1,6 +1,6 @@
 <?php
 
-namespace Unusualify\Payable\Services\PayPal\Traits;
+namespace Unusualify\Payable\Services\Paypal\Traits;
 
 use Illuminate\Support\Facades\Log;
 

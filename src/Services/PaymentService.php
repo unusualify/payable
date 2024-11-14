@@ -92,21 +92,26 @@ abstract class PaymentService extends URequest{
 
     static function updateRecord($id, $status, $response)
     {
-        $payment = ModelsPayment::findOrFail($id);
-
-        $paymentParams = json_decode($payment->parameters, true);
-        $custom_fields = $paymentParams['custom_fields'] ?? null;
-        // dd($payment, $paymentParams, $custom_fields);
-        $updated = $payment->update([
-            'status' => $status,
-            'response' => $response,
-            'parameters' => json_encode($custom_fields),
-        ]);
-        if($updated){
-            return $custom_fields;
-        }else{
-            return $updated;
+        // dd($id);
+        try{
+            $payment = ModelsPayment::findOrFail($id);
+            $paymentParams = json_decode($payment->parameters, true);
+            $custom_fields = $paymentParams['custom_fields'] ?? null;
+            // dd($payment, $paymentParams, $custom_fields, $payment->parameters);
+            $updated = $payment->update([
+                'status' => $status,
+                'response' => $response,
+                'parameters' => json_encode($custom_fields),
+            ]);
+            if($updated){
+                return $custom_fields;
+            }else{
+                return $updated;
+            }
+        }catch(\Illuminate\Database\Eloquent\ModelNotFoundException $e){
+            return $e->getMessage();
         }
+        
     }
     public function setMode($mode)
     {

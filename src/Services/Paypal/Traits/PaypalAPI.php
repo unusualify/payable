@@ -1,6 +1,6 @@
 <?php
 
-namespace Unusualify\Payable\Services\PayPal\Traits;
+namespace Unusualify\Payable\Services\Paypal\Traits;
 
 trait PaypalAPI
 {
@@ -29,7 +29,7 @@ trait PaypalAPI
     use PaypalAPI\WebHooksEvents;
 
     /**
-     * Login through PayPal API to get access token.
+     * Login through Paypal API to get access token.
      *
      * @throws \Throwable
      *
@@ -69,7 +69,7 @@ trait PaypalAPI
     }
 
     /**
-     * Set PayPal Rest API access token.
+     * Set Paypal Rest API access token.
      *
      * @param object $response
      *
@@ -86,11 +86,11 @@ trait PaypalAPI
         //     $response->token_type, $this->access_token);
         $this->setRequestHeader('Authorization', "{$response->token_type} {$this->access_token}");
 
-        if(isset($_SESSION['PayPal-Request-Id'])){
-        $this->setRequestHeader('PayPal-Request-Id', "{$_SESSION['PayPal-Request-Id']}". uniqid());
+        if(isset($_SESSION['Paypal-Request-Id'])){
+        $this->setRequestHeader('Paypal-Request-Id', "{$_SESSION['Paypal-Request-Id']}". uniqid());
         }else{
-        $_SESSION['PayPal-Request-Id'] = session()->getId(). uniqid();
-        $this->setRequestHeader('PayPal-Request-Id', "{$_SESSION['PayPal-Request-Id']}");
+        $_SESSION['Paypal-Request-Id'] = session()->getId(). uniqid();
+        $this->setRequestHeader('Paypal-Request-Id', "{$_SESSION['Paypal-Request-Id']}");
         }
         // dd($this->headers);
     }
@@ -98,7 +98,7 @@ trait PaypalAPI
 
     }
     /**
-     * Set PayPal App ID.
+     * Set Paypal App ID.
      *
      * @param object $response
      *
@@ -116,9 +116,9 @@ trait PaypalAPI
      *
      * @param int $size
      *
-     * @return \Unusualify\Payable\Services\PayPal\PaypalService
+     * @return \Unusualify\Payable\Services\Paypal\PaypalService
      */
-    public function setPageSize(int $size): \Unusualify\Payable\Services\PayPal\PaypalService
+    public function setPageSize(int $size): \Unusualify\Payable\Services\PaypalService
     {
         $this->page_size = $size;
 
@@ -130,9 +130,9 @@ trait PaypalAPI
      *
      * @param int $size
      *
-     * @return \Unusualify\Payable\Services\PayPal\PaypalService
+     * @return \Unusualify\Payable\Services\Paypal\PaypalService
      */
-    public function setCurrentPage(int $page): \Unusualify\Payable\Services\PayPal\PaypalService
+    public function setCurrentPage(int $page): \Unusualify\Payable\Services\PaypalService
     {
         $this->current_page = $page;
 
@@ -144,9 +144,9 @@ trait PaypalAPI
      *
      * @param bool $totals
      *
-     * @return  \Unusualify\Payable\Services\PayPal\PaypalService
+     * @return  \Unusualify\Payable\Services\Paypal\PaypalService
      */
-    public function showTotals(bool $totals): \Unusualify\Payable\Services\PayPal\PaypalService
+    public function showTotals(bool $totals): \Unusualify\Payable\Services\PaypalService
     {
         $this->show_totals = var_export($totals, true);
 
