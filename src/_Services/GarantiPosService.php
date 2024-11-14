@@ -132,7 +132,7 @@ class GarantiPosService extends PaymentService{
             'installment' => $this->params['installment'],
             'parameters' => json_encode($this->params)
         ]);
-        
+
         $this->params['successurl'] = route('payable.response').'?payment_service=garanti-pos'.'&payment_id='.$payment->id;
         $this->params['errorurl'] = route('payable.response').'?payment_service=garanti-pos'.'&payment_id='.$payment->id;
 
@@ -236,7 +236,8 @@ class GarantiPosService extends PaymentService{
         $params['cardexpiredatemonth'] = $params['card_month'];
         $params['cardexpiredateyear'] = $this->formatCardYear($params['card_year']);
         $params['cardcvv2'] = $params['card_cvv'];
-        
+
+
         // Remove all keys from $params that are not in $requiredParams
         // $filteredParams = array_intersect_key($params, array_flip($requiredParams));
         // dd($params, $filteredParams);
@@ -245,7 +246,6 @@ class GarantiPosService extends PaymentService{
     }
 
     public function handleResponse(HttpRequest $request){
-        //TODO: retrieve paid item id from request
         $paramsToRemoved = [
             'card_name',
             'card_no',
@@ -271,14 +271,14 @@ class GarantiPosService extends PaymentService{
                 'order_id' => $request->order_id,
                 'order_data' => $request->all()
             ];
-            
+
             $response = $this->updateRecord(
                 $params['id'],
                 'COMPLETED',
                 $resp
             );
             $params['custom_fields']= $resp['custom_fields'];
-            
+
         }else{
             $params = [
                 'status' => 'fail',
