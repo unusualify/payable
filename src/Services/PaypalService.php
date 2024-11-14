@@ -7,7 +7,7 @@ use GuzzleHttp\Utils;
 use Illuminate\Http\Request;
 use RuntimeException;
 use Unusualify\Payable\Models\Payment;
-use Unusualify\Payable\Paypal\Str;
+use Unusualify\Payable\Services\Paypal\Str;
 use Unusualify\Payable\Services\Paypal\Traits\PaypalAPI;
 use Unusualify\Payable\Services\Paypal\Traits\PayPalVerifyIPN;
 use Unusualify\Priceable\Facades\PriceService;
