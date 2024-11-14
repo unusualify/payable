@@ -4,7 +4,7 @@ namespace Unusualify\Payable\Services\Paypal\Traits;
 
 use Illuminate\Support\Facades\Log;
 
-trait PayPalVerifyIPN
+trait PaypalVerifyIPN
 {
   protected $webhook_id;
 
