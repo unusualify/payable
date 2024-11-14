@@ -21,7 +21,7 @@ trait InvoicesTemplates
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -43,7 +43,7 @@ trait InvoicesTemplates
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -63,7 +63,7 @@ trait InvoicesTemplates
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -86,7 +86,7 @@ trait InvoicesTemplates
 
         $this->verb = 'put';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -106,6 +106,6 @@ trait InvoicesTemplates
 
         $this->verb = 'delete';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 }

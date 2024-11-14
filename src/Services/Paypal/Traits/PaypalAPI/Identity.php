@@ -21,7 +21,7 @@ trait Identity
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -43,7 +43,7 @@ trait Identity
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -65,7 +65,7 @@ trait Identity
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -87,7 +87,7 @@ trait Identity
 
         $this->verb = 'delete';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 
     /**
@@ -123,7 +123,7 @@ trait Identity
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -149,7 +149,7 @@ trait Identity
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -173,7 +173,7 @@ trait Identity
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -191,6 +191,6 @@ trait Identity
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 }

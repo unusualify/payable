@@ -23,7 +23,7 @@ trait ReferencedPayouts
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -43,7 +43,7 @@ trait ReferencedPayouts
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -65,7 +65,7 @@ trait ReferencedPayouts
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -85,6 +85,6 @@ trait ReferencedPayouts
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 }

@@ -19,7 +19,7 @@ trait WebHooksEvents
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -37,7 +37,7 @@ trait WebHooksEvents
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -57,7 +57,7 @@ trait WebHooksEvents
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -81,6 +81,6 @@ trait WebHooksEvents
         ];
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 }

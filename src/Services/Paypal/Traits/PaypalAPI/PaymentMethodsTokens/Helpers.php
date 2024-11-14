@@ -67,7 +67,7 @@ trait Helpers
    *
    * @return \Srmklive\Paypal\Services\Paypal
    */
-  public function setPaymentSourcePayPal(array $data): \Srmklive\Paypal\Services\Paypal
+  public function setPaymentSourcePaypal(array $data)
   {
     return $this->setPaymentSourceDetails('paypal', $data);
   }

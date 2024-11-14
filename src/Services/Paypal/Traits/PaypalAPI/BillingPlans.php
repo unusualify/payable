@@ -25,7 +25,7 @@ trait BillingPlans
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -43,7 +43,7 @@ trait BillingPlans
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -66,7 +66,7 @@ trait BillingPlans
 
         $this->verb = 'patch';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 
     /**
@@ -86,7 +86,7 @@ trait BillingPlans
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -106,7 +106,7 @@ trait BillingPlans
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 
     /**
@@ -126,7 +126,7 @@ trait BillingPlans
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 
     /**
@@ -151,6 +151,6 @@ trait BillingPlans
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 }

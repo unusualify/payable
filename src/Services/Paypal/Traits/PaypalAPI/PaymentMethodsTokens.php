@@ -25,7 +25,7 @@ trait PaymentMethodsTokens
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -45,7 +45,7 @@ trait PaymentMethodsTokens
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -63,7 +63,7 @@ trait PaymentMethodsTokens
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -81,7 +81,7 @@ trait PaymentMethodsTokens
 
         $this->verb = 'delete';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 
     /**
@@ -103,7 +103,7 @@ trait PaymentMethodsTokens
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -121,6 +121,6 @@ trait PaymentMethodsTokens
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 }

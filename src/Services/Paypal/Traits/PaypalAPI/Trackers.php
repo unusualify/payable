@@ -23,7 +23,7 @@ trait Trackers
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -45,7 +45,7 @@ trait Trackers
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -66,7 +66,7 @@ trait Trackers
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -89,7 +89,7 @@ trait Trackers
 
         $this->verb = 'put';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 
     /**
@@ -109,6 +109,6 @@ trait Trackers
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 }

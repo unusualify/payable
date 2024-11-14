@@ -27,7 +27,7 @@ trait Subscriptions
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -50,7 +50,7 @@ trait Subscriptions
 
         $this->verb = 'patch';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 
     /**
@@ -70,7 +70,7 @@ trait Subscriptions
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -93,7 +93,7 @@ trait Subscriptions
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 
     /**
@@ -116,7 +116,7 @@ trait Subscriptions
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 
     /**
@@ -139,7 +139,7 @@ trait Subscriptions
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 
     /**
@@ -170,7 +170,7 @@ trait Subscriptions
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 
     /**
@@ -193,7 +193,7 @@ trait Subscriptions
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -226,6 +226,6 @@ trait Subscriptions
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 }

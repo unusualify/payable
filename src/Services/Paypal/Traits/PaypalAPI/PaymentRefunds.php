@@ -21,6 +21,6 @@ trait PaymentRefunds
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 }

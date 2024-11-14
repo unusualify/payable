@@ -23,6 +23,6 @@ trait WebHooksVerification
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 }

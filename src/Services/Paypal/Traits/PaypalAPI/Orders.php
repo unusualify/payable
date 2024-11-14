@@ -25,7 +25,7 @@ trait Orders
         $this->type = 'json';
         $this->verb = 'post';
         // dd($this->apiEndPoint);
-        $resp =  $this->doPayPalRequest();
+        $resp =  $this->doPaypalRequest();
 
         $this->createRecord(
             [
@@ -57,7 +57,7 @@ trait Orders
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -80,7 +80,7 @@ trait Orders
 
         $this->verb = 'patch';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 
     /**
@@ -101,7 +101,7 @@ trait Orders
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -124,7 +124,7 @@ trait Orders
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -147,6 +147,6 @@ trait Orders
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 }

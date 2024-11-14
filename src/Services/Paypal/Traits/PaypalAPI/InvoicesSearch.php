@@ -29,6 +29,6 @@ trait InvoicesSearch
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 }
