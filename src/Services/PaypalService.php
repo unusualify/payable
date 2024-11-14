@@ -9,7 +9,7 @@ use RuntimeException;
 use Unusualify\Payable\Models\Payment;
 use Unusualify\Payable\Services\Paypal\Str;
 use Unusualify\Payable\Services\Paypal\Traits\PaypalAPI;
-use Unusualify\Payable\Services\Paypal\Traits\PayPalVerifyIPN;
+use Unusualify\Payable\Services\Paypal\Traits\PaypalVerifyIPN;
 use Unusualify\Priceable\Facades\PriceService;
 use Unusualify\Priceable\Models\Price;
 
@@ -17,7 +17,7 @@ class PaypalService extends PaymentService
 {
     use Paypal\Traits\PaypalConfig;
 
-    use PayPalVerifyIPN;
+    use PaypalVerifyIPN;
     use PaypalAPI;
 
     protected $options;
