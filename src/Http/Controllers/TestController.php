@@ -13,7 +13,7 @@ use Unusualify\Payable\Services\TebPosService;
 use Unusualify\Priceable\Models\Currency;
 use Unusualify\Priceable\Models\Price;
 
-// use Srmklive\PayPal\PayPalFacadeAccessor as PayPalClient;
+// use Srmklive\Paypal\PayPalFacadeAccessor as PayPalClient;
 
 
 class TestController extends Controller
@@ -139,8 +139,8 @@ class TestController extends Controller
             //   "network" => "VISA"
             // ]
           ],
-          // "vault_id" => "", // The PayPal-generated ID for the saved card payment source. Typically stored on the merchant's server.
-          // "network_token" =>[  //A 3rd party network token refers to a network token that the merchant provisions from and vaults with an external TSP (Token Service Provider) other than PayPal.
+          // "vault_id" => "", // The Paypal-generated ID for the saved card payment source. Typically stored on the merchant's server.
+          // "network_token" =>[  //A 3rd party network token refers to a network token that the merchant provisions from and vaults with an external TSP (Token Service Provider) other than Paypal.
           //   "number" => "stringstrings",
           //   "cryptogram" => "stringstringstringstringstri",
           //   "token_requestor_id" => "string",

@@ -4,13 +4,13 @@ namespace Unusualify\Payable\Facades;
 
 /*
  * Class Facade
- * @package Srmklive\PayPal\Facades
- * @see Srmklive\PayPal\ExpressCheckout
+ * @package Srmklive\Paypal\Facades
+ * @see Srmklive\Paypal\ExpressCheckout
  */
 
 use Illuminate\Support\Facades\Facade;
 
-class PayPal extends Facade
+class Paypal extends Facade
 {
     /**
      * Get the registered name of the component.
@@ -19,6 +19,6 @@ class PayPal extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return \Unusualify\Payable\Services\PayPal\PayPalFacadeAccessor::class;
+        return \Unusualify\Payable\Services\Paypal\PaypalFacadeAccessor::class;
     }
 }
