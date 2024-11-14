@@ -3,7 +3,7 @@
 namespace Unusualify\Payable\Services\Paypal;
 
 use Exception;
-use Unusualify\Payable\Services\PaypalService as PayPalClient;
+use Unusualify\Payable\Services\PaypalService as PaypalClient;
 
 class PaypalFacadeAccessor
 {
@@ -36,7 +36,7 @@ class PaypalFacadeAccessor
   public static function setProvider()
   {
     // Set default provider. Defaults to ExpressCheckout
-    self::$provider = new PayPalClient();
+    self::$provider = new PaypalClient();
     self::$provider->getAccessToken();
     // dd('here');
     return self::getProvider();

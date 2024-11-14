@@ -23,7 +23,7 @@ trait CatalogProducts
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -41,7 +41,7 @@ trait CatalogProducts
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -64,7 +64,7 @@ trait CatalogProducts
 
         $this->verb = 'patch';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 
     /**
@@ -84,6 +84,6 @@ trait CatalogProducts
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 }

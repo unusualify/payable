@@ -19,7 +19,7 @@ trait PaymentExperienceWebProfiles
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -41,7 +41,7 @@ trait PaymentExperienceWebProfiles
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -61,7 +61,7 @@ trait PaymentExperienceWebProfiles
 
         $this->verb = 'delete';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -84,7 +84,7 @@ trait PaymentExperienceWebProfiles
 
         $this->verb = 'patch';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -107,7 +107,7 @@ trait PaymentExperienceWebProfiles
 
         $this->verb = 'put';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -127,6 +127,6 @@ trait PaymentExperienceWebProfiles
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 }

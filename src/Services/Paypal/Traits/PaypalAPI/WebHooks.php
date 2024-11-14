@@ -29,7 +29,7 @@ trait WebHooks
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -47,7 +47,7 @@ trait WebHooks
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -67,7 +67,7 @@ trait WebHooks
 
         $this->verb = 'delete';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 
     /**
@@ -90,7 +90,7 @@ trait WebHooks
 
         $this->verb = 'patch';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -110,7 +110,7 @@ trait WebHooks
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -130,6 +130,6 @@ trait WebHooks
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 }

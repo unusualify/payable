@@ -21,7 +21,7 @@ trait PaymentAuthorizations
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -54,7 +54,7 @@ trait PaymentAuthorizations
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -82,7 +82,7 @@ trait PaymentAuthorizations
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -102,6 +102,6 @@ trait PaymentAuthorizations
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 }

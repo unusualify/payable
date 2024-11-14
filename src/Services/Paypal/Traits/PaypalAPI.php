@@ -50,7 +50,7 @@ trait PaypalAPI
         $this->generateBasicAuthHeaders();
         // dd($this->url, $this->apiEndPoint);
         $this->verb = 'post';
-        $response = json_decode($this->doPayPalRequest());
+        $response = json_decode($this->doPaypalRequest());
 
         unset($this->options['auth']);
         unset($this->options[$this->httpBodyParam]);
@@ -79,7 +79,7 @@ trait PaypalAPI
     {
         $this->access_token = $response->access_token;
 
-        $this->setPayPalAppId($response);
+        $this->setPaypalAppId($response);
         // dd($response->token_type, $this->access_token);
         // dd($this->setRequestHeader('Authorization',
         //     "{$response->token_type} {$this->access_token}"),
@@ -104,7 +104,7 @@ trait PaypalAPI
      *
      * @return void
      */
-    private function setPayPalAppId($response)
+    private function setPaypalAppId($response)
     {
         $app_id = empty($response->app_id) ? $this->config->app_id : $response->app_id;
 

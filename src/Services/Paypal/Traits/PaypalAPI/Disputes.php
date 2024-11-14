@@ -19,7 +19,7 @@ trait Disputes
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -42,7 +42,7 @@ trait Disputes
 
         $this->verb = 'patch';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 
     /**
@@ -62,6 +62,6 @@ trait Disputes
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 }

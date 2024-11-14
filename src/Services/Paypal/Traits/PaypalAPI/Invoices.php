@@ -23,7 +23,7 @@ trait Invoices
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -47,7 +47,7 @@ trait Invoices
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -74,7 +74,7 @@ trait Invoices
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 
     /**
@@ -101,7 +101,7 @@ trait Invoices
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 
     /**
@@ -128,7 +128,7 @@ trait Invoices
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 
     /**
@@ -166,7 +166,7 @@ trait Invoices
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -187,7 +187,7 @@ trait Invoices
 
         $this->verb = 'delete';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 
     /**
@@ -221,7 +221,7 @@ trait Invoices
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -242,7 +242,7 @@ trait Invoices
 
         $this->verb = 'delete';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 
     /**
@@ -268,7 +268,7 @@ trait Invoices
         ];
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -286,7 +286,7 @@ trait Invoices
 
         $this->verb = 'post';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -306,7 +306,7 @@ trait Invoices
 
         $this->verb = 'get';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -329,7 +329,7 @@ trait Invoices
 
         $this->verb = 'put';
 
-        return $this->doPayPalRequest();
+        return $this->doPaypalRequest();
     }
 
     /**
@@ -349,7 +349,7 @@ trait Invoices
 
         $this->verb = 'delete';
 
-        return $this->doPayPalRequest(false);
+        return $this->doPaypalRequest(false);
     }
 
     /**

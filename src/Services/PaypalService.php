@@ -114,8 +114,8 @@ class PaypalService extends PaymentService
 
         // dd($this->options['request_body']);
         // dd($this);
-        $resp =  json_decode($this->doPayPalRequest());
-        // dd($this->doPayPalRequest());
+        $resp =  json_decode($this->doPaypalRequest());
+        // dd($this->doPaypalRequest());
         // dd($resp);
         $allParams['record_params']['order_id'] = $resp->id;
         // dd($resp, $resp->id);
@@ -142,9 +142,9 @@ class PaypalService extends PaymentService
 
         $this->type = 'json';
         // dd($order_id);
-        // dd($this->doPayPalRequest());
+        // dd($this->doPaypalRequest());
         // dd($this->options['request_body']);
-        $resp = json_decode($this->doPayPalRequest());
+        $resp = json_decode($this->doPaypalRequest());
         // dd($resp);
         $data = [
             'payment_source' => $resp->payment_source,
@@ -161,7 +161,7 @@ class PaypalService extends PaymentService
         $resp->custom_fields = $custom_fields;
         // dd($resp);
         return $resp;
-        // return $this->doPayPalRequest();
+        // return $this->doPaypalRequest();
     }
 
     // string $capture_id, string $invoice_id, float $amount, string $note, $priceID
@@ -186,7 +186,7 @@ class PaypalService extends PaymentService
         $this->headers['Content-Type'] = 'application/json';
 
         // dd($this->options);
-        $resp =  $this->doPayPalRequest();
+        $resp =  $this->doPaypalRequest();
 
         if(json_decode($resp)->status == 'COMPLETED')
         {

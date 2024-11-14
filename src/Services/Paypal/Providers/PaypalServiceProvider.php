@@ -8,7 +8,7 @@ namespace Unusualify\Payable\Services\Paypal\Providers;
  */
 
 use Illuminate\Support\ServiceProvider;
-use Unusualify\Payable\Services\PayPalService as PayPalClient;
+use Unusualify\Payable\Services\PaypalService as PaypalClient;
 
 class PaypalServiceProvider extends ServiceProvider
 {
@@ -42,7 +42,7 @@ class PaypalServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->registerPayPal();
+        $this->registerPaypal();
 
         $this->mergeConfig();
     }
@@ -52,10 +52,10 @@ class PaypalServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    private function registerPayPal()
+    private function registerPaypal()
     {
         $this->app->singleton('paypal_client', static function () {
-            return new PayPalClient();
+            return new PaypalClient();
         });
     }
 
