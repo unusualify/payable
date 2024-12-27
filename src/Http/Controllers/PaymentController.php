@@ -79,7 +79,9 @@ class PaymentController extends Controller
     // dd($paymentService, $test);
     // dd(Session::get(config('payable.session_key'). '.payment_service'));
     // $payment = new Payable(Session::get(config('payable.session_key'). 'payment_service'));
+    // dd($request->only(['payment_service'])['payment_service']);
     $payment = new Payable($request->only(['payment_service'])['payment_service']);
+    // dd($request->only(['payment_service'])['payment_service'], $payment, $payment->handleResponse($request));
     // dd($payment);
     return $payment->handleResponse($request);
     // dd($response);

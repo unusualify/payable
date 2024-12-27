@@ -61,11 +61,14 @@ abstract class PaymentService extends URequest{
         // dd($this->getConfigName());
         $this->config = config($this->getConfigName());
         // dd($this->config,$this->getConfigName());
+        // dd($this->config);
+        // dd($this->config, $this->getConfigName());
         $this->mode = $this->config['mode'];
     }
 
     public function getConfigName()
     {
+        // dd('payable' . '.services.' .strtolower(str_replace('Service', '', class_basename($this))));
         return 'payable' . '.services.' .strtolower(str_replace('Service', '', class_basename($this)));
     }
 
@@ -111,7 +114,7 @@ abstract class PaymentService extends URequest{
         }catch(\Illuminate\Database\Eloquent\ModelNotFoundException $e){
             return $e->getMessage();
         }
-        
+
     }
     public function setMode($mode)
     {

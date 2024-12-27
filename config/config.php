@@ -102,7 +102,7 @@ return [
                 'api_password' => env('TEB_COMMON_API_PASS', ''),
             ]
         ],
-        'buckaroo' => [
+        'ideal' => [
             'mode' => env('BUCKAROO_MODE',''),
             'sandbox' => [
                 'website_key' => env('BUCKAROO_SANDBOX_WEBSITE_KEY',''),

@@ -19,15 +19,18 @@ class LaravelServiceProvider extends ServiceProvider
     public function boot()
     {
         if ($this->app->runningInConsole()) {
-            $this->publishes([
-               __DIR__ . '/../config/config.php' => config_path('payable.php'),
-            ], 'config');
+            // $this->publishes([
+            //    __DIR__ . '/../config/config.php' => config_path('payable.php'),
+            // ], 'config');
+            $this->publishMigrations();
         }
-        $this->loadMigrationsFrom(
-            __DIR__ . '/../src/Database/Migrations'
-        );
-        // $this->loadViewsFrom(__DIR__ . '/views', 'unusual_form');
+        // dd(__DIR__.'/../routes/web.php');
         $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
+
+        // $this->loadMigrationsFrom(
+        //     __DIR__ . '/../src/Database/Migrations'
+        // );
+        // $this->loadViewsFrom(__DIR__ . '/views', 'unusual_form');
         // $this->bootViews();
 
     }
@@ -96,6 +99,23 @@ class LaravelServiceProvider extends ServiceProvider
     }
 
     /**
+     * Publish migration files.
+     *
+     * @return void
+     */
+    protected function publishMigrations()
+    {
+        $timestamp = date('Y_m_d_His');
+
+        $stubPath = __DIR__ . '/../stubs/create_payments_table.stub';
+        $targetPath = database_path("migrations/{$timestamp}_create_payments_table.php");
+
+        $this->publishes([
+            $stubPath => $targetPath,
+        ], 'migrations');
+    }
+
+    /**
      * Register facades
      */
 
@@ -111,7 +131,7 @@ class LaravelServiceProvider extends ServiceProvider
 
     //  }
 
- 
+
 
 
 }

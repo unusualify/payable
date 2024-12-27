@@ -99,18 +99,67 @@ class TebPosService extends PaymentService{
 
     public function generateHash()
     {
-        $map = [
-        $this->merchantID,
-        $this->params['order_id'],
-        $this->params['paid_price'],
-        route('payable.teb.return'). $this->returnQueries['success'],
-        route('payable.teb.return') . $this->returnQueries['error'],
-        $this->processType,
-        $this->params['currency']->iso_4217_code,
-        $this->rnd,
-        $this->storeKey
+        $rnd = time();
+        $taksit = '';
+
+
+        // 'pan' => $this->params['card_no'],
+        //     'Ecom_Payment_Card_ExpDate_Month' => $this->params['card_month'],
+        //     'Ecom_Payment_Card_ExpDate_Year' => $this->params['card_year'],
+        //     'cv2' => $this->params['card_cvv'],
+        //     'amount' => $this->params['paid_price'],
+        //     'cardType' => '',
+        //     'clientid' => $this->merchantID,
+        //     'oid' => $this->params['order_id'],
+        //     'okUrl' => route('payable.response').'?payment_service=teb-pos',
+        //     'failUrl' => route('payable.response').'?payment_service=teb-pos',
+        //     'rnd' => $this->rnd,
+        //     'hash' => $hash,
+        //     'islemtipi' => $this->processType,
+        //     // 'taksit' => $this->params['installment'],
+        //     'taksit' => '',
+        //     'currency' => $this->params['currency']->iso_4217_number,
+        //     'storetype' => '3d_pay_hosting',
+        //     'lang' => $this->params['locale'],
+        //     'firmaadi' => '',
+        $orderedMap = [
+            'amount' => $this->params['paid_price'],
+            'BillToCompany' => $this->params['company_name'],
+            'BillToName' => $this->params['card_name'],
+            'callbackUrl' => route('payment.client.response'),
+            'clientid' => $this->merchantID,
+            'currency' => $this->params['currency']->iso_4217_number,
+            'cv2' => $this->params['card_cvv'],
+            'Ecom_Payment_Card_ExpDate_Month' => $this->params['card_month'],
+            'Ecom_Payment_Card_ExpDate_Year' => $this->params['card_year'],
+            'failUrl' => route('payable.response', ['orderNo' => $this->params['order_id'], 'payment_service' => 'teb-pos']),
+            'hashAlgorithm' => 'ver3',
+            // 'Instalment' => $taksit,
+            'lang' => $this->params['locale'],
+            'okurl' => route('payable.response', ['orderNo' => $this->params['order_id'], 'payment_service' => 'teb-pos']),
+            'pan' => $this->params['card_no'],
+            'refreshtime' => '5',
+            'rnd' => $rnd,
+            'storetype' => '3D_PAY',
+            'taksit' => $taksit,
+            'TranType' => 'Auth'
         ];
-        return base64_encode(pack('H*', sha1(implode('', $map))));
+
+        // Build hash string maintaining order
+        $hashString = '';
+        $isFirst = true;
+        foreach ($orderedMap as $value) {
+            $escapedValue = str_replace("|", "\\|", str_replace("\\", "\\\\", $value));
+            if ($isFirst) {
+                $hashString = $escapedValue;
+                $isFirst = false;
+            } else {
+                $hashString .= "|" . $escapedValue;
+            }
+        }
+        $hashString .= "|" . $this->storeKey;
+
+        return base64_encode(pack('H*', hash('sha512', $hashString)));
     }
 
     public function hydrateParams(array $params)
