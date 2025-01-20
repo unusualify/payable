@@ -19,9 +19,9 @@ class LaravelServiceProvider extends ServiceProvider
     public function boot()
     {
         if ($this->app->runningInConsole()) {
-            // $this->publishes([
-            //    __DIR__ . '/../config/config.php' => config_path('payable.php'),
-            // ], 'config');
+            $this->publishes([
+               __DIR__ . '/../config/config.php' => config_path('payable.php'),
+            ], 'config');
             $this->publishMigrations();
         }
         // dd(__DIR__.'/../routes/web.php');
@@ -49,6 +49,10 @@ class LaravelServiceProvider extends ServiceProvider
 
         $this->registerProviders();
 
+        $this->mergeConfigFrom(
+            __DIR__.'/../config/config.php',
+            'payable'
+        );
     }
 
     /**
