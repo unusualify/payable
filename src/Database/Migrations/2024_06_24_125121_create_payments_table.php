@@ -33,7 +33,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists(config('payable.tables.payments', 'unfy_payments'));
+        Schema::dropIfExists(config('payable.tables.payments', 'umod_payments'));
 
 
     }

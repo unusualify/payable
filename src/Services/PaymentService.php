@@ -63,7 +63,10 @@ abstract class PaymentService extends URequest{
         // dd($this->config,$this->getConfigName());
         // dd($this->config);
         // dd($this->config, $this->getConfigName());
+        // dd($this->mode, $this->config);
+
         $this->mode = $this->config['mode'];
+        // dd($this->mode, $this->config);
     }
 
     public function getConfigName()
