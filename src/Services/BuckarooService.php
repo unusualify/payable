@@ -66,7 +66,7 @@ class BuckarooService extends PaymentService
         );
         $params = $this->hydrateParams($params);
         // dd($params);
-        //TODO: create record
+        // dd($params);
         $params['returnURL'] = $params['returnURL'] . '&payment_id=' . $payment->id;
         $resp = $this->buckaroo->method($this->service)->pay($params);
         if($resp->hasRedirect()){
@@ -76,7 +76,7 @@ class BuckarooService extends PaymentService
             return Redirect::to($redirectUrl);
 
         }else if ($resp->hasError()){
-            dd($resp->getSomeError());
+            // dd($resp->getSomeError());
             return $resp->getSomeError();
         }else{
             return 'Something went wrong please contact with administrator.';
@@ -91,11 +91,14 @@ class BuckarooService extends PaymentService
      */
     public function hydrateParams(array $params) : array
     {
+        // dd($params);
         $params = [
             'returnURL' => route('payable.response').'?payment_service='. $this->service, //Returns to this url aftere payment.
             'issuer' => 'ABNANL2A', // Selected bank ??
             'amountDebit' => $params['paid_price'], // The amount we want to charge
             'invoice' => $params['order_id'], // Each payment must contain a unique invoice number
+            'custom_fields' => $params['custom_fields']
+
         ];
 
         return $params;
