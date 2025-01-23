@@ -445,6 +445,25 @@ class IyzicoService extends PaymentService
 
     public function handleResponse(HttpRequest $request)
     {
+
+        $paramsToRemoved = [
+            'card_name',
+            'card_no',
+            'card_year',
+            'card_month',
+            'card_cvv',
+            'user_ip',
+            'oid',
+            'orderid',
+            'terminaluserid',
+            'txnamount',
+            'terminalid',
+        ];
+        // dd($request->all());
+        $resp = array_filter($request->all(), function($key) use ($paramsToRemoved) {
+            return !in_array($key, $paramsToRemoved);
+        }, ARRAY_FILTER_USE_KEY);
+
         if ($request->status == 'success') {
             $params = [
                 'status' => 'success',
@@ -463,9 +482,11 @@ class IyzicoService extends PaymentService
         }else{
             $params = [
                 'status' => 'fail',
-                'payment_id' => $request->paymentId,
-                'conversation_id' => $request->conversationId,
-                'conversation_data' => $request->conversationData
+                'id' => $request->query('payment_id'),
+                'service_payment_id' => $request->paymentId,
+                'order_id' => $request->order_id,
+                'order_data' => $request->all(),
+                'custom_fields' => $resp['custom_fields'],
             ];
         }
         // dd($params);

@@ -30,6 +30,9 @@ php artisan vendor:publish --provider="Unusualify\Payable\LaravelServiceProvider
 
 This will create a `payable.php` configuration file in your `config` directory.
 
+In the `payable.php` configuration file, you need to specify a route name for return_url. In default it is set as `payment.response`.
+You should create a GET & POST routes for the same url and specify a a route name.
+
 ## Usage
 
 ### Basic Usage

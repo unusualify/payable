@@ -79,7 +79,6 @@ protected $params = [];
             'installment' => $this->params['installment'],
             'parameters' => json_encode($this->params)
         ]
-        // 
     );
 
     $returnUrl = route('payable.response').'?payment_service=teb-common-pos'.'&payment_id='.$payment->id;
@@ -152,9 +151,27 @@ protected $params = [];
   public function hydrateParams(array $params)
   {
   }
-  
+
   public function handleResponse(HttpRequest $request){
     // dd($request);
+    $paramsToRemoved = [
+        'card_name',
+        'card_no',
+        'card_year',
+        'card_month',
+        'card_cvv',
+        'user_ip',
+        'oid',
+        'orderid',
+        'terminaluserid',
+        'txnamount',
+        'terminalid',
+    ];
+    // dd($request->all());
+    $resp = array_filter($request->all(), function($key) use ($paramsToRemoved) {
+        return !in_array($key, $paramsToRemoved);
+    }, ARRAY_FILTER_USE_KEY);
+
     if($request->MdStatus == 1 && $request->BankResponseCode == '00'){
 
         $params = [
@@ -171,7 +188,7 @@ protected $params = [];
             $request->all()
         );
         // dd($custom_fields);
-        
+
         $params['custom_fields'] = $custom_fields;
         // dd($params);
     }else{
@@ -180,10 +197,11 @@ protected $params = [];
         // dd($payment);
         $params = [
             'status' => 'fail',
-            'id' => $payment->id,
-            'payment_id' => $request->paymentId,
-            'conversation_id' => $request->conversationId,
-            'conversation_data' => $request->conversationData
+            'id' => $request->query('payment_id'),
+            'service_payment_id' => $request->paymentId,
+            'order_id' => $request->order_id,
+            'order_data' => $request->all(),
+            'custom_fields' => $resp['custom_fields'],
         ];
         // dd($this->updateRecord(
         //     $params['id'],

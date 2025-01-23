@@ -280,17 +280,24 @@ class GarantiPosService extends PaymentService{
             $params['custom_fields']= $resp['custom_fields'];
 
         }else{
+            // dd($request);
             $params = [
                 'status' => 'fail',
-                'payment_id' => $request->paymentId,
-                'conversation_id' => $request->conversationId,
-                'conversation_data' => $request->conversationData
+                'id' => $request->query('payment_id'),
+                'service_payment_id' => $request->paymentId,
+                'order_id' => $request->order_id,
+                'order_data' => $request->all(),
+                'custom_fields' => $resp['custom_fields'],
             ];
+            // $params['custom_fields'] = $resp['custom_fields'];
+
             $response = $this->updateRecord(
                 $params['id'],
                 'FAILED',
                 $resp
             );
+
+
         }
         return $this->generatePostForm($params, route(config('payable.return_url')));
     }
