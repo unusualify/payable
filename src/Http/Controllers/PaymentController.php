@@ -71,19 +71,10 @@ class PaymentController extends Controller
   }
 
   public function response(Request $request){
-    // dd(auth()->user());
-    // return redirect()->route('admin.system.system_payment.test-gunes');
-    // $test = config('payable.session_key').'_payment_service';
-    // dd(session()->all());
 
-    // dd($paymentService, $test);
-    // dd(Session::get(config('payable.session_key'). '.payment_service'));
-    // $payment = new Payable(Session::get(config('payable.session_key'). 'payment_service'));
-    // dd($request->only(['payment_service'])['payment_service']);
     $payment = new Payable($request->only(['payment_service'])['payment_service']);
-    // dd($request->only(['payment_service'])['payment_service'], $payment, $payment->handleResponse($request));
-    // dd($payment);
+
     return $payment->handleResponse($request);
-    // dd($response);
+
   }
 }
