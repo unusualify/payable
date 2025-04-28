@@ -76,9 +76,7 @@ class TebPosService extends PaymentService{
         [
             'payment_gateway' => $this->serviceName,
             'order_id' => $this->params['order_id'],
-            'payment_service_id' => $this->params['payment_service_id'],
-            'price_id' => $this->params['price_id'],
-            'currency_id' => $this->params['currency']->id,
+            'currency' => $this->params['currency'],
             'email' => '', //Add email to data
             'installment' => $this->params['installment'],
             'amount' => $this->params['paid_price'],

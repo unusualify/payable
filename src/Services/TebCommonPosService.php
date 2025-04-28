@@ -71,11 +71,9 @@ protected $params = [];
         [
             'serviceName' => $this->serviceName,
             'order_id' => $this->params['order_id'],
-            'currency_id' => $this->params['currency']->id,
+            'currency' => $this->params['currency'],
             'amount' => $this->params['paid_price'],
-            'email' => '', //Add email to data
-            'price_id' => $this->params['price_id'],
-            'payment_service_id' => $this->params['payment_service_id'],
+            'email' => '', //Add email to data        
             'installment' => $this->params['installment'],
             'parameters' => json_encode($this->params)
         ]

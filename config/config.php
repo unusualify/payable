@@ -47,11 +47,13 @@ return [
         'garantipos' => [
             'mode' => env('GARANTI_POS_MODE', 'sandbox'),
             'sandbox' => [
+                'company_name' => env('GARANTI_TEST_COMPANY_NAME', ''),
                 'url' => env('GARANTI_TEST_PAYMENT_URL', 'sandbox'),
                 'merchant_id' => env('GARANTI_TEST_MERCHANT_ID', ''),
                 'terminal_id' => env('GARANTI_TEST_3D_TERMINAL_ID', ''),
                 '3dpay_terminal_id' => env('GARANTI_TEST_3D_PAY_TERMINAL_ID', ''),
                 '3d_oos_pay_terminal_id' => env('GARANTI_TEST_3D_OOS_PAY_TERMINAL_ID', ''),
+                'terminal_userid' => env('GARANTI_TEST_TERMINAL_USERID', ''),
                 'provision_userid' => env('GARANTI_TEST_PROV_USERID', ''),
                 'provision_pw' => env('GARANTI_TEST_PROV_PW', ''),
                 'secure_key' => env('GARANTI_TEST_SECURE_KEY', ''),
@@ -61,12 +63,14 @@ return [
 
             ],
             'live' => [
+                'company_name' => env('GARANTI_COMPANY_NAME', ''),
                 'url' => env('GARANTI_PAYMENT_URL', 'sandbox'),
                 'merchant_id' => env('GARANTI_MERCHANT_ID', ''),
                 'terminal_id' => env('GARANTI_3D_TERMINAL_ID', ''),
                 '3d_terminal_id' => env('GARANTI_3D_TERMINAL_ID', ''),
                 '3d_oos_pay_terminal_id' => env('GARANTI_3D_PAY_TERMINAL_ID', ''),
                 'provision_userid' => env('GARANTI_PROV_USER_ID', ''),
+                'terminal_userid' => env('GARANTI_TERMINAL_USERID', ''),
                 'provision_pw' => env('GARANTI_PROV_USER_PW', ''),
                 'secure_key' => env('GARANTI_SECURE_KEY', ''),
                 'pay_provision_userid' => env('GARANTIPAY_PROV_USER_ID', ''),

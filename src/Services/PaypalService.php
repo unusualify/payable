@@ -223,8 +223,7 @@ class PaypalService extends PaymentService
             'order_id' => $params['order_id'],
             'email' => $params['user_email'],
             'installment' => $params['installment'],
-            'payment_service_id' => $params['payment_service_id'],
-            'price_id' => $params['price_id'],
+            'currency' => $params['currency'],
             'parameters' => json_encode($params),
         ];
 

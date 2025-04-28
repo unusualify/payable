@@ -364,10 +364,9 @@ class IyzicoService extends PaymentService
             'amount' => $params['price'],
             'email' => $params['user_email'],
             'installment' => $params['installment'],
-            'payment_service_id' => $params['payment_service_id'],
-            'price_id' => $params['price_id'],
             'parameters' => json_encode($params),
             'order_id' => $params['order_id'],
+            'currency' => $params['currency'],
         ];
 
         return $recordParams;
