@@ -95,7 +95,6 @@ class GarantiPosService extends PaymentService{
         $this->paymentType = $this->config['payment_type'];
 
         $this->params = [
-            "companyname" => $tempConfig['company_name'],
             "refreshtime" => $this->paymentRefreshTime,
             "secure3dsecuritylevel" => "3D_PAY",
             "txntype" => "sales",
@@ -188,6 +187,7 @@ class GarantiPosService extends PaymentService{
         $params['cardexpiredatemonth'] = $params['card_month'];
         $params['cardexpiredateyear'] = $this->formatCardYear($params['card_year']);
         $params['cardcvv2'] = $params['card_cvv'];
+        $params['companyname'] = $params['company_name'];
         return $params;
     }
 
@@ -221,7 +221,7 @@ class GarantiPosService extends PaymentService{
 
             $response = $this->updateRecord(
                 $params['id'],
-                'COMPLETED',
+                self::STATUS_COMPLETED,
                 $resp
             );
 
@@ -236,7 +236,7 @@ class GarantiPosService extends PaymentService{
 
             $response = $this->updateRecord(
                 $params['id'],
-                'FAILED',
+                self::STATUS_FAILED,
                 $resp
             );
 

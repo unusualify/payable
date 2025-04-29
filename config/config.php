@@ -47,7 +47,6 @@ return [
         'garantipos' => [
             'mode' => env('GARANTI_POS_MODE', 'sandbox'),
             'sandbox' => [
-                'company_name' => env('GARANTI_TEST_COMPANY_NAME', ''),
                 'url' => env('GARANTI_TEST_PAYMENT_URL', 'sandbox'),
                 'merchant_id' => env('GARANTI_TEST_MERCHANT_ID', ''),
                 'terminal_id' => env('GARANTI_TEST_3D_TERMINAL_ID', ''),
@@ -63,7 +62,6 @@ return [
 
             ],
             'live' => [
-                'company_name' => env('GARANTI_COMPANY_NAME', ''),
                 'url' => env('GARANTI_PAYMENT_URL', 'sandbox'),
                 'merchant_id' => env('GARANTI_MERCHANT_ID', ''),
                 'terminal_id' => env('GARANTI_3D_TERMINAL_ID', ''),

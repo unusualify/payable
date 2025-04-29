@@ -30,6 +30,12 @@ abstract class PaymentService extends URequest{
 
     public $serviceName;
 
+    public const STATUS_PENDING = 'PENDING';
+    public const STATUS_COMPLETED = 'COMPLETED';
+    public const STATUS_FAILED = 'FAILED';
+    public const STATUS_CANCELLED = 'CANCELLED';
+    public const STATUS_REFUNDED = 'REFUNDED';
+
     protected $headers = [
         'Authorization' => 'Bearer',
         'Content-Type' => 'application/json',

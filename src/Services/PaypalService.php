@@ -155,7 +155,7 @@ class PaypalService extends PaymentService
         // dd($data);
         $custom_fields = $this->updateRecord(
             $params['payment_id'],
-            'COMPLETED',
+            self::STATUS_COMPLETED,
             $data
         );
         $resp->custom_fields = $custom_fields;
@@ -188,11 +188,11 @@ class PaypalService extends PaymentService
         // dd($this->options);
         $resp =  $this->doPaypalRequest();
 
-        if(json_decode($resp)->status == 'COMPLETED')
+        if(json_decode($resp)->status == self::STATUS_COMPLETED)
         {
         $this->updateRecord(
             $params['order_id'],
-            'REFUNDED',
+            self::STATUS_REFUNDED,
             $resp
         );
 

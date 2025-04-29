@@ -292,7 +292,7 @@ class IyzicoService extends PaymentService
         if((json_decode($resp))->status == 'success'){
             $custom_fields = $this->updateRecord(
                 $params['id'],
-                'COMPLETED',
+                self::STATUS_COMPLETED,
                 $resp
             );
             if($custom_fields)

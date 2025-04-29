@@ -54,7 +54,7 @@ class IdealService extends BuckarooService{
 
             $custom_fields = $this->updateRecord(
                 $params['id'],
-                'COMPLETED',
+                self::STATUS_COMPLETED,
                 json_encode($request->all()),
             );
             // dd($custom_fields);
@@ -68,7 +68,7 @@ class IdealService extends BuckarooService{
             // dd($resp);
             $custom_fields = $this->updateRecord(
                 $params['id'],
-                'FAILED',
+                self::STATUS_FAILED,
                 json_encode($request->all()),
             );
             // dd($custom_fields);

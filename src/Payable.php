@@ -20,8 +20,6 @@ class Payable {
         $serviceName = $this->generateClassPath();
         $this->service = new $serviceName();
         Session::put(config('payable.session_key').'_payment_service', $slug);
-        // dd(Session::all());
-
     }
 
 
