@@ -45,12 +45,12 @@ class Payable {
 
     public function cancel($params)
     {
-        $this->service->cancel($params);
+        return $this->service->cancel($params);
     }
 
     public function refund($params)
     {
-        $this->service->refund($params);
+        return $this->service->refund($params);
     }
 
     public function formatPrice($price)

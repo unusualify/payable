@@ -179,14 +179,13 @@ protected $params = [];
             'order_id' => $request->order_id,
             'order_data' => $request->all()
         ];
-        $custom_fields = $this->updateRecord(
+       $this->updateRecord(
             $params['id'],
             self::STATUS_COMPLETED,
             $request->all()
         );
 
-        $params['custom_fields'] = $custom_fields;
-    }else{
+      }else{
         $payment = Payment::where('order_id',$request->input('OrderId'))->first();
         $params = [
             'status' => 'fail',
@@ -202,7 +201,6 @@ protected $params = [];
             $request->all()
         );
 
-        $params['custom_fields'] = $response;
     }
 
     return $this->generatePostForm($params, route(config('payable.return_url')));
