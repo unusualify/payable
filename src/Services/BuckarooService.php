@@ -24,16 +24,7 @@ class BuckarooService extends PaymentService
 
         $this->buckaroo = new BuckarooClient($this->websiteKey, $this->secretKey);
 
-    //   $buckaroo = new BuckarooClient($this->websiteKey, $this->secretKey);
 
-    //   $buckaroo->payment('ideal') // Input the desire payment method.
-    //     ->pay([
-    //         'returnURL' => 'https://example.com/return', //Returns to this url aftere payment.
-    //         'issuer'          => 'ABNANL2A', // Selected bank
-    //         'amountDebit'   => 10, // The amount we want to charge
-    //         'invoice'       => 'UNIQUE-INVOICE-NO', // Each payment must contain a unique invoice number
-    //     ]);
-      //   dd(get_class_methods($this->buckaroo));
     }
 
     /**
@@ -60,7 +51,6 @@ class BuckarooService extends PaymentService
      */
     public function pay(array $params)
     {
-        // dd($params);
         $payment = $this->createRecord(
             $this->hydrateRecordParams($params)
         );
@@ -70,7 +60,6 @@ class BuckarooService extends PaymentService
         $params['returnURL'] = $params['returnURL'] . '&payment_id=' . $payment->id;
         $resp = $this->buckaroo->method($this->service)->pay($params);
         if($resp->hasRedirect()){
-            //TODO: redirect to ideal $resp
             $redirectUrl = $resp->getRedirectUrl();
 
             return Redirect::to($redirectUrl);
@@ -82,6 +71,7 @@ class BuckarooService extends PaymentService
             return 'Something went wrong please contact with administrator.';
         }
     }
+
 
     /**
      * hydrateParams
@@ -97,8 +87,6 @@ class BuckarooService extends PaymentService
             'issuer' => 'ABNANL2A', // Selected bank ??
             'amountDebit' => $params['paid_price'], // The amount we want to charge
             'invoice' => $params['order_id'], // Each payment must contain a unique invoice number
-            'custom_fields' => $params['custom_fields']
-
         ];
 
         return $params;
@@ -107,7 +95,7 @@ class BuckarooService extends PaymentService
     public function hydrateRecordParams(array $params) : array
     {
         return $recordParams = [
-            'amount' => $params['price'],
+            'amount' => $params['paid_price'],
             'email' => $params['user_email'],
             'installment' => $params['installment'],
             'parameters' => json_encode($params),
