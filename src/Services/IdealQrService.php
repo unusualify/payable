@@ -36,7 +36,7 @@ class IdealQrService extends BuckarooService{
         
         $params['returnURL'] = route('payable.response').'?payment_service='. $this->service . '&payment_id=' . $payment->id;
         $response = $this->buckaroo->method('ideal_qr')->generate([
-            'description' => 'Test purchase',
+            'description' => $params['description'] ?? 'Purchase',
             'returnURL' => $params['returnURL'],
             'minAmount' =>  $params['paid_price'],
             'maxAmount' =>  $params['paid_price'],
@@ -45,7 +45,7 @@ class IdealQrService extends BuckarooService{
             'isOneOff' => true,
             'amount' => $params['paid_price'],
             'amountIsChangeable' => false,
-            'expiration' => '2030-09-30',
+            'expiration' => date('Y-m-d', strtotime('+1 day')),
             'isProcessing' => false,
         ]);
 

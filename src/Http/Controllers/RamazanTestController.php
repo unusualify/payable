@@ -127,6 +127,7 @@ class RamazanTestController extends Controller
             'issuer' => 'ABNANL2A',
             'order_id' => 'TEST' . uniqid(),
             'user_email' => 'test@example.com',
+            'description' => 'Test purchase',
             'user_ip' => request()->ip(),
         ];
         
