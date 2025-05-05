@@ -25,6 +25,7 @@ class PaypalService extends PaymentService
     protected $verb;
     protected $type;
     public $apiEndPoint;
+    protected $service;
     /**
      * Paypal constructor.
      *
@@ -45,6 +46,7 @@ class PaypalService extends PaymentService
         $this->httpBodyParam = 'form_params';
         $this->options = [];
         $this->setRequestHeader('Accept', 'application/json');
+        $this->service = 'paypal';
 
         parent::__construct(
             $this->mode,
@@ -122,9 +124,9 @@ class PaypalService extends PaymentService
 
         }
         $params = [
-            'status' => 'fail',
+            'status' => $this::RESPONSE_STATUS_ERROR,
             'id' => $payment->id,
-            'payment_service' => 'paypal',
+            'payment_service' => $this->service,
             'order_id' => $params['order_id'],
             'order_data' => json_encode($response)
         ];
@@ -163,41 +165,82 @@ class PaypalService extends PaymentService
     // string $capture_id, string $invoice_id, float $amount, string $note, $priceID
     public function refund(array $params)
     {
+        if(empty($params['payment_id'])){
+            return [
+                'status' => $this::RESPONSE_STATUS_ERROR,
+                'id' => $params['payment_id'],
+                'payment_service' => $this->service,
+                'message' => 'Payment id is required'
+            ];
+        }
+        
+        $payment = Payment::find($params['payment_id']);
+        if(empty($payment)){
+            return [
+                'status' => $this::RESPONSE_STATUS_ERROR,
+                'id' => $params['payment_id'],
+                'payment_service' => $this->service,
+                'message' => 'Payment not found'
+            ];
+        }
+
+        if($payment->status != 'COMPLETED'){
+            return [
+                'status' => $this::RESPONSE_STATUS_ERROR,
+                'id' => $params['payment_id'],
+                'payment_service' => $this->service,
+                'message' => 'Payment is not completed'
+            ];
+        }
+
+        if(empty($params['capture_id'])){
+            $payment_response = json_decode($payment->response); 
+            if (isset($payment_response->purchase_units[0]->payments->captures[0]->id)) {
+                $params['capture_id'] = $payment_response->purchase_units[0]->payments->captures[0]->id;
+            } else {
+                return [
+                    'status' => $this::RESPONSE_STATUS_ERROR,
+                    'id' => $params['payment_id'],
+                    'payment_service' => $this->service,
+                    'message' => 'Capture ID not found in payment response'
+                ];
+            }
+        }
+
         $this->apiEndPoint = "v2/payments/captures/{$params['capture_id']}/refund";
         $this->verb = 'post';
         $this->type = 'raw';
 
-    
         $this->options['request_body'] = '{}';
         $this->headers['Content-Type'] = 'application/json';
 
-        $response =  $this->doPaypalRequest();
+        $response = $this->doPaypalRequest();
         if(is_string($response)){
             $response = json_decode($response);
         }
 
-        if(isset($response->status) && $response->status == "COMPLETED")
-        {
+        if(isset($response->status) && $response->status == "COMPLETED") {
             $this->updateRecord(
                 $params['payment_id'],
                 self::STATUS_REFUNDED,
                 $response
             );
             $return_params = [
-                'status' => 'success',
+                'status' => $this::RESPONSE_STATUS_SUCCESS,
                 'id' => $params['payment_id'],
-                'payment_service' => 'paypal',
-                'order_data' => json_encode($response)
+                'payment_service' => $this->service,
+                'order_data' => json_encode($response),
+                'message' => 'Refunded successfully'
             ];
-            
-        }else{
+        } else {
+            $error_content = json_decode($response->getContent(), true);
             $return_params = [
-                'status' => 'fail',
+                'status' => $this::RESPONSE_STATUS_ERROR,
                 'id' => $params['payment_id'],
-                'payment_service' => 'paypal',
-                'order_data' => json_encode($response)
+                'payment_service' => $this->service,
+                'order_data' => json_encode($response),
+                'message' => isset($error_content['error']) ? $error_content['error'] : 'Refund failed'
             ];
-
         }
         return $return_params;
     }
@@ -224,17 +267,17 @@ class PaypalService extends PaymentService
                 $response
             );
             $return_params = [
-                'status' => 'success',
+                'status' => $this::RESPONSE_STATUS_SUCCESS,
                 'id' => $params['payment_id'],
-                'payment_service' => 'paypal',
+                'payment_service' => $this->service,
                 'order_data' => json_encode($response)
             ];
             
         }else{
             $return_params = [
-                'status' => 'fail',
+                'status' => $this::RESPONSE_STATUS_ERROR,
                 'id' => $params['payment_id'],
-                'payment_service' => 'paypal',
+                'payment_service' => $this->service,
                 'order_data' => json_encode($response)
             ];
 
@@ -262,6 +305,7 @@ class PaypalService extends PaymentService
             'installment' => $params['installment'],
             'currency' => $params['currency'],
             'parameters' => json_encode($params),
+            'payment_gateway' => $this->serviceName,
         ];
 
         //If authorization will be used
@@ -348,7 +392,7 @@ class PaypalService extends PaymentService
                     json_encode($response)
                 );
                 $params = [
-                    'status' => 'success',
+                    'status' => $this::RESPONSE_STATUS_SUCCESS,
                     'id' => $allParams['payment_id'],
                     'payment_service' => $allParams['payment_service'],
                     'order_id' => $response->purchase_units[0]->payments->captures[0]->custom_id,
@@ -363,7 +407,7 @@ class PaypalService extends PaymentService
                     json_encode($response)
                 );
                 $params = [
-                    'status' => 'fail',
+                    'status' => $this::RESPONSE_STATUS_ERROR,
                     'id' => $allParams['payment_id'],
                     'payment_service' => $allParams['payment_service'],
                     'payer_id' => isset($allParams['PayerID'] )? $allParams['PayerID'] : '',
@@ -377,7 +421,7 @@ class PaypalService extends PaymentService
             $payment = $this->updateRecord($allParams['payment_id'], self::STATUS_FAILED, json_encode(request()->all()));
 
             $params = [
-                    'status' => 'fail',
+                    'status' => $this::RESPONSE_STATUS_ERROR,
                     'id' => $allParams['payment_id'],
                     'payment_service' => $allParams['payment_service'],
                     'payer_id' => isset($allParams['PayerID'] )? $allParams['PayerID'] : '',

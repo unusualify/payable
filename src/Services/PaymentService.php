@@ -36,6 +36,9 @@ abstract class PaymentService extends URequest{
     public const STATUS_CANCELLED = 'CANCELLED';
     public const STATUS_REFUNDED = 'REFUNDED';
 
+    public const RESPONSE_STATUS_SUCCESS = 'success';
+    public const RESPONSE_STATUS_ERROR = 'error';
+
     protected $headers = [
         'Authorization' => 'Bearer',
         'Content-Type' => 'application/json',

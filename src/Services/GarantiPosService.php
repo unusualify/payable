@@ -113,7 +113,7 @@ class GarantiPosService extends PaymentService{
         $this->params['txntimestamp'] = time();
         $this->params += $params;
         $payment = $this->createRecord([
-            'serviceName' => $this->serviceName,
+            'payment_gateway' => $this->serviceName,
             'order_id' => $this->params['order_id'],
             'currency' => $this->params['currency'],
             'amount' => $this->params['paid_price'],
@@ -212,7 +212,7 @@ class GarantiPosService extends PaymentService{
 
         if($request->mdstatus == 1){
             $params = [
-                'status' => 'success',
+                'status' => $this::RESPONSE_STATUS_SUCCESS,
                 'id' => $request->query('payment_id'),
                 'payment_service' => $request->payment_service,
                 'order_id' => $request->order_id,
@@ -227,7 +227,7 @@ class GarantiPosService extends PaymentService{
 
         }else{
             $params = [
-                'status' => 'fail',
+                'status' => $this::RESPONSE_STATUS_ERROR,
                 'id' => $request->query('payment_id'),
                 'payment_service' => $request->payment_service,
                 'order_id' => $request->order_id,

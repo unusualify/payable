@@ -213,7 +213,7 @@ class TebPosService extends PaymentService{
 
         if($request->MdStatus == 1 && $request->BankResponseCode == '00'){
             $params = [
-                'status' => 'success',
+                'status' => $this::RESPONSE_STATUS_SUCCESS,
                 'id' => $request->query('payment_id'),
                 'service_payment_id' => $request->paymentId,
                 'order_id' => $request->conversationId,
@@ -229,7 +229,7 @@ class TebPosService extends PaymentService{
         }else{
 
             $params = [
-                'status' => 'fail',
+                'status' => $this::RESPONSE_STATUS_ERROR,
                 'id' => $request->query('payment_id'),
                 'service_payment_id' => $request->paymentId,
                 'order_id' => $request->order_id,
