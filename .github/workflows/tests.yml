@@ -1,0 +1,79 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Tests
+
+on:
+  push:
+    branches:
+      - dev
+    paths-ignore:
+      - '**.md'
+      - '**.yml'
+      - '**.yaml'
+  pull_request:
+    branches:
+      - main
+      - dev
+    paths-ignore:
+      - '**.md'
+      - '**.yml'
+      - '**.yaml'
+jobs:
+  laravel_changes:
+    name: Check Laravel changes
+    runs-on: ubuntu-latest
+    outputs:
+      is_changed: ${{ steps.changed-files.outputs.any_changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v35
+        with:
+          files: |
+            src/**
+            tests/**
+            routes/**
+            config/**
+  laravel:
+    needs: laravel_changes
+    runs-on: ubuntu-latest
+    if: ${{ needs.laravel_changes.outputs.is_changed == 'true' }}
+    strategy:
+      fail-fast: true
+      matrix:
+        # os: [ubuntu-latest]
+        php: [8.1, 8.2, 8.3]
+        laravel: [10.x]
+        stability: [ prefer-stable ]
+        dependency-version: [ prefer-stable ]
+        include:
+          - laravel: 10.*
+            testbench: ^8.0
+
+    name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.dependency-version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
+          coverage: none
+
+      - name: Setup problem matchers
+        run: |
+            echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+            echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+      - name: Install dependencies
+        run: |
+            composer install
+            # composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
+            composer require "laravel/framework:${{ matrix.laravel }}" --no-interaction --no-update
+            composer update --${{ matrix.stability }} --prefer-dist --no-interaction
+      - name: Execute Laravel tests
+        run: composer test
+

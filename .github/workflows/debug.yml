@@ -1,0 +1,45 @@
+name: Workflow test
+
+on:
+  push:
+    branches:
+      - 'debug/**'
+
+permissions:
+  contents: write
+
+jobs:
+
+  debug:
+    name: Debug
+    # needs: laravel
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: json, dom, curl, libxml, mbstring
+          coverage: none
+
+      - name: Install Pint
+        run: composer global require laravel/pint
+
+      - name: Run Pint
+        run: pint
+
+      - name: Commit linted files
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git diff --quiet && git diff --staged --quiet || git commit -m "style(laravel): lint coding styles"
+          git push
+          git checkout main
+          git merge --no-ff ${{ github.ref }}
+          git log -3

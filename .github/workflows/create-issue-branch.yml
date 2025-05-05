@@ -1,0 +1,142 @@
+name: Create Issue Branch
+
+on:
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  create_branch:
+    runs-on: ubuntu-latest
+    if: |
+      contains(github.event.issue.labels.*.name, 'accepted') &&
+      (contains(github.event.issue.labels.*.name, 'enhancement') || contains(github.event.issue.labels.*.name, 'bug'))
+    steps:
+      - name: Parse Issue
+        if: contains(github.event.issue.labels.*.name, 'bug')
+        uses: stefanbuck/github-issue-parser@v3
+        id: issue-parser
+        # with:
+        #   template-path: .github/ISSUE_TEMPLATE/1-bug.yml # optional but recommended
+
+      - name: Print Issue Body
+        if: contains(github.event.issue.labels.*.name, 'bug')
+        run: cat ${HOME}/issue-parser-result.json
+
+      - name: Extract Issue Details
+        id: extract
+        run: |
+          SEVERITY=""
+          if [[ "${{ contains(github.event.issue.labels.*.name, 'bug') }}" == "true" ]]; then
+            SEVERITY="${{ steps.issue-parser.outputs.issueparser_severity }}"
+          fi
+          TITLE="${{ github.event.issue.title }}"
+          TITLE=$(echo "$TITLE" | awk -F ']:' '{print $NF}')
+          echo "title=$TITLE" >> $GITHUB_OUTPUT
+          echo "severity=$SEVERITY" >> $GITHUB_OUTPUT
+
+      - name: Determine Branch Type
+        id: prefix
+        run: |
+          SOURCE="dev"
+          if [[ "${{ contains(github.event.issue.labels.*.name, 'enhancement') }}" == "true" ]]; then
+            PREFIX="feature/"
+          elif [[ "${{ contains(github.event.issue.labels.*.name, 'bug') }}" == "true" ]]; then
+            SEVERITY=${{ steps.extract.outputs.severity }}
+            if [ "$SEVERITY" == "Critical" ]; then
+              PREFIX="hotfix/"
+              SOURCE="main"
+            else
+              PREFIX="bugfix/"
+            fi
+          else
+            PREFIX=""
+          fi
+
+          echo "Prefix: $PREFIX"
+          echo "Source: $SOURCE"
+
+          echo "prefix=$PREFIX" >> $GITHUB_OUTPUT
+          echo "source=$SOURCE" >> $GITHUB_OUTPUT
+
+      - name: Sanitize Branch Name
+        id: branch_name
+        run: |
+          TITLE="${{ steps.extract.outputs.title }}"
+          # Convert to lowercase, trim whitespace, replace multiple spaces/special chars with single hyphen
+          SANITIZED=$(echo "$TITLE" | \
+            tr '[:upper:]' '[:lower:]' | \
+            sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' | \
+            sed -e 's/[^[:alnum:]]/-/g' | \
+            sed -e 's/-\{2,\}/-/g' | \
+            sed -e 's/^-//' -e 's/-$//')
+          SANITIZED="$SANITIZED-issue-${{ github.event.issue.number}}"
+          echo "Branch Name: $SANITIZED"
+          echo "branch=$SANITIZED" >> $GITHUB_OUTPUT
+
+      - name: Checkout Branch
+        if: steps.prefix.outputs.prefix != ''
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.prefix.outputs.source }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git and Create Branch
+        if: steps.prefix.outputs.prefix != ''
+        run: |
+          # Configure Git
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          BRANCH_NAME="${{ steps.prefix.outputs.prefix }}${{ steps.branch_name.outputs.branch }}"
+
+          # Get the SHA of the source branch
+          SOURCE_SHA=$(git rev-parse ${{ steps.prefix.outputs.source }})
+
+          # Get Repository Node ID
+          REPO_ID=$(gh api graphql -f query='
+            query($owner:String!, $name:String!) {
+              repository(owner:$owner, name:$name) {
+                id
+              }
+            }' -f owner="${{ github.repository_owner }}" -f name="${{ github.event.repository.name }}" --jq '.data.repository.id')
+
+          # Get Issue Node ID (converting issue number to integer)
+          ISSUE_ID=$(gh api graphql -f query='
+            query($owner:String!, $name:String!, $number:Int!) {
+              repository(owner:$owner, name:$name) {
+                issue(number:$number) {
+                  id
+                }
+              }
+            }' -f owner="${{ github.repository_owner }}" -f name="${{ github.event.repository.name }}" -F number=${{ github.event.issue.number }} --jq '.data.repository.issue.id')
+
+          # Create branch using GraphQL API to properly link it to the issue
+          gh api graphql -f query='
+            mutation ($repositoryId: ID!, $issueId: ID!, $name: String!, $oid: GitObjectID!) {
+              createLinkedBranch(input: {repositoryId: $repositoryId, issueId: $issueId, name: $name, oid: $oid}) {
+                linkedBranch {
+                  id
+                }
+              }
+            }' \
+            -f repositoryId="$REPO_ID" \
+            -f issueId="$ISSUE_ID" \
+            -f name="$BRANCH_NAME" \
+            -f oid="$SOURCE_SHA"
+
+          # Fetch the new branch
+          git fetch origin "$BRANCH_NAME"
+          git checkout "$BRANCH_NAME"
+
+          # Create comment on issue linking the branch
+          gh issue comment "${{ github.event.issue.number }}" --body "Created branch [\`$BRANCH_NAME\`](https://github.com/${{ github.repository }}/tree/$BRANCH_NAME) for this issue."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
