@@ -66,16 +66,14 @@ protected $params = [];
     ];
 
     $this->params += $params;
-    // $currency = PriceService::find($priceID)->currency;
+
     $payment = $this->createRecord(
         [
-            'serviceName' => $this->serviceName,
+            'payment_gateway' => $this->serviceName,
             'order_id' => $this->params['order_id'],
-            'currency_id' => $this->params['currency']->id,
+            'currency' => $this->params['currency'],
             'amount' => $this->params['paid_price'],
-            'email' => '', //Add email to data
-            'price_id' => $this->params['price_id'],
-            'payment_service_id' => $this->params['payment_service_id'],
+            'email' => $this->params['user_email'], //Add email to data        
             'installment' => $this->params['installment'],
             'parameters' => json_encode($this->params)
         ]
@@ -92,9 +90,9 @@ protected $params = [];
       'callbackUrl' => $returnUrl,
       'orderId' => $this->params['order_id'],
       'isCommission' => 0,
-      'amount' => $this->params['paid_price'],
-      'totalAmount' => $this->params['paid_price'],
-      'currency' => $this->params['currency']->iso_4217_number,
+      'amount' => $this->formatPrice($this->params['paid_price']),
+      'totalAmount' => $this->formatPrice($this->params['paid_price']),
+      'currency' =>  Currency::getNumericCode($this->params['currency']),
       'installmentCount' => $this->params['installment'],
       'description' => '',
       'echo' => '',
@@ -167,7 +165,7 @@ protected $params = [];
         'txnamount',
         'terminalid',
     ];
-    // dd($request->all());
+
     $resp = array_filter($request->all(), function($key) use ($paramsToRemoved) {
         return !in_array($key, $paramsToRemoved);
     }, ARRAY_FILTER_USE_KEY);
@@ -175,60 +173,40 @@ protected $params = [];
     if($request->MdStatus == 1 && $request->BankResponseCode == '00'){
 
         $params = [
-            'status' => 'success',
+            'status' => $this::RESPONSE_STATUS_SUCCESS,
             'id' => $request->input('payment_id'),
-            'service_payment_id' => $request->paymentId,
-            'order_id' => $request->conversationId,
-            'order_data' => $request->conversationData
+            'payment_service' => $request->payment_service,
+            'order_id' => $request->order_id,
+            'order_data' => $request->all()
         ];
-        // dd($params['id']);
-        $custom_fields = $this->updateRecord(
+       $this->updateRecord(
             $params['id'],
-            'COMPLETED',
+            self::STATUS_COMPLETED,
             $request->all()
         );
-        // dd($custom_fields);
 
-        $params['custom_fields'] = $custom_fields;
-        // dd($params);
-    }else{
-        // dd($request->all());
+      }else{
         $payment = Payment::where('order_id',$request->input('OrderId'))->first();
-        // dd($payment);
         $params = [
-            'status' => 'fail',
+            'status' => $this::RESPONSE_STATUS_ERROR,
             'id' => $request->query('payment_id'),
-            'service_payment_id' => $request->paymentId,
+            'payment_service' => $request->payment_service,
             'order_id' => $request->order_id,
-            'order_data' => $request->all(),
-            'custom_fields' => $resp['custom_fields'],
+            'order_data' => $request->all()
         ];
-        // dd($this->updateRecord(
-        //     $params['id'],
-        //     'COMPLETED',
-        //     $request->all()
-        // ));
+
         $response = $this->updateRecord(
             $params['id'],
-            'COMPLETED',
+            self::STATUS_FAILED,
             $request->all()
         );
-        // dd($response);
-        $params['custom_fields'] = $response;
+
     }
 
     return $this->generatePostForm($params, route(config('payable.return_url')));
-
-    // [
-    //   "ClientId" => "1000000031"
-    //   "OrderId" => "ORD-6703c1081be43"
-    //   "MdStatus" => "1"
-    //   "ThreeDSessionId" => "P8A6AF94A670F48D396637ADABCF4AD200151EAE48E874FA0B80C5E3C1B6D9CDC"
-    //   "BankResponseCode" => "00"
-    //   "BankResponseMessage" => "İşlem onaylandı"
-    //   "RequestStatus" => "1"
-    //   "HashParameters" => "ClientId,ApiUser,OrderId,MdStatus,BankResponseCode,BankResponseMessage,RequestStatus"
-    //   "Hash" => "0EnLRun4qsYVI6QTfWMW+VK4wBSqkOxPdBqDJVxuzRlqDwSbGTf75wo4uassPX+69zGCEF4ZBOZ+Qlw5xq568w=="
-    // ]
     }
+
+    public function formatPrice($price){
+      return round($price, 2) * 100;
+  }
 }

@@ -292,22 +292,22 @@ class IyzicoService extends PaymentService
         if((json_decode($resp))->status == 'success'){
             $custom_fields = $this->updateRecord(
                 $params['id'],
-                'COMPLETED',
+                self::STATUS_COMPLETED,
                 $resp
             );
             if($custom_fields)
                 return [
-                    'status' => 'success',
+                    'status' => $this::RESPONSE_STATUS_SUCCESS,
                     'custom_fields' => $custom_fields
                 ];
             else
                 return [
-                    'status' => 'success',
+                    'status' => $this::RESPONSE_STATUS_SUCCESS,
                     'custom_fields' => null
                 ];
         }else{
             return [
-                'status' => 'error',
+                'status' => $this::RESPONSE_STATUS_ERROR,
                 'custom_fields' => null
             ];
         }
@@ -364,10 +364,9 @@ class IyzicoService extends PaymentService
             'amount' => $params['price'],
             'email' => $params['user_email'],
             'installment' => $params['installment'],
-            'payment_service_id' => $params['payment_service_id'],
-            'price_id' => $params['price_id'],
             'parameters' => json_encode($params),
             'order_id' => $params['order_id'],
+            'currency' => $params['currency'],
         ];
 
         return $recordParams;
@@ -466,7 +465,7 @@ class IyzicoService extends PaymentService
 
         if ($request->status == 'success') {
             $params = [
-                'status' => 'success',
+                'status' => $this::RESPONSE_STATUS_SUCCESS,
                 'id' => $request->query('payment_id'),
                 'service_payment_id' => $request->paymentId,
                 'order_id' => $request->conversationId,
@@ -481,7 +480,7 @@ class IyzicoService extends PaymentService
             // dd('finished');
         }else{
             $params = [
-                'status' => 'fail',
+                'status' => $this::RESPONSE_STATUS_ERROR,
                 'id' => $request->query('payment_id'),
                 'service_payment_id' => $request->paymentId,
                 'order_id' => $request->order_id,

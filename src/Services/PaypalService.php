@@ -25,6 +25,7 @@ class PaypalService extends PaymentService
     protected $verb;
     protected $type;
     public $apiEndPoint;
+    protected $service;
     /**
      * Paypal constructor.
      *
@@ -45,32 +46,31 @@ class PaypalService extends PaymentService
         $this->httpBodyParam = 'form_params';
         $this->options = [];
         $this->setRequestHeader('Accept', 'application/json');
+        $this->service = 'paypal';
 
         parent::__construct(
             $this->mode,
         );
 
         $this->getAccessToken();
-
-
     }
 
     public function doPaypalRequest(bool $decode = true)
     {
 
-        try {
+      
             if($this->verb == 'post'){
                 if(!isset($this->options['request_body'])){
                 $this->options['request_body'] = [];
                 }
-                // dd($this->options['request_body'], $this->type);
+
                 $response = $this->postReq(
                 $this->url,
                 $this->apiEndPoint,
                 $this->options['request_body'],
                 $this->headers,
                 $this->type,
-                'test'
+                $this->mode
                 );
             }else{ //Get request
                 $response = $this->getReq(
@@ -80,12 +80,9 @@ class PaypalService extends PaymentService
                 $this->headers
                 );
             }
+         
             return $response;
-        } catch (RuntimeException $t) {
-            $error = ($decode === false) || (Str::isJson($t->getMessage()) === false) ? $t->getMessage() : Utils::jsonDecode($t->getMessage(), true);
-
-            return ['error' => $error];
-        }
+        
 
     }
 
@@ -103,37 +100,51 @@ class PaypalService extends PaymentService
         $this->options['request_body'] = $allParams['request_params'];
         $this->type = 'json';
         $this->verb = 'post';
-        // dd($this->doPaypalRequest());
-        // dd($allParams);
-        $payment = $this->createRecord(
+       
+         $payment = $this->createRecord(
             $allParams['record_params']
-        );
-
+        ); 
         $this->options['request_body']['payment_source']['paypal']['experience_context']['return_url'] = $this->options['request_body']['payment_source']['paypal']['experience_context']['return_url']. '&payment_id='.$payment->id;
         $this->options['request_body']['payment_source']['paypal']['experience_context']['cancel_url'] = $this->options['request_body']['payment_source']['paypal']['experience_context']['cancel_url']. '&payment_id='.$payment->id;
+        
 
-        // dd($this->options['request_body']);
-        // dd($this);
-        $resp =  json_decode($this->doPaypalRequest());
-        // dd($this->doPaypalRequest());
-        // dd($resp);
-        $allParams['record_params']['order_id'] = $resp->id;
-        // dd($resp, $resp->id);
-        // dd($data);
-        // $currency = Price::find($priceID)->currency;
-        // dd($resp);
-        // dd(((int)$params['purchase_units'][0]['amount']['value']));
-        $redirectionUrl = $resp->links[1]->href;
-        if($redirectionUrl)
-            print(
-            "<script>window.open('" . $redirectionUrl . "', '_self')</script>"
-            );
-        exit;
-        // return $resp;
+        $response = $this->doPaypalRequest();
+          
+        if(is_string($response)){
+            $response = json_decode($response);
+        }
+
+        if (isset($response->id) && $response->id != null && isset($response->status) && $response->status == 'PAYER_ACTION_REQUIRED' && isset($response->links)) {
+                $allParams['record_params']['order_id'] = $params['order_id'];
+                foreach  ($response->links as $link) {
+                    if ($link->rel == 'payer-action') {
+                        return redirect()->away($link->href);
+                    }
+                }
+
+        }
+        $params = [
+            'status' => $this::RESPONSE_STATUS_ERROR,
+            'id' => $payment->id,
+            'payment_service' => $this->service,
+            'order_id' => $params['order_id'],
+            'order_data' => json_encode($response)
+        ];
+
+       $response = $this->updateRecord(
+            $params['id'],
+            self::STATUS_FAILED,
+            json_encode($response)
+        ); 
+        return $this->generatePostForm($params, route(config('payable.return_url')));
+
     }
 
     public function capturePayment($params, array $data = [])
     {
+        //If authorization will be used
+        // $this->apiEndPoint = "v2/checkout/orders/{$params['token']}/authorize";
+
         $this->apiEndPoint = "v2/checkout/orders/{$params['token']}/capture";
 
         $this->options['request_body'] = (object) $data;
@@ -141,67 +152,137 @@ class PaypalService extends PaymentService
         $this->verb = 'post';
 
         $this->type = 'json';
-        // dd($order_id);
-        // dd($this->doPaypalRequest());
-        // dd($this->options['request_body']);
-        $resp = json_decode($this->doPaypalRequest());
-        // dd($resp);
-        $data = [
-            'payment_source' => $resp->payment_source,
-            'purchase_units' => $resp->purchase_units,
-            'payer' => $resp->payer,
-            'links' => $resp->links
-        ];
-        // dd($data);
-        $custom_fields = $this->updateRecord(
-            $params['payment_id'],
-            'COMPLETED',
-            $data
-        );
-        $resp->custom_fields = $custom_fields;
-        // dd($resp);
-        return $resp;
-        // return $this->doPaypalRequest();
+        
+        $response = $this->doPaypalRequest();
+
+        if(is_string($response)){
+            $response = json_decode($response);
+        }
+      
+        return $response;
     }
 
     // string $capture_id, string $invoice_id, float $amount, string $note, $priceID
     public function refund(array $params)
     {
+        if(empty($params['payment_id'])){
+            return [
+                'status' => $this::RESPONSE_STATUS_ERROR,
+                'id' => $params['payment_id'],
+                'payment_service' => $this->service,
+                'message' => 'Payment id is required'
+            ];
+        }
+        
+        $payment = Payment::find($params['payment_id']);
+        if(empty($payment)){
+            return [
+                'status' => $this::RESPONSE_STATUS_ERROR,
+                'id' => $params['payment_id'],
+                'payment_service' => $this->service,
+                'message' => 'Payment not found'
+            ];
+        }
+
+        if($payment->status != 'COMPLETED'){
+            return [
+                'status' => $this::RESPONSE_STATUS_ERROR,
+                'id' => $params['payment_id'],
+                'payment_service' => $this->service,
+                'message' => 'Payment is not completed'
+            ];
+        }
+
+        if(empty($params['capture_id'])){
+            $payment_response = json_decode($payment->response); 
+            if (isset($payment_response->purchase_units[0]->payments->captures[0]->id)) {
+                $params['capture_id'] = $payment_response->purchase_units[0]->payments->captures[0]->id;
+            } else {
+                return [
+                    'status' => $this::RESPONSE_STATUS_ERROR,
+                    'id' => $params['payment_id'],
+                    'payment_service' => $this->service,
+                    'message' => 'Capture ID not found in payment response'
+                ];
+            }
+        }
+
         $this->apiEndPoint = "v2/payments/captures/{$params['capture_id']}/refund";
         $this->verb = 'post';
         $this->type = 'raw';
 
-        // $currency = Price::find($params['priceID'])->currency;
-        // dd($currency);
-        // $this->options['request_body'] = json_encode([
-        //   'amount' => [
-        //     'value' => $params['amount'],
-        //     'currency_code' => $currency->iso_4217
-        //   ],
-        //   'invoice_id' => $params['order_id'],
-        //   'note_to_payer' => "Refund of {$params['order_id']}"
-        // ]);
         $this->options['request_body'] = '{}';
-        // dd($this->options['request_body']);
         $this->headers['Content-Type'] = 'application/json';
 
-        // dd($this->options);
-        $resp =  $this->doPaypalRequest();
-
-        if(json_decode($resp)->status == 'COMPLETED')
-        {
-        $this->updateRecord(
-            $params['order_id'],
-            'REFUNDED',
-            $resp
-        );
-
-        return true;
-        }else{
-        return false;
+        $response = $this->doPaypalRequest();
+        if(is_string($response)){
+            $response = json_decode($response);
         }
 
-        // dd($resp);
+        if(isset($response->status) && $response->status == "COMPLETED") {
+            $this->updateRecord(
+                $params['payment_id'],
+                self::STATUS_REFUNDED,
+                $response
+            );
+            $return_params = [
+                'status' => $this::RESPONSE_STATUS_SUCCESS,
+                'id' => $params['payment_id'],
+                'payment_service' => $this->service,
+                'order_data' => json_encode($response),
+                'message' => 'Refunded successfully'
+            ];
+        } else {
+            $error_content = json_decode($response->getContent(), true);
+            $return_params = [
+                'status' => $this::RESPONSE_STATUS_ERROR,
+                'id' => $params['payment_id'],
+                'payment_service' => $this->service,
+                'order_data' => json_encode($response),
+                'message' => isset($error_content['error']) ? $error_content['error'] : 'Refund failed'
+            ];
+        }
+        return $return_params;
+    }
+    public function cancel(array $params)
+    {
+        $this->apiEndPoint = "v2/payments/authorizations/{$params['authorization_id']}/void";
+        $this->verb = 'post';
+        $this->type = 'raw';
+
+    
+        $this->options['request_body'] = '{}';
+        $this->headers['Content-Type'] = 'application/json';
+
+        $response =  $this->doPaypalRequest();
+        if(is_string($response)){
+            $response = json_decode($response);
+        }
+
+        if(isset($response->status) && $response->status == "VOIDED")
+        {
+            $this->updateRecord(
+                $params['payment_id'],
+                self::STATUS_CANCELLED,
+                $response
+            );
+            $return_params = [
+                'status' => $this::RESPONSE_STATUS_SUCCESS,
+                'id' => $params['payment_id'],
+                'payment_service' => $this->service,
+                'order_data' => json_encode($response)
+            ];
+            
+        }else{
+            $return_params = [
+                'status' => $this::RESPONSE_STATUS_ERROR,
+                'id' => $params['payment_id'],
+                'payment_service' => $this->service,
+                'order_data' => json_encode($response)
+            ];
+
+        }
+        return $return_params;
     }
 
     public function showFromSource($orderId)
@@ -210,45 +291,50 @@ class PaypalService extends PaymentService
         $this->apiEndPoint = "v2/checkout/orders/{$orderId}";
         $this->headers['Content-Type'] = 'application/json';
         $this->verb = 'get';
-        $resp = $this->doPaypalRequest();
+        $response = $this->doPaypalRequest();
 
-        return $resp;
+        return $response;
     }
 
     public function hydrateParams(array $params)
     {
-
         $recordParams = [
             'amount' => $params['paid_price'],
             'order_id' => $params['order_id'],
             'email' => $params['user_email'],
             'installment' => $params['installment'],
-            'payment_service_id' => $params['payment_service_id'],
-            'price_id' => $params['price_id'],
+            'currency' => $params['currency'],
             'parameters' => json_encode($params),
+            'payment_gateway' => $this->serviceName,
         ];
 
-        $params = [
+        //If authorization will be used
+        //'intent' => 'AUTHORIZE',
+
+        $request_params = [
             'intent' => 'CAPTURE',
             'purchase_units' => [
                 [
                     'amount' => [
-                        'currency_code' => $params['currency']->iso_4217,
+                        'currency_code' => $params['currency'] ?? 'USD',
                         'value' => $this->formatAmount($params['paid_price'])
                     ],
+                    'description' => 'Order: ' . $params['order_id'],
+                    'custom_id' => $params['order_id'],
                 ],
             ],
             'payment_source' => [
                 'paypal' => [
                     "name" => [
-                    "given_name" => $params['user_name'],
-                    'surname' => $params['user_surname'],
+                        "given_name" => $params['user_name'],
+                        'surname' => $params['user_surname'],
                     ],
-                    "email_address" => $params['user_email'], //User's email address or empty
+                    "email_address" => $params['user_email'],
                     'experience_context' => [
                         'payment_method_preference' => 'IMMEDIATE_PAYMENT_REQUIRED',
-                        'brand_name' => 'B2Press INC',
-                        'locale' => 'en-US',
+                        'brand_name' => $params['company_name'],
+                        'locale' => $params['locale'] ?? 'en-US',
+                        'shipping_preference' => 'NO_SHIPPING',
                         'landing_page' => 'LOGIN',
                         'user_action' => 'PAY_NOW',
                         'return_url' => route('payable.response').'?success=true&payment_service=paypal',
@@ -257,15 +343,16 @@ class PaypalService extends PaymentService
                 ],
             ]
         ];
+
         return [
-        'record_params' => $recordParams,
-        'request_params' => $params,
+            'record_params' => $recordParams,
+            'request_params' => $request_params,
         ];
     }
 
     public function formatAmount($amount)
     {
-        return number_format((float)$amount / 100 , 2, '.', '');
+        return number_format((float)$amount , 2, '.', '');
     }
 
     public function validateParams($params){
@@ -286,49 +373,63 @@ class PaypalService extends PaymentService
         if(empty($missingParams)){
             return true;
         }else{
-            dd($missingParams ,$params);
-            return 'These keys are missing for this payment service' . $missingParams;
+            return 'These keys are missing for this payment service' . implode(', ', $missingParams);
         }
     }
 
     public function handleResponse(Request $request){
 
         $allParams = $request->query();
-        // dd($allParams);
+
         $params = [];
-        // dd($allParams);
-        // dd($request);
+        
         if($allParams['success'] == 'true'){
-            $resp = $this->capturePayment($allParams);
-            // dd($resp);
-                // $this->updateRecord(
-                //     $allParams['payment_id'],
-                //     'COMPLETED',
-                //     json_encode($resp)
-                // );
+            $response = $this->capturePayment($allParams);
+            if(isset($response->status) && $response->status == "COMPLETED"){
+                $this->updateRecord(
+                    $allParams['payment_id'],
+                    self::STATUS_COMPLETED,
+                    json_encode($response)
+                );
                 $params = [
-                    'status' => 'success',
+                    'status' => $this::RESPONSE_STATUS_SUCCESS,
                     'id' => $allParams['payment_id'],
-                    'service_payment_id' => $allParams['token'],
-                    'order_id' => $allParams['payment_id'],
-                    'payer_id' => $allParams['PayerID'],
-                    'custom_fields' => $resp->custom_fields,
-                ];
-        }else{
-            $payment = $this->updateRecord($allParams['payment_id'], 'CANCELLED', json_encode(request()->all()));
-            // dd($payment);
-            $params = [
-                    'status' => 'error',
-                    'id' => $allParams['payment_id'],
-                    'service_payment_id' => $allParams['token'],
-                    'order_id' => $allParams['payment_id'],
+                    'payment_service' => $allParams['payment_service'],
+                    'order_id' => $response->purchase_units[0]->payments->captures[0]->custom_id,
                     'payer_id' => isset($allParams['PayerID'] )? $allParams['PayerID'] : '',
-                    'custom_fields' => $payment,
+                    'token' => $allParams['token'] ?? '',
+                    'order_data' => $response
+                ];
+            }else{
+                $this->updateRecord(
+                    $allParams['payment_id'],
+                    self::STATUS_FAILED,
+                    json_encode($response)
+                );
+                $params = [
+                    'status' => $this::RESPONSE_STATUS_ERROR,
+                    'id' => $allParams['payment_id'],
+                    'payment_service' => $allParams['payment_service'],
+                    'payer_id' => isset($allParams['PayerID'] )? $allParams['PayerID'] : '',
+                    'token' => $allParams['token'] ?? '',
+                    'order_data' => $response
+                ];
+        
+            }
+           
+        }else{
+            $payment = $this->updateRecord($allParams['payment_id'], self::STATUS_FAILED, json_encode(request()->all()));
+
+            $params = [
+                    'status' => $this::RESPONSE_STATUS_ERROR,
+                    'id' => $allParams['payment_id'],
+                    'payment_service' => $allParams['payment_service'],
+                    'payer_id' => isset($allParams['PayerID'] )? $allParams['PayerID'] : '',
+                    'token' => $allParams['token'] ?? '',
+                    'order_data' => request()->all(),
             ];
         }
-        // dd($params);
         return $this->generatePostForm($params, route(config('payable.return_url')));
-        // print_r($this->generatePostForm($params, route(config('payable.return_url'))));
         exit;
 
     }

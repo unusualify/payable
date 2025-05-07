@@ -20,8 +20,6 @@ class Payable {
         $serviceName = $this->generateClassPath();
         $this->service = new $serviceName();
         Session::put(config('payable.session_key').'_payment_service', $slug);
-        // dd(Session::all());
-
     }
 
 
@@ -47,12 +45,12 @@ class Payable {
 
     public function cancel($params)
     {
-        $this->service->cancel($params);
+        return $this->service->cancel($params);
     }
 
     public function refund($params)
     {
-        $this->service->refund($params);
+        return $this->service->refund($params);
     }
 
     public function formatPrice($price)

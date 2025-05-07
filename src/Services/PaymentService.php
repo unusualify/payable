@@ -30,6 +30,15 @@ abstract class PaymentService extends URequest{
 
     public $serviceName;
 
+    public const STATUS_PENDING = 'PENDING';
+    public const STATUS_COMPLETED = 'COMPLETED';
+    public const STATUS_FAILED = 'FAILED';
+    public const STATUS_CANCELLED = 'CANCELLED';
+    public const STATUS_REFUNDED = 'REFUNDED';
+
+    public const RESPONSE_STATUS_SUCCESS = 'success';
+    public const RESPONSE_STATUS_ERROR = 'error';
+
     protected $headers = [
         'Authorization' => 'Bearer',
         'Content-Type' => 'application/json',
@@ -58,15 +67,9 @@ abstract class PaymentService extends URequest{
 
     public function setConfig()
     {
-        // dd($this->getConfigName());
         $this->config = config($this->getConfigName());
-        // dd($this->config,$this->getConfigName());
-        // dd($this->config);
-        // dd($this->config, $this->getConfigName());
-        // dd($this->mode, $this->config);
-
+       
         $this->mode = $this->config['mode'];
-        // dd($this->mode, $this->config);
     }
 
     public function getConfigName()
@@ -77,43 +80,26 @@ abstract class PaymentService extends URequest{
 
     function createRecord(array $data)
     {
-        // dd($data->paymentServiceId);
-       	// dd($data);
-        $payment = Payment::create(
-        $data
-        // [
-        //   'payment_gateway' => $data['payment_gateway'],
-        //   'order_id' => $data['order_id'],
-        //   'price' => $data['price'],
-        //   // 'currency_id' => isset($data['currency_id']) ? $data['currency_id'] : null,
-        //   'email' => $data['email'],
-        //   // 'installment' => $data->installment,
-        //   'parameters' => json_encode($data),
-        //   'payment_service_id' => $data['payment_service_id'],
-        //   'price_id' => $data['price_id'],
-        // ]
-        );
+        $payment = Payment::create($data);
         return $payment;
     }
 
     static function updateRecord($id, $status, $response)
     {
-        // dd($id);
         try{
+
+            if(is_array($response) || is_object($response)){
+                $response = json_encode($response);
+            }
             $payment = ModelsPayment::findOrFail($id);
-            $paymentParams = json_decode($payment->parameters, true);
-            $custom_fields = $paymentParams['custom_fields'] ?? null;
-            // dd($payment, $paymentParams, $custom_fields, $payment->parameters);
+           
             $updated = $payment->update([
                 'status' => $status,
-                'response' => $response,
-                'parameters' => json_encode($custom_fields),
+                'response' => $response
             ]);
-            if($updated){
-                return $custom_fields;
-            }else{
-                return $updated;
-            }
+            
+            return $updated;
+            
         }catch(\Illuminate\Database\Eloquent\ModelNotFoundException $e){
             return $e->getMessage();
         }
@@ -130,36 +116,5 @@ abstract class PaymentService extends URequest{
     {
         return redirect()
             ->toWithPayload($actionUrl, $params);
-        // $form = '<html lang="en">
-        //     <head>
-        //         <meta charset="UTF-8">
-        //         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        //         <title>Payment Confirmation</title>
-        //     </head>
-        //     <body>';
-        // $form .= '<form action="' . htmlspecialchars($actionUrl) . '" method="POST" id="autoSubmitForm">' . "\n";
-
-        // foreach ($params as $key => $value) {
-        //     // dd($key, $value);
-        //     if(is_array($value)){
-        //         // dd($value);
-        //         foreach ($value as $subKey => $subValue){
-        //             $form .= '<input type="hidden" name="' . htmlspecialchars($key).'['.htmlspecialchars($subKey) . ']' . '" value="' . htmlspecialchars($subValue) . '">' . "\n";
-        //         }
-        //     }else
-        //         $form .= '<input type="hidden" name="' . htmlspecialchars($key) . '" value="' . htmlspecialchars($value) . '">' . "\n";
-        // }
-        // // dd(csrf_token());
-        // $form .= '</form>';
-        // $form .= "<script>
-        //     window.onload = function() {
-        //             document.getElementById('autoSubmitForm').submit();
-        //     };
-        // </script>";
-        // $form .= '</body>
-        //     </html>';
-        // // dd($form);
-        // // dd(session()->all(), csrf_token());
-        // return $form;
     }
 }

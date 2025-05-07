@@ -8,12 +8,12 @@ use Unusualify\Payable\Models\Payment as ModelsPayment;
 use Illuminate\Support\Facades\Redirect;
 
 
-class IdealService extends BuckarooService{
+class IdealQrService extends BuckarooService{
 
     
     public function __construct($mode = null)
     {
-        $this->service = 'ideal';
+        $this->service = 'ideal-qr';
 
         parent::__construct(
             $this->service
@@ -32,20 +32,28 @@ class IdealService extends BuckarooService{
         $payment = $this->createRecord(
             $this->hydrateRecordParams($params)
         );
-        $params = $this->hydrateParams($params);
        
         
-        $params['returnURL'] = $params['returnURL'] . '&payment_id=' . $payment->id;
+        $params['returnURL'] = route('payable.response').'?payment_service='. $this->service . '&payment_id=' . $payment->id;
+        $response = $this->buckaroo->method('ideal_qr')->generate([
+            'description' => $params['description'] ?? 'Purchase',
+            'returnURL' => $params['returnURL'],
+            'minAmount' =>  $params['paid_price'],
+            'maxAmount' =>  $params['paid_price'],
+            'imageSize' => '600',
+            'purchaseId' => $params['order_id'],
+            'isOneOff' => true,
+            'amount' => $params['paid_price'],
+            'amountIsChangeable' => false,
+            'expiration' => date('Y-m-d', strtotime('+1 day')),
+            'isProcessing' => false,
+        ]);
 
-        $response = $this->buckaroo->method($this->service)->pay($params);
-
-        if($response->hasRedirect()){
-            $redirectUrl = $response->getRedirectUrl();
-            $transactionKey = $response->getTransactionKey();
-            return Redirect::to($redirectUrl);
-
+        if($response->isSuccess()){
+            $servicesParams = $response->getServiceParameters();
+            $qrimageurl = $servicesParams['qrimageurl'];
+            return $qrimageurl;
         }else if ($response->hasError()){
-            // dd($response->getSomeError());
             return $response->getSomeError();
         }else{
             return 'Something went wrong please contact with administrator.';

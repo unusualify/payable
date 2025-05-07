@@ -79,6 +79,7 @@ abstract class URequest implements URequestInterface
     function postReq($url, $endPoint, $postFields, $headers, $type, $mode = null)
     {
         // dd($url.$endPoint);
+        //dd($postFields);
         try{
             if ($type == 'json') {
                 // dd($this->client);

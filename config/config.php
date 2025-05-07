@@ -52,6 +52,7 @@ return [
                 'terminal_id' => env('GARANTI_TEST_3D_TERMINAL_ID', ''),
                 '3dpay_terminal_id' => env('GARANTI_TEST_3D_PAY_TERMINAL_ID', ''),
                 '3d_oos_pay_terminal_id' => env('GARANTI_TEST_3D_OOS_PAY_TERMINAL_ID', ''),
+                'terminal_userid' => env('GARANTI_TEST_TERMINAL_USERID', ''),
                 'provision_userid' => env('GARANTI_TEST_PROV_USERID', ''),
                 'provision_pw' => env('GARANTI_TEST_PROV_PW', ''),
                 'secure_key' => env('GARANTI_TEST_SECURE_KEY', ''),
@@ -67,6 +68,7 @@ return [
                 '3d_terminal_id' => env('GARANTI_3D_TERMINAL_ID', ''),
                 '3d_oos_pay_terminal_id' => env('GARANTI_3D_PAY_TERMINAL_ID', ''),
                 'provision_userid' => env('GARANTI_PROV_USER_ID', ''),
+                'terminal_userid' => env('GARANTI_TERMINAL_USERID', ''),
                 'provision_pw' => env('GARANTI_PROV_USER_PW', ''),
                 'secure_key' => env('GARANTI_SECURE_KEY', ''),
                 'pay_provision_userid' => env('GARANTIPAY_PROV_USER_ID', ''),
@@ -105,6 +107,17 @@ return [
             ]
         ],
         'ideal' => [
+            'mode' => env('BUCKAROO_MODE',''),
+            'sandbox' => [
+                'website_key' => env('BUCKAROO_SANDBOX_WEBSITE_KEY',''),
+                'secret_key' => env('BUCKAROO_SANDBOX_SECRET_KEY',''),
+            ],
+            'live' => [
+                'website_key' => env('BUCKAROO_SANDBOX_WEBSITE_KEY',''),
+                'secret_key' => env('BUCKAROO_SANDBOX_SECRET_KEY',''),
+            ]
+        ],
+        'ideal-qr' => [
             'mode' => env('BUCKAROO_MODE',''),
             'sandbox' => [
                 'website_key' => env('BUCKAROO_SANDBOX_WEBSITE_KEY',''),

@@ -21,14 +21,12 @@ class Payment extends Model
         'payment_gateway',
         'order_id',
         'amount',
-        'currency_id',
+        'currency',
         'status',
         'email',
         'installment',
         'parameters',
-        'response',
-        'payment_service_id',
-        'price_id'
+        'response'
     ];
 
     public function getTable()
