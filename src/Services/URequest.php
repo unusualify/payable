@@ -4,7 +4,7 @@ namespace Unusualify\Payable\Services;
 
 use GuzzleHttp\Client;
 
-abstract class URequest implements URequestInterface 
+abstract class URequest implements URequestInterface
 {
 
     /**
@@ -12,12 +12,12 @@ abstract class URequest implements URequestInterface
      * @var String
      */
     public $mode = 'sandbox';
-    /** 
+    /**
      * Test TOKEN URL
      * @var String
      */
     protected $testTokenUrl;
-    /** 
+    /**
      * Prod TOKEN URL
      * @var String
      */
@@ -33,7 +33,7 @@ abstract class URequest implements URequestInterface
      * API Key for service
      * @var String
      */
-    protected $apiKey;  
+    protected $apiKey;
 
     /**
      * API Secret Hash for service
@@ -55,9 +55,9 @@ abstract class URequest implements URequestInterface
     protected $client;
 
     protected $headers;
-    
+
     public function __construct(
-        $mode = 'sandbox',       
+        $mode = 'sandbox',
         $headers = null,
 
         ) {
@@ -104,7 +104,7 @@ abstract class URequest implements URequestInterface
                 ]);
                 // dd($postFields,$headers, "{$url}{$endPoint}" );
             }else if ($type == 'encoded') {
-                // dd($postFields);  
+                // dd($postFields);
                 if (count($headers) < 1) {
                     $headers['Content-Type'] = "application/x-www-form-urlencoded";
                 }
@@ -128,6 +128,14 @@ abstract class URequest implements URequestInterface
                     'headers' => $headers,
                     'body' => $postFields
                 ]);
+            } else if ($type == 'xml') {
+                if (count($headers) < 1) {
+                    $headers['Content-Type'] = "application/xml";
+                }
+                $res = $this->client->post("{$url}{$endPoint}", [
+                    'headers' => $headers,
+                    'body' => $postFields
+                ]);
             } else if($type == 'multipart'){
                 if (count($headers) < 1) {
                     $headers['Content-Type'] = "multipart/form-data";
@@ -137,8 +145,7 @@ abstract class URequest implements URequestInterface
                     'multipart' => $postFields,
                     // 'headers' => $headers
                 ]);
-            }
-            else {
+            }else {
                 $res = $this->client->post("{$url}/{$endPoint}", [
                     'headers' => $headers,
                     'body' => json_encode($postFields)
@@ -174,7 +181,7 @@ abstract class URequest implements URequestInterface
             // dd($res,"{$url}{$endPoint}", $headers, $parameters, $res->getBody()->getContents());
             // return $res;
             return json_decode($res->getBody()->getContents());
-            
+
         }catch(\Exception $e){
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -197,8 +204,6 @@ abstract class URequest implements URequestInterface
     }
 
     abstract function setConfig();
-
-    abstract function getConfigName();
 
     abstract function setMode($mode);
 
