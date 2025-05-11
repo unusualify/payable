@@ -3,29 +3,72 @@
 namespace Unusualify\Payable\Services;
 
 use Exception;
-use GuzzleHttp\Utils;
 use Illuminate\Http\Request;
-use RuntimeException;
-use Unusualify\Payable\Models\Payment;
-use Unusualify\Payable\Services\Paypal\Str;
-use Unusualify\Payable\Services\Paypal\Traits\PaypalAPI;
-use Unusualify\Payable\Services\Paypal\Traits\PaypalVerifyIPN;
-use Unusualify\Priceable\Facades\PriceService;
-use Unusualify\Priceable\Models\Price;
+use Unusualify\Payable\Models\{Payment, Enums\PaymentStatus};
+use Unusualify\Payable\Services\Paypal\Traits\{PaypalAPI, PaypalConfig, PaypalVerifyIPN};
+
 
 class PaypalService extends PaymentService
 {
-    use Paypal\Traits\PaypalConfig;
+    use PaypalConfig, PaypalVerifyIPN, PaypalAPI;
 
-    use PaypalVerifyIPN;
-    use PaypalAPI;
+    /**
+     * Has Refund
+     *
+     * @var bool
+     */
+    public static $hasRefund = true;
 
+    /**
+     * Has Cancel
+     *
+     * @var bool
+     */
+    public static $hasCancel = true;
+
+    /**
+     * Options
+     *
+     * @var array
+     */
     protected $options;
+
+    /**
+     * Http Body Param
+     *
+     * @var string
+     */
     protected $httpBodyParam;
+
+    /**
+     * Verb
+     *
+     * @var string
+     */
     protected $verb;
+
+    /**
+     * Type
+     *
+     * @var string
+     */
     protected $type;
-    public $apiEndPoint;
+
+    /**
+     * Api End Point
+     *
+     * @var string
+     */
+    protected $apiEndPoint;
+
+    /**
+     * Service
+     *
+     * @var string
+     */
     protected $service;
+
+
     /**
      * Paypal constructor.
      *
@@ -40,14 +83,16 @@ class PaypalService extends PaymentService
     {
         // Setting Paypal API Credentials
         // Manage setConfig functio based on the needs of URequest class
-        $this->getConfigName();
-        $this->setConfig($config);
+        // parent::__construct();
+        $this->setConfig();
+
         $this->url = $this->config['api_url'];
         $this->httpBodyParam = 'form_params';
         $this->options = [];
         $this->setRequestHeader('Accept', 'application/json');
         $this->service = 'paypal';
 
+        // dd($this);
         parent::__construct(
             $this->mode,
         );
@@ -57,33 +102,29 @@ class PaypalService extends PaymentService
 
     public function doPaypalRequest(bool $decode = true)
     {
-
-      
-            if($this->verb == 'post'){
-                if(!isset($this->options['request_body'])){
+        if($this->verb == 'post'){
+            if(!isset($this->options['request_body'])){
                 $this->options['request_body'] = [];
-                }
+            }
 
-                $response = $this->postReq(
+            $response = $this->postReq(
                 $this->url,
                 $this->apiEndPoint,
                 $this->options['request_body'],
                 $this->headers,
                 $this->type,
                 $this->mode
-                );
-            }else{ //Get request
-                $response = $this->getReq(
+            );
+        }else{ //Get request
+            $response = $this->getReq(
                 $this->url,
                 $this->apiEndPoint,
                 [],
                 $this->headers
-                );
-            }
-         
-            return $response;
-        
+            );
+        }
 
+        return $response;
     }
 
     public function pay(array $params)
@@ -91,53 +132,45 @@ class PaypalService extends PaymentService
         $this->apiEndPoint = 'v2/checkout/orders';
 
         $validatedParams = $this->validateParams($params);
+
         if($validatedParams != true){
             return $validatedParams;
         }
 
-        $allParams = $this->hydrateParams($params);
-
-        $this->options['request_body'] = $allParams['request_params'];
+        $this->options['request_body'] = $this->hydrateParams($params);
         $this->type = 'json';
         $this->verb = 'post';
-       
-         $payment = $this->createRecord(
-            $allParams['record_params']
-        ); 
-        $this->options['request_body']['payment_source']['paypal']['experience_context']['return_url'] = $this->options['request_body']['payment_source']['paypal']['experience_context']['return_url']. '&payment_id='.$payment->id;
-        $this->options['request_body']['payment_source']['paypal']['experience_context']['cancel_url'] = $this->options['request_body']['payment_source']['paypal']['experience_context']['cancel_url']. '&payment_id='.$payment->id;
-        
 
         $response = $this->doPaypalRequest();
-          
+
         if(is_string($response)){
             $response = json_decode($response);
         }
 
         if (isset($response->id) && $response->id != null && isset($response->status) && $response->status == 'PAYER_ACTION_REQUIRED' && isset($response->links)) {
-                $allParams['record_params']['order_id'] = $params['order_id'];
-                foreach  ($response->links as $link) {
-                    if ($link->rel == 'payer-action') {
-                        return redirect()->away($link->href);
-                    }
+            $allParams['record_params']['order_id'] = $params['order_id'];
+            foreach  ($response->links as $link) {
+                if ($link->rel == 'payer-action') {
+                    return redirect()->away($link->href);
                 }
-
+            }
         }
-        $params = [
+
+        $payResponse = [
+            'type' => 'pay',
             'status' => $this::RESPONSE_STATUS_ERROR,
-            'id' => $payment->id,
+            'id' => $this->payment->id,
             'payment_service' => $this->service,
             'order_id' => $params['order_id'],
             'order_data' => json_encode($response)
         ];
 
-       $response = $this->updateRecord(
-            $params['id'],
-            self::STATUS_FAILED,
-            json_encode($response)
-        ); 
-        return $this->generatePostForm($params, route(config('payable.return_url')));
+        $this->payment->update([
+            'status' => PaymentStatus::FAILED,
+            'response' => $response
+        ]);
 
+        return $this->generatePostForm($payResponse, route(config('payable.return_url')));
     }
 
     public function capturePayment($params, array $data = [])
@@ -152,137 +185,188 @@ class PaypalService extends PaymentService
         $this->verb = 'post';
 
         $this->type = 'json';
-        
+
         $response = $this->doPaypalRequest();
 
         if(is_string($response)){
             $response = json_decode($response);
         }
-      
+
+        $this->payment->update([
+            'status' => PaymentStatus::COMPLETED,
+            'response' => $data
+        ]);
+
         return $response;
     }
 
     // string $capture_id, string $invoice_id, float $amount, string $note, $priceID
-    public function refund(array $params)
+    /**
+     * Refund Paypal Payment
+     *
+     * @param array|object $params
+     * @return array
+     */
+    public function refund(array|object $params)
     {
-        if(empty($params['payment_id'])){
-            return [
-                'status' => $this::RESPONSE_STATUS_ERROR,
-                'id' => $params['payment_id'],
-                'payment_service' => $this->service,
-                'message' => 'Payment id is required'
-            ];
-        }
-        
-        $payment = Payment::find($params['payment_id']);
-        if(empty($payment)){
-            return [
-                'status' => $this::RESPONSE_STATUS_ERROR,
-                'id' => $params['payment_id'],
-                'payment_service' => $this->service,
-                'message' => 'Payment not found'
-            ];
+        $refundRequest = $this->validateRefundRequest($params);
+
+        if(!$refundRequest['validated']){
+            return $refundRequest;
         }
 
-        if($payment->status != 'COMPLETED'){
-            return [
-                'status' => $this::RESPONSE_STATUS_ERROR,
-                'id' => $params['payment_id'],
-                'payment_service' => $this->service,
-                'message' => 'Payment is not completed'
-            ];
-        }
+        $params = (array) $params;
 
-        if(empty($params['capture_id'])){
-            $payment_response = json_decode($payment->response); 
-            if (isset($payment_response->purchase_units[0]->payments->captures[0]->id)) {
-                $params['capture_id'] = $payment_response->purchase_units[0]->payments->captures[0]->id;
+        $captureId = $params['capture_id'] ?? null;
+        $payment = $refundRequest['payment'] ?? null;
+
+        if(empty($captureId)){
+            if ($payment && $payment->response->purchase_units[0]->payments->captures[0]->id) {
+                $captureId = $payment->response->purchase_units[0]->payments->captures[0]->id;
             } else {
-                return [
-                    'status' => $this::RESPONSE_STATUS_ERROR,
-                    'id' => $params['payment_id'],
-                    'payment_service' => $this->service,
+                return array_merge($refundRequest, [
                     'message' => 'Capture ID not found in payment response'
-                ];
+                ]);
             }
         }
 
-        $this->apiEndPoint = "v2/payments/captures/{$params['capture_id']}/refund";
+        $source = $this->showFromSource($payment->response->id);
+
+        if($source->status != "COMPLETED" || $source->intent != "CAPTURE"){
+            throw new \Exception('Payment cannot be refunded');
+        }
+
+        $this->apiEndPoint = "v2/payments/captures/{$captureId}/refund";
         $this->verb = 'post';
         $this->type = 'raw';
-
         $this->options['request_body'] = '{}';
         $this->headers['Content-Type'] = 'application/json';
 
         $response = $this->doPaypalRequest();
+
         if(is_string($response)){
             $response = json_decode($response);
         }
 
+        $refundResponseStatus = $this::RESPONSE_STATUS_ERROR;
+        $message = 'Refund failed';
+
         if(isset($response->status) && $response->status == "COMPLETED") {
-            $this->updateRecord(
-                $params['payment_id'],
-                self::STATUS_REFUNDED,
-                $response
-            );
-            $return_params = [
-                'status' => $this::RESPONSE_STATUS_SUCCESS,
-                'id' => $params['payment_id'],
-                'payment_service' => $this->service,
-                'order_data' => json_encode($response),
-                'message' => 'Refunded successfully'
-            ];
+            if($payment){
+                $payment->update([
+                    'status' => PaymentStatus::REFUNDED,
+                    'response' => $response
+                ]);
+            }
+
+            $refundResponseStatus = $this::RESPONSE_STATUS_SUCCESS;
+            $message = 'Refunded successfully';
+
         } else {
             $error_content = json_decode($response->getContent(), true);
-            $return_params = [
-                'status' => $this::RESPONSE_STATUS_ERROR,
-                'id' => $params['payment_id'],
-                'payment_service' => $this->service,
-                'order_data' => json_encode($response),
-                'message' => isset($error_content['error']) ? $error_content['error'] : 'Refund failed'
-            ];
+
+            if(isset($error_content['error'])){
+                $message = $error_content['error'];
+            }
         }
-        return $return_params;
+
+        return array_merge($refundRequest, [
+            'status' => $refundResponseStatus,
+            'order_data' => json_encode($response),
+            'message' => $message
+        ]);
     }
-    public function cancel(array $params)
+
+    /**
+     * Cancel Paypal Payment
+     *
+     * @param array|object $params
+     * @return array
+     */
+    public function cancel(array|object $params)
     {
-        $this->apiEndPoint = "v2/payments/authorizations/{$params['authorization_id']}/void";
-        $this->verb = 'post';
+        $type = 'cancel';
+
+        $params = (array) $params;
+
+        $captureId = null;
+
+        if($this->payment && $this->payment->response){
+
+            if(isset($this->payment->response->id)){
+                $captureId = $this->payment->response->purchase_units[0]->payments->captures[0]->id;
+            }else {
+                throw new \Exception('Order ID not found in payment response');
+            }
+
+        }else {
+            if($params['authorization_id'] || $params['order_id'] || $params['id']){
+                $captureId = $params['authorization_id'] ?? $params['capture_id'] ?? $params['order_id'] ?? $params['id'];
+            }else {
+                throw new \Exception('Authorization ID, Order ID or Payment ID is required');
+            }
+        }
+
+        $source = $this->showFromSource($captureId);
+
+        if($source->status != "COMPLETED" || $source->intent != "AUTHORIZED"){
+            throw new \Exception('Payment cannot be cancelled');
+        }
+
+        // dd($source);
+
+
+        // $this->apiEndPoint = "v2/payments/authorizations/{$orderId}/void";
         $this->type = 'raw';
 
-    
         $this->options['request_body'] = '{}';
         $this->headers['Content-Type'] = 'application/json';
 
+        // foreach($this->payment->response->purchase_units as $purchase_unit){
+        //     foreach($purchase_unit->payments->captures as $capture){
+        //         if($capture->id){
+        //             $this->verb = 'get';
+        //             $this->apiEndPoint = "v2/payments/captures/{$capture->id}";
+        //             $response =  $this->doPaypalRequest();
+        //         }
+        //     }
+        // }
+
+        $this->verb = 'post';
+        $this->apiEndPoint = "v2/payments/authorizations/{$orderId}/void";
+
         $response =  $this->doPaypalRequest();
+
+        dd($response);
+
         if(is_string($response)){
             $response = json_decode($response);
         }
 
-        if(isset($response->status) && $response->status == "VOIDED")
-        {
-            $this->updateRecord(
-                $params['payment_id'],
-                self::STATUS_CANCELLED,
-                $response
-            );
-            $return_params = [
-                'status' => $this::RESPONSE_STATUS_SUCCESS,
-                'id' => $params['payment_id'],
-                'payment_service' => $this->service,
-                'order_data' => json_encode($response)
-            ];
-            
-        }else{
-            $return_params = [
-                'status' => $this::RESPONSE_STATUS_ERROR,
-                'id' => $params['payment_id'],
-                'payment_service' => $this->service,
-                'order_data' => json_encode($response)
-            ];
+        $cancelResponseStatus = $this::RESPONSE_STATUS_ERROR;
+        $paymentId = $this->payment ? $this->payment->id : ($params['payment_id'] ?? null);
+        $paymentService = $this->payment ? $this->payment->payment_gateway : ($params['payment_service'] ?? $this->service);
 
+        if(isset($response->status) && $response->status == "VOIDED"){
+            $cancelResponseStatus = $this::RESPONSE_STATUS_SUCCESS;
+            if($this->payment){
+                $this->payment->update([
+                    'status' => PaymentStatus::CANCELLED,
+                    'response' => $response
+                ]);
+            }
         }
-        return $return_params;
+
+        $cancelResponse = [
+            'type' => $type,
+            'status' => $cancelResponseStatus,
+            'id' => $paymentId,
+            'payment_service' => $paymentService,
+            'order_data' => json_encode($response)
+        ];
+
+
+        return $cancelResponse;
     }
 
     public function showFromSource($orderId)
@@ -298,26 +382,16 @@ class PaypalService extends PaymentService
 
     public function hydrateParams(array $params)
     {
-        $recordParams = [
-            'amount' => $params['paid_price'],
-            'order_id' => $params['order_id'],
-            'email' => $params['user_email'],
-            'installment' => $params['installment'],
-            'currency' => $params['currency'],
-            'parameters' => json_encode($params),
-            'payment_gateway' => $this->serviceName,
-        ];
-
         //If authorization will be used
         //'intent' => 'AUTHORIZE',
 
-        $request_params = [
-            'intent' => 'CAPTURE',
-            'purchase_units' => [
+        return [
+            'intent' => $params['intent'] ?? 'CAPTURE',
+            'purchase_units' => $params['purchase_units'] ?? [
                 [
                     'amount' => [
                         'currency_code' => $params['currency'] ?? 'USD',
-                        'value' => $this->formatAmount($params['paid_price'])
+                        'value' => $this->formatAmount($params['amount'])
                     ],
                     'description' => 'Order: ' . $params['order_id'],
                     'custom_id' => $params['order_id'],
@@ -337,25 +411,22 @@ class PaypalService extends PaymentService
                         'shipping_preference' => 'NO_SHIPPING',
                         'landing_page' => 'LOGIN',
                         'user_action' => 'PAY_NOW',
-                        'return_url' => route('payable.response').'?success=true&payment_service=paypal',
-                        'cancel_url' => route('payable.response').'?success=false&payment_service=paypal',
+                        'return_url' => $this->getRedirectUrl(['success' => 'true']),
+                        'cancel_url' => $this->getRedirectUrl(['success' => 'false']),
                     ],
                 ],
             ]
         ];
 
-        return [
-            'record_params' => $recordParams,
-            'request_params' => $request_params,
-        ];
     }
 
     public function formatAmount($amount)
     {
-        return number_format((float)$amount , 2, '.', '');
+        return number_format((float) $amount/100 , 2, '.', '');
     }
 
-    public function validateParams($params){
+    public function validateParams($params)
+    {
 
         $requiredParams = [
             'order_id',
@@ -377,60 +448,105 @@ class PaypalService extends PaymentService
         }
     }
 
-    public function handleResponse(Request $request){
-
+    public function handleResponse(Request $request)
+    {
         $allParams = $request->query();
 
-        $params = [];
-        
+        // for payments table record
+        $recordStatus = PaymentStatus::FAILED;
+        $recordResponse = '';
+        $recordId = $allParams['payment_id'];
+
+        // for redirect payload
+        $responseStatus = $this::RESPONSE_STATUS_ERROR;
+        $responseId = $allParams['payment_id'];
+        $responsePaymentService = $allParams['payment_service'];
+        $responseToken = $allParams['token'] ?? '';
+        $responsePayerId = isset($allParams['PayerID'] )? $allParams['PayerID'] : '';
+        $responseOrderData = [];
+        $responseOrderId = '';
+
         if($allParams['success'] == 'true'){
-            $response = $this->capturePayment($allParams);
-            if(isset($response->status) && $response->status == "COMPLETED"){
-                $this->updateRecord(
-                    $allParams['payment_id'],
-                    self::STATUS_COMPLETED,
-                    json_encode($response)
-                );
-                $params = [
-                    'status' => $this::RESPONSE_STATUS_SUCCESS,
-                    'id' => $allParams['payment_id'],
-                    'payment_service' => $allParams['payment_service'],
-                    'order_id' => $response->purchase_units[0]->payments->captures[0]->custom_id,
-                    'payer_id' => isset($allParams['PayerID'] )? $allParams['PayerID'] : '',
-                    'token' => $allParams['token'] ?? '',
-                    'order_data' => $response
-                ];
-            }else{
-                $this->updateRecord(
-                    $allParams['payment_id'],
-                    self::STATUS_FAILED,
-                    json_encode($response)
-                );
-                $params = [
-                    'status' => $this::RESPONSE_STATUS_ERROR,
-                    'id' => $allParams['payment_id'],
-                    'payment_service' => $allParams['payment_service'],
-                    'payer_id' => isset($allParams['PayerID'] )? $allParams['PayerID'] : '',
-                    'token' => $allParams['token'] ?? '',
-                    'order_data' => $response
-                ];
-        
+            $paypalResponse = $this->capturePayment($allParams);
+
+            $recordResponse = $paypalResponse;
+
+            $responseOrderData = $paypalResponse;
+
+            if(isset($paypalResponse->status) && $paypalResponse->status == "COMPLETED"){
+                $recordStatus = PaymentStatus::COMPLETED;
+
+                $responseStatus = $this::RESPONSE_STATUS_SUCCESS;
+                $responseOrderId = $paypalResponse->purchase_units[0]->payments->captures[0]->custom_id;
             }
-           
+
         }else{
-            $payment = $this->updateRecord($allParams['payment_id'], self::STATUS_FAILED, json_encode(request()->all()));
+            $recordResponse = json_encode(request()->all());
 
-            $params = [
-                    'status' => $this::RESPONSE_STATUS_ERROR,
-                    'id' => $allParams['payment_id'],
-                    'payment_service' => $allParams['payment_service'],
-                    'payer_id' => isset($allParams['PayerID'] )? $allParams['PayerID'] : '',
-                    'token' => $allParams['token'] ?? '',
-                    'order_data' => request()->all(),
-            ];
+            $responseOrderData = request()->all();
         }
-        return $this->generatePostForm($params, route(config('payable.return_url')));
-        exit;
 
+        $this->payment->update([
+            'status' => $recordStatus,
+            'response' => $recordResponse
+        ]);
+
+        $responsePayload = [
+            'id' => $responseId,
+            'status' => $responseStatus,
+            'payment_service' => $responsePaymentService,
+            'token' => $responseToken,
+            'payer_id' => $responsePayerId,
+            'order_id' => $responseOrderId,
+            'order_data' => $responseOrderData,
+        ];
+
+        return $this->generatePostForm($responsePayload, route(config('payable.return_url')));
+    }
+
+    public function isCancellable($payload)
+    {
+        if(!$payload){
+            return false;
+        }
+
+        $payload = (object) $payload;
+
+        if(!isset($payload->id)){
+            throw new \Exception('Payment id is required');
+        }
+
+        if(!isset($payload->status)){
+            throw new \Exception('Payment status is required');
+        }
+
+        $orderId = $payload->id;
+
+        $source = $this->showFromSource($orderId);
+
+        return $source->status == "COMPLETED" && $source->intent == "AUTHORIZED";
+    }
+
+    public function isRefundable($payload)
+    {
+        if(!$payload){
+            return false;
+        }
+
+        $payload = (object) $payload;
+
+        if(!isset($payload->id)){
+            throw new \Exception('Payment id is required');
+        }
+
+        if(!isset($payload->status)){
+            throw new \Exception('Payment status is required');
+        }
+
+        $orderId = $payload->id;
+
+        $source = $this->showFromSource($orderId);
+
+        return $source->status == "COMPLETED" && $source->intent == "CAPTURED";
     }
 }
