@@ -53,6 +53,10 @@ class LaravelServiceProvider extends ServiceProvider
             __DIR__.'/../config/payable.php',
             'payable'
         );
+
+        $this->app->scoped('payable', function () {
+            return new Payable();
+        });
     }
 
     /**

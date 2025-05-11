@@ -2,60 +2,117 @@
 
 namespace Unusualify\Payable;
 
-use Illuminate\Http\Request as HttpRequest;
-use Illuminate\Support\Facades\Cookie;
+use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Session;
-use Unusualify\Modularity\Http\Requests\Request;
+use Illuminate\Support\Str;
+use Unusualify\Payable\Models\Enums\PaymentStatus;
+use Unusualify\Payable\Models\Payment;
 
-class Payable {
-
-
+class Payable
+{
+    /**
+     * Service slug
+     *
+     * @var string
+     */
     public $slug;
 
+    /**
+     * Service
+     *
+     */
     public $service;
 
-    public function __construct(string $slug)
+    public function __construct($slug = null)
     {
-        $this->slug = $slug;
-        $serviceName = $this->generateClassPath();
-        $this->service = new $serviceName();
+        if(!$slug) return;
+
+        $this->setService($slug);
+
         Session::put(config('payable.session_key').'_payment_service', $slug);
     }
 
-
-    public function generateClassPath()
+    public function setService($slug)
     {
-        return __NAMESPACE__ . '\\Services\\' . $this->toPascalCase($this->slug) . 'Service';
+        $this->slug = $slug;
+
+        $serviceClass = $this->getServiceClass($this->slug);
+
+        $this->service = new $serviceClass();
+
+        return $this;
     }
 
-    public function toPascalCase(string $str)
+    /**
+     * Get Service Class
+     *
+     * @return string
+     */
+    public static function getServiceClass($slug)
     {
-        $arr = array_map('ucfirst', explode('-', $str));
-        $str = '';
-        for ($i = 0; $i < count($arr); $i++) {
-            $str .= ucfirst(strtolower($arr[$i]));
+        $class = __NAMESPACE__ . '\\Services\\' . Str::studly($slug) . 'Service';
+
+        if(!class_exists($class))
+            throw new \Exception('Service class not found for slug: ' . $slug);
+
+        return $class;
+        // return __NAMESPACE__ . '\\Services\\' . $this->toPascalCase($this->slug) . 'Service';
+    }
+
+    public function pay($payload, $paymentPayload = [])
+    {
+        $validated = $this->validatePayload($payload);
+        $payload = array_merge_recursive_preserve($this->getPayloadSchema(), $payload);
+
+        $payload = $this->removeExceptional($payload);
+
+        $payment = $this->createPaymentRecord($payload, $paymentPayload);
+
+        return $this->service
+            ->setRedirectUrl($this->generateReturnUrl([
+                'payment_service' => $this->slug,
+                'payment_id' => $payment->id,
+            ]))
+            ->setPayment($payment)
+            ->pay($payload, $paymentPayload);
+    }
+
+
+    /**
+     * Cancel Payment
+     *
+     * @param int $payment_id
+     * @param array|object $params
+     */
+    public function cancel($payment_id, $params = [])
+    {
+        if(!$this->service->hasCancel($params) && method_exists($this->service, 'cancel')){
+            throw new \Exception('Cancel is not supported for the ' . $this->service->name);
         }
-        return $str;
+
+        $payment = Payment::findOrFail($payment_id);
+
+        return $this->service
+            ->setRedirectUrl($this->generateReturnUrl([
+                'payment_service' => $this->slug,
+                'payment_id' => $payment->id,
+            ]))
+            ->setPayment($payment)
+            ->cancel($params);
     }
 
-    public function pay($params)
+    public function refund($payment_id, $params = [])
     {
-        return $this->service->pay($this->removeExceptional($params));
-    }
+        if(!$this->service->hasRefund($params) && method_exists($this->service, 'refund')){
+            throw new \Exception('Refund is not supported for the ' . $this->service->name);
+        }
 
-    public function cancel($params)
-    {
-        return $this->service->cancel($params);
-    }
+        $payment = Payment::findOrFail($payment_id);
 
-    public function refund($params)
-    {
-        return $this->service->refund($params);
-    }
-
-    public function formatPrice($price)
-    {
-        $this->service->formatPrice($price);
+        return $this->service
+            ->setPayment($payment)
+            ->refund($params);
     }
 
     public function removeExceptional($params)
@@ -75,38 +132,53 @@ class Payable {
         return $params;
     }
 
-    public function formatAmount($amount)
+    public function handleResponse(Request $request)
     {
-        return $this->service->formatAmount($amount);
+        if(!$request->get('payment_id')){
+            throw new \Exception('Payment ID is required');
+        }
+
+        $payment = Payment::find($request->get('payment_id'));
+
+        return $this->service
+            ->setPayment($payment)
+            ->handleResponse($request);
     }
 
-    public function castParams($params)
+
+    protected function validatePayload($payload)
     {
-        $this->service->castParams($params);
+        if(!isset($payload['amount'])){
+            throw new \Exception('Amount is required');
+        } else if(!isset($payload['order_id'])){
+            throw new \Exception('Order ID is required');
+        }
+
+        return $payload;
     }
 
-    public function handleResponse(HttpRequest $request)
-    {
-        return $this->service->handleResponse($request);
-    }
-
-    public function getPayloadSchema()
+    protected function getPayloadSchema()
     {
         return [
+            // 'amount' => null,
+            // 'order_id' => '',
+            'currency' => 'EUR',
+
             'locale' => '',
-            'payment_service_id' => '',
-            'order_id' => '',
-            'price' => '',
-            'price_id' => '',
-            'paid_price' => '',
-            'currency' => '',
             'installment' => '',
+
+            // 'payment_service_id' => '',
+            // 'price' => '',
+            // 'price_id' => '',
+
             'payment_group' => '',
+
             'card_name' => '',
             'card_no' => '',
             'card_month' => '',
             'card_year' => '',
             'card_cvv' => '',
+
             'user_id' => '',
             'user_name' => '',
             'user_surname' => '',
@@ -119,6 +191,7 @@ class Payable {
             'user_city' => '',
             'user_country' => '',
             'user_zip_code' => '',
+
             'items' => [
                 'id' => '',
                 'name' => '',
@@ -128,6 +201,64 @@ class Payable {
                 'price' => '',
             ]
         ];
+    }
+
+    /**
+     * Create Payment Record
+     *
+     * @param array $data
+     * @return \Unusualify\Payable\Models\Payment
+     */
+    public function createPaymentRecord($payload, $paymentAttributes = [])
+    {
+        $originalPayload = [
+            'amount' => $payload['amount'],
+            'currency' => $payload['currency'],
+            'email' => $payload['user_email'],
+            'installment' => $payload['installment'] ?? 1,
+            'order_id' => $payload['order_id'],
+            'payment_gateway' => $this->slug,
+            'status' => PaymentStatus::PENDING,
+
+            'parameters' => Arr::except($payload, [
+                'user_email',
+                'installment',
+                'order_id',
+                'currency',
+                'payment_gateway',
+                'amount',
+            ]),
+        ];
+
+        // If payment id is provided, update the payment
+        if(isset($paymentAttributes['id'])){
+            $payment = Payment::findOrFail($paymentAttributes['id']);
+
+            if(!in_array($payment->status, [PaymentStatus::PENDING, PaymentStatus::FAILED])){
+                throw new \Exception('Payment is not in pending or failed status');
+            }
+
+            $payment->update(Arr::except(array_merge($paymentAttributes, $originalPayload), ['id']));
+
+            $payment->refresh();
+
+            return $payment;
+        }
+
+        return Payment::create(array_merge($paymentAttributes, $originalPayload));
+    }
+
+    public function updatePaymentRecord($payment, $status, $response)
+    {
+        $payment->update([
+            'status' => $status,
+            'response' => $response,
+        ]);
+    }
+
+    public function generateReturnUrl($params)
+    {
+        return route('payable.response', $params);
     }
 
 }
