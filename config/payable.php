@@ -7,6 +7,8 @@
 
 return [
     'table' => 'unfy_payments',
+    'additional_fillable' => [],
+    'middleware' => [],
     'session_key' => 'payable',
     'return_url' => 'payment.response',
     'services' => [
@@ -44,7 +46,7 @@ return [
                 'api_secret' => env('IYZICO_PROD_API_SECRET'),
             ],
         ],
-        'garantipos' => [
+        'garanti-pos' => [
             'mode' => env('GARANTI_POS_MODE', 'sandbox'),
             'sandbox' => [
                 'url' => env('GARANTI_TEST_PAYMENT_URL', 'sandbox'),
@@ -78,7 +80,7 @@ return [
             'store_key' => env('GARANTI_STORE_KEY', ''),
             'payment_type' => 'creditcard'
         ],
-        'tebpos' => [
+        'teb-pos' => [
             'mode' => env('TEB_POS_MODE', 'sandbox'),
             'sandbox' => [
                 'url' => env('TEB_PAYMENT_URL'),
@@ -91,7 +93,7 @@ return [
                 'store_key' => env('TEB_STORE_KEY', '')
             ]
         ],
-        'tebcommonpos' => [
+        'teb-common-pos' => [
             'mode' => env('TEB_COMMON_POS_MODE', ''),
             'sandbox' => [
                 'url' => env('TEB_COMMON_TEST_URL', ''),
@@ -113,19 +115,19 @@ return [
                 'secret_key' => env('BUCKAROO_SANDBOX_SECRET_KEY',''),
             ],
             'live' => [
-                'website_key' => env('BUCKAROO_SANDBOX_WEBSITE_KEY',''),
-                'secret_key' => env('BUCKAROO_SANDBOX_SECRET_KEY',''),
+                'website_key' => env('BUCKAROO_LIVE_WEBSITE_KEY',''),
+                'secret_key' => env('BUCKAROO_LIVE_SECRET_KEY',''),
             ]
         ],
         'ideal-qr' => [
-            'mode' => env('BUCKAROO_MODE',''),
+            'mode' => env('BUCKAROO_MODE','sandbox'),
             'sandbox' => [
                 'website_key' => env('BUCKAROO_SANDBOX_WEBSITE_KEY',''),
                 'secret_key' => env('BUCKAROO_SANDBOX_SECRET_KEY',''),
             ],
             'live' => [
-                'website_key' => env('BUCKAROO_SANDBOX_WEBSITE_KEY',''),
-                'secret_key' => env('BUCKAROO_SANDBOX_SECRET_KEY',''),
+                'website_key' => env('BUCKAROO_LIVE_WEBSITE_KEY',''),
+                'secret_key' => env('BUCKAROO_LIVE_SECRET_KEY',''),
             ]
         ]
     ],
