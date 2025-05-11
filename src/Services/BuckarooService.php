@@ -3,28 +3,63 @@
 namespace Unusualify\Payable\Services;
 
 use Buckaroo\BuckarooClient;
+use Illuminate\Support\Arr;
 
 class BuckarooService extends PaymentService
 {
+    /**
+     * Service type (e.g., 'ideal')
+     *
+     * @var string
+     */
     protected $service;
+
+    /**
+     * Buckaroo client instance
+     *
+     * @var \Buckaroo\BuckarooClient
+     */
     protected $buckaroo;
+
+    /**
+     * Website key for Buckaroo
+     *
+     * @var string
+     */
     protected $websiteKey;
+
+    /**
+     * Secret key for Buckaroo
+     *
+     * @var string
+     */
     protected $secretKey;
+
+    /**
+     * Issuer for Buckaroo
+     *
+     * @var string
+     */
     protected $issuer;
 
+        /**
+     * Constructor for BuckarooService
+     *
+     * @param string|null $mode
+     * @param string|null $service
+     */
     public function __construct($mode = null, $service = 'ideal')
     {
-
         parent::__construct(
             headers: $this->headers,
         );
 
+
         $this->setCredentials();
+
         $this->service = $service;
 
         $this->buckaroo = new BuckarooClient($this->websiteKey, $this->secretKey);
-
-
     }
 
     /**
@@ -34,45 +69,39 @@ class BuckarooService extends PaymentService
      */
     public function setCredentials()
     {
-        $this->setConfig();
-
+        // $this->setConfig();
         $this->mode = $this->config['mode'];
+
         $tempConfig = $this->config[$this->mode];
+
         $this->websiteKey = $tempConfig['website_key'];
+
         $this->secretKey = $tempConfig['secret_key'];
     }
 
-   
+
     /**
      * hydrateParams
      *
-     * @param  mixed $params
+     * @param  array|object $params
      * @return array
      */
-    public function hydrateParams(array $params) : array
+    public function hydrateParams(array|object $params) : array
     {
-        // dd($params);
-        $params = [
-            'returnURL' => route('payable.response').'?payment_service='. $this->service, //Returns to this url aftere payment.
-            'issuer' => $params['issuer'], // Selected bank 
-            'amountDebit' => $params['paid_price'], // The amount we want to charge
+        $params = (array) $params;
+        $payload = Arr::only($params, ['issuer']);
+
+        $payload = array_merge($payload, [
+            'returnURL' => $this->getRedirectUrl(['status' => 'success']), //Returns to this url aftere payment.
+            'returnURLCancel' => $this->getRedirectUrl(['status' => 'cancel']), //Returns to this url aftere payment if user cancels the payment.
+            'returnURLError' => $this->getRedirectUrl(['status' => 'error']), //Returns to this url aftere payment if there is an error.
+            'returnURLReject' => $this->getRedirectUrl(['status' => 'reject']), //Returns to this url aftere payment if the payment is rejected.
+            'amountDebit' => (float) $params['amount'] / 100, // The amount we want to charge
+            'currency' => $params['currency'] ?? 'EUR',
             'invoice' => $params['order_id'], // Each payment must contain a unique invoice number
-        ];
+        ]);
 
-        return $params;
-    }
-
-    public function hydrateRecordParams(array $params) : array
-    {
-        return $recordParams = [
-            'amount' => $params['paid_price'],
-            'email' => $params['user_email'],
-            'installment' => $params['installment'],
-            'parameters' => json_encode($params),
-            'order_id' => $params['order_id'],
-            'currency' => $params['currency'],
-            'payment_gateway' => $this->serviceName,
-        ];
+        return $payload;
     }
 }
 
