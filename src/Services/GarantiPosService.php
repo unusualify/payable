@@ -5,9 +5,10 @@ namespace Unusualify\Payable\Services;
 use Unusualify\Payable\Services\PaymentService;
 use Unusualify\Payable\Services\Currency;
 use Illuminate\Http\Request as HttpRequest;
+use Unusualify\Payable\Models\Enums\PaymentStatus;
 
-
-class GarantiPosService extends PaymentService{
+class GarantiPosService extends PaymentService
+{
 
     public $version = "v0.01";
 
@@ -44,6 +45,20 @@ class GarantiPosService extends PaymentService{
     public $debugPaymentUrl = "https://eticaret.garanti.com.tr/destek/postback.aspx";
 
 
+    /**
+     * Has Refund
+     *
+     * @var bool
+     */
+    public static $hasRefund = false;
+
+    /**
+     * Has Cancel
+     *
+     * @var bool
+     */
+    public static $hasCancel = false;
+
 
     // GarantiPay tanımlamalar
     public $garantiPay = "Y"; // Usage of GarantiPay: Y/N
@@ -51,7 +66,6 @@ class GarantiPosService extends PaymentService{
     public $fbbUseFlag = "Y"; // Usage of Fbb: Y/N
     public $chequeUseflag = "N"; // Usage of cheque: Y/N
     public $mileUseflag = "N"; // Usage of Mile: Y/N
-
 
 
     //Translate the status messages
@@ -80,9 +94,10 @@ class GarantiPosService extends PaymentService{
     */
     public function setCredentials()
     {
-        $this->setConfig();
+        // $this->setConfig();
+
         $tempConfig = $this->config[$this->mode];
-        
+
         $this->url = $tempConfig['url'];
         $this->merchantID = $tempConfig['merchant_id'];
         $this->terminalID = $tempConfig['terminal_id'];
@@ -112,34 +127,328 @@ class GarantiPosService extends PaymentService{
         $endpoint = 'servlet/gt3dengine';
         $this->params['txntimestamp'] = time();
         $this->params += $params;
-        $payment = $this->createRecord([
-            'payment_gateway' => $this->serviceName,
-            'order_id' => $this->params['order_id'],
-            'currency' => $this->params['currency'],
-            'amount' => $this->params['paid_price'],
-            'email' => $this->params['user_email'],
-            'installment' => $this->params['installment'],
-            'parameters' => json_encode($this->params)
-        ]);
 
-        $this->params['successurl'] = route('payable.response').'?payment_service=garanti-pos'.'&payment_id='.$payment->id;
-        $this->params['errorurl'] = route('payable.response').'?payment_service=garanti-pos'.'&payment_id='.$payment->id;
+        $this->params['successurl'] = $this->getRedirectUrl(['success' => 'true']);
+        $this->params['errorurl'] = $this->getRedirectUrl(['success' => 'false']);
 
-
-        $this->params['secure3dhash'] = $this->GenerateHashData($payment->id);
+        $this->params['secure3dhash'] = $this->GenerateHashData($this->payment->id);
+        // dd($this->params['secure3dhash'], $this);
         $this->headers['Content-Type'] ='application/x-www-form-urlencoded';
 
         $resp = $this->postReq(
-        $this->url,
-        $endpoint,
-        $this->hydrateParams($this->params),
-        $this->headers,
+            $this->url,
+            $endpoint,
+            $this->hydrateParams($this->params),
+            $this->headers,
             'encoded',
         );
 
         return print_r($resp);
     }
+    public function pay_(array $params)
+    {
+        // Store original parameters for later use
+        $this->params['txntimestamp'] = time();
+        $this->params += $params;
 
+        // Set success and error URLs
+        $successUrl = $this->getRedirectUrl(['success' => 'true']);
+        $errorUrl = $this->getRedirectUrl(['success' => 'false']);
+
+        // Get the required values
+        // $orderId = $this->payment->id;
+        $orderId = $params['order_id'];
+        $amount = $this->formatPrice($params['amount']);
+        $currencyCode = Currency::getNumericCode($params['currency']);
+        $cardNumber = $params['card_no'];
+        $cardExpMonth = $params['card_month'];
+        $cardExpYear = $this->formatCardYear($params['card_year']);
+        $cardCvv = $params['card_cvv'];
+        $cardHolderName = $params['card_name'];
+
+        dd($this->GenerateHashData($this->payment->id), $this);
+
+        // Create the XML request structure
+        $requestData = [
+            'Mode' => $this->mode === 'live' ? 'PROD' : 'TEST',
+            'Version' => $this->config[$this->mode]['api_version'],
+            'Terminal' => [
+                'ProvUserID' => $this->provUserID,
+                // 'UserID' => $this->terminalUserID,
+                'UserID' => $this->provUserID,
+                'HashData' => $this->GenerateHashData($this->payment->id),
+                // 'HashData' => $this->GenerateHashData($orderId, $cardNumber, $amount, $currencyCode),
+                'ID' => $this->terminalID,
+                'MerchantID' => $this->merchantID,
+            ],
+            'Customer' => [
+                'IPAddress' => $params['user_ip'],
+                'EmailAddress' => $params['user_email'],
+            ],
+            'Card' => [
+                'Number' => $cardNumber,
+                'ExpireDate' => $cardExpMonth . $cardExpYear,
+                'CVV2' => $cardCvv,
+            ],
+            'Order' => [
+                'OrderID' => $params['order_id'],
+                'GroupID' => '',
+                'Description' => $params['description'] ?? '',
+            ],
+            'Transaction' => [
+                'Type' => 'sales',
+                'InstallmentCnt' => $params['installment_count'] ?? '',
+                'Amount' => $amount,
+                'CurrencyCode' => $currencyCode,
+                'CardholderPresentCode' => '0', // E-commerce transaction
+                'MotoInd' => 'N',
+                'Secure3D' => [
+                    'AuthenticationCode' => '',
+                    'SecurityLevel' => '3D_PAY',
+                    'TxnID' => '',
+                    'Md' => '',
+                    'SuccessUrl' => $successUrl,
+                    'ErrorUrl' => $errorUrl,
+                ],
+            ],
+        ];
+
+        // Convert to XML
+        $xmlRequest = $this->arrayToXml($requestData, '<GVPSRequest/>');
+
+        // Set headers for XML
+        $this->headers['Content-Type'] = 'application/xml';
+
+        // Make the request
+        $endpoint = 'VPServlet';
+        $resp = $this->postReq(
+            $this->url,
+            $endpoint,
+            $xmlRequest,
+            $this->headers,
+            'xml',
+        );
+
+        dd($requestData, simplexml_load_string($resp));
+
+        return $this->processResponse($resp);
+    }
+
+    /**
+     * Cancel a payment transaction
+     * Can only be used on the same day as the original transaction
+     *
+     * @param array|object $params Parameters including order_id and hostrefnum/transid
+     * @return mixed Response from payment gateway
+     */
+    public function cancel(array|object $params)
+    {
+        $params = (array) $params;
+        // Check required parameters
+        if (!isset($params['order_id']) || (!isset($params['transid']) && !isset($params['hostrefnum']))) {
+            return ['error' => 'Missing required parameters: order_id or transaction reference number'];
+        }
+
+        // Set provider user ID for cancellation operations
+        $originalProvUserID = $this->provUserID;
+        $this->provUserID = "PROVRFN";
+
+        $endpoint = 'VPServlet';
+        $orderId = $params['order_id'];
+        $amount = $this->formatPrice($params['amount']);
+        $currencyCode = Currency::getNumericCode($params['currency'] ?? 'TRY');
+        $retRefNum = $params['transid'] ?? $params['hostrefnum'];
+
+        // Create the XML request
+        $requestData = [
+            'Mode' => $this->mode === 'live' ? 'PROD' : 'TEST',
+            'Version' => '512',
+            'Terminal' => [
+                'ProvUserID' => $this->provUserID,
+                'UserID' => $this->terminalUserID,
+                'HashData' => $this->GenerateHashData($orderId, null, $amount, $currencyCode),
+                'ID' => $this->terminalID,
+                'MerchantID' => $this->merchantID,
+            ],
+            'Customer' => [
+                'IPAddress' => $params['customeripaddress'] ?? $params['ip_address'] ?? $_SERVER['REMOTE_ADDR'],
+                'EmailAddress' => $params['customeremailaddress'] ?? $params['user_email'] ?? '',
+            ],
+            'Order' => [
+                'OrderID' => $orderId,
+                'GroupID' => '',
+            ],
+            'Transaction' => [
+                'Type' => 'void',
+                'InstallmentCnt' => '',
+                'Amount' => $amount,
+                'CurrencyCode' => $currencyCode,
+                'CardholderPresentCode' => '0',
+                'MotoInd' => 'N',
+                'OriginalRetrefNum' => $retRefNum,
+            ],
+        ];
+
+        // Convert to XML
+        $xmlRequest = $this->arrayToXml($requestData, '<GVPSRequest/>');
+
+        // Set headers
+        $this->headers['Content-Type'] = 'application/xml';
+
+        // Make request
+        $resp = $this->postReq(
+            $this->url,
+            $endpoint,
+            $xmlRequest,
+            $this->headers,
+            'xml',
+        );
+
+        dd($resp);
+
+        // Reset provUserID to original value
+        $this->provUserID = $originalProvUserID;
+
+        return $this->processResponse($resp);
+    }
+
+    /**
+     * Refund a payment transaction
+     * Used for refunding transactions from previous days
+     *
+     * @param array|object $params Parameters including order_id and amount
+     * @return mixed Response from payment gateway
+     */
+    public function refund(array|object $params)
+    {
+        $params = (array) $params;
+        // Check required parameters
+        if (!isset($params['order_id']) || !isset($params['amount'])) {
+            return ['error' => 'Missing required parameters: order_id or amount'];
+        }
+
+        // Set provider user ID for refund operations
+        $originalProvUserID = $this->provUserID;
+        $this->provUserID = "PROVRFN";
+
+        $endpoint = 'VPServlet';
+        $orderId = $params['order_id'];
+        $amount = $this->formatPrice($params['amount']);
+        $currencyCode = Currency::getNumericCode($params['currency'] ?? 'TRY');
+
+        // Create the XML request
+        $requestData = [
+            'Mode' => $this->mode === 'live' ? 'PROD' : 'TEST',
+            'Version' => '512',
+            'Terminal' => [
+                'ProvUserID' => $this->provUserID,
+                'UserID' => $this->terminalUserID,
+                'HashData' => $this->GenerateHashData($orderId, null, $amount, $currencyCode),
+                'ID' => $this->terminalID,
+                'MerchantID' => $this->merchantID,
+            ],
+            'Customer' => [
+                'IPAddress' => $params['customeripaddress'] ?? $params['ip_address'] ?? $_SERVER['REMOTE_ADDR'],
+                'EmailAddress' => $params['customeremailaddress'] ?? $params['user_email'] ?? '',
+            ],
+            'Order' => [
+                'OrderID' => $orderId,
+                'GroupID' => '',
+            ],
+            'Transaction' => [
+                'Type' => 'refund',
+                'InstallmentCnt' => '',
+                'Amount' => $amount,
+                'CurrencyCode' => $currencyCode,
+                'CardholderPresentCode' => '0',
+                'MotoInd' => 'N',
+            ],
+        ];
+
+        // Convert to XML
+        $xmlRequest = $this->arrayToXml($requestData, '<GVPSRequest/>');
+
+        // Set headers
+        $this->headers['Content-Type'] = 'application/xml';
+
+        // Make request
+        $resp = $this->postReq(
+            $this->url,
+            $endpoint,
+            $xmlRequest,
+            $this->headers,
+            'xml',
+        );
+
+        // Reset provUserID to original value
+        $this->provUserID = $originalProvUserID;
+
+        return $this->processResponse($resp);
+    }
+
+    /**
+     * Process the response from the gateway
+     *
+     * @param mixed $response Raw response from gateway
+     * @return array Processed response
+     */
+    private function processResponse($response)
+    {
+        // Try to parse as XML
+        try {
+            $xml = simplexml_load_string($response);
+            if ($xml) {
+                dd($xml);
+                return $this->parseXmlResponse($xml);
+            }
+        } catch (\Exception $e) {
+            // Not XML or parsing error
+        }
+
+        // Try to parse as JSON
+        $json = json_decode($response, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $json;
+        }
+
+        // Return raw response if unable to parse
+        return [
+            'raw_response' => $response,
+            'status' => 'unknown',
+            'message' => 'Unable to parse response'
+        ];
+    }
+
+    /**
+     * Parse XML response from Garanti
+     *
+     * @param \SimpleXMLElement $xml Response as XML
+     * @return array Parsed response
+     */
+    private function parseXmlResponse($xml)
+    {
+        $result = [];
+
+        // Extract basic response data
+        if (isset($xml->Transaction->Response)) {
+            $result['code'] = (string)$xml->Transaction->Response->Code;
+            $result['message'] = (string)$xml->Transaction->Response->Message;
+            $result['status'] = ((string)$xml->Transaction->Response->Code === 'Approved') ? 'success' : 'error';
+            $result['reason_code'] = (string)$xml->Transaction->Response->ReasonCode;
+        }
+
+        // Extract transaction details if available
+        if (isset($xml->Transaction->RetrefNum)) {
+            $result['ref_num'] = (string)$xml->Transaction->RetrefNum;
+        }
+
+        // Extract order ID if available
+        if (isset($xml->Order->OrderID)) {
+            $result['order_id'] = (string)$xml->Order->OrderID;
+        }
+
+        return $result;
+    }
 
     private function GenerateSecurityData()
     {
@@ -152,18 +461,43 @@ class GarantiPosService extends PaymentService{
         return strtoupper($shaData);
     }
 
-    public function GenerateHashData($payment_id)
+    /**
+     * Modified version of GenerateHashData to support cancel and refund operations
+     *
+     * @param string $orderId Order ID
+     * @param string|null $cardNumber Card number (can be null for cancel/refund)
+     * @param string $amount Transaction amount
+     * @param string $currencyCode Currency code
+     * @return string Hashed data
+     */
+    public function GenerateHashData($orderId, $cardNumber = null, $amount = null, $currencyCode = null)
     {
-        $orderId  = $this->params['order_id']; 
-        $terminalId =  $this->terminalID;
-        $amount = $this->formatPrice($this->params['paid_price']); 
+        // If called with parameters from cancel/refund
+        if ($amount !== null && $currencyCode !== null) {
+            $hashedPassword = $this->GenerateSecurityData();
+            $data = [
+                $orderId,
+                $this->terminalID,
+                $cardNumber,
+                $amount,
+                $currencyCode,
+                $hashedPassword
+            ];
+            return strtoupper(hash("sha512", implode('', $data)));
+        }
+
+        // Original implementation for payment
+        $orderId  = $this->params['order_id'];
+        $terminalId = $this->terminalID;
+        $amount = $this->formatPrice($this->params['amount']);
         $currencyCode = Currency::getNumericCode($this->params['currency']);
         $storeKey = $this->storeKey;
         $installmentCount = "";
-        $successUrl = route('payable.response').'?payment_service=garanti-pos'.'&payment_id='.$payment_id;
-        $errorUrl = route('payable.response').'?payment_service=garanti-pos'.'&payment_id='.$payment_id;
+        $successUrl = $this->getRedirectUrl(['success' => 'true']);
+        $errorUrl = $this->getRedirectUrl(['success' => 'false']);
         $type = $this->params['txntype'];
-        $hashedPassword = $this->GenerateSecurityData();      
+        $hashedPassword = $this->GenerateSecurityData();
+
         return strtoupper(hash('sha512', $terminalId . $orderId . $amount . $currencyCode . $successUrl . $errorUrl . $type . $installmentCount . $storeKey . $hashedPassword));
     }
 
@@ -175,7 +509,8 @@ class GarantiPosService extends PaymentService{
             $params['mode'] = 'TEST';
 
         $params['orderid'] = $params['order_id'];
-        $params['txnamount'] = $this->formatPrice($params['paid_price']);
+        // $params['txnamount'] = $this->formatPrice($params['paid_price']);
+        $params['txnamount'] = $this->formatPrice($params['amount']);
         $params['lang'] = $params['locale'];
         $params['txncurrencycode'] = Currency::getNumericCode($params['currency']);
         $params['customeremailaddress'] = $params['user_email'];
@@ -191,7 +526,8 @@ class GarantiPosService extends PaymentService{
         return $params;
     }
 
-    public function handleResponse(HttpRequest $request){
+    public function handleResponse(HttpRequest $request)
+    {
         $paramsToRemoved = [
             'card_name',
             'card_no',
@@ -206,50 +542,76 @@ class GarantiPosService extends PaymentService{
             'terminalid',
         ];
 
-        $resp = array_filter($request->all(), function($key) use ($paramsToRemoved) {
+        $cleanedResponse = array_filter($request->all(), function($key) use ($paramsToRemoved) {
             return !in_array($key, $paramsToRemoved);
         }, ARRAY_FILTER_USE_KEY);
 
-        if($request->mdstatus == 1){
-            $params = [
-                'status' => $this::RESPONSE_STATUS_SUCCESS,
-                'id' => $request->query('payment_id'),
-                'payment_service' => $request->payment_service,
-                'order_id' => $request->order_id,
-                'order_data' => $request->all()
-            ];
+        $responseStatus = $request->mdstatus == 1 ? self::RESPONSE_STATUS_SUCCESS : self::RESPONSE_STATUS_ERROR;
+        $recordStatus = $request->mdstatus == 1 ? PaymentStatus::COMPLETED : PaymentStatus::FAILED;
+        $responseMessage = $this->mdStatuses[$request->mdstatus];
 
-            $response = $this->updateRecord(
-                $params['id'],
-                self::STATUS_COMPLETED,
-                $resp
-            );
+        $this->payment->update([
+            'status' => $recordStatus,
+            'response' => $cleanedResponse
+        ]);
 
-        }else{
-            $params = [
-                'status' => $this::RESPONSE_STATUS_ERROR,
-                'id' => $request->query('payment_id'),
-                'payment_service' => $request->payment_service,
-                'order_id' => $request->order_id,
-                'order_data' => $request->all()
-            ];
+        $responsePayload = [
+            'status' => $responseStatus,
+            'id' => $request->query('payment_id'),
+            'payment_service' => $request->query('payment_service'),
+            'order_id' => $request->query('order_id'),
+            'order_data' => $request->all(),
+            'message' => $responseMessage
+        ];
 
-            $response = $this->updateRecord(
-                $params['id'],
-                self::STATUS_FAILED,
-                $resp
-            );
-
-
-        }
-        return $this->generatePostForm($params, route(config('payable.return_url')));
+        return $this->generatePostForm($responsePayload, route(config('payable.return_url')));
     }
 
-    public function formatPrice($price){
-        return round($price, 2) * 100;
+    public function formatPrice($price)
+    {
+        return $price;
+        // return round($price, 2) * 100;
     }
 
-    public function formatCardYear($year){
+    public function formatCardYear($year)
+    {
         return substr($year, 2);
+    }
+
+    /**
+     * Convert array to XML
+     *
+     * @param array $array Array to convert
+     * @param string $rootElement Root element tag
+     * @return string XML string
+     */
+    protected function arrayToXml($array, $rootElement = null)
+    {
+        $xml = new \SimpleXMLElement($rootElement !== null ? $rootElement : '<root/>');
+
+        $this->arrayToXmlHelper($array, $xml);
+
+        return $xml->asXML();
+    }
+
+    /**
+     * Helper function for arrayToXml conversion
+     */
+    private function arrayToXmlHelper($array, &$xml)
+    {
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                if (is_numeric($key)) {
+                    $key = 'item' . $key; // change numeric keys to item0, item1, etc.
+                }
+                $subnode = $xml->addChild($key);
+                $this->arrayToXmlHelper($value, $subnode);
+            } else {
+                if (is_numeric($key)) {
+                    $key = 'item' . $key;
+                }
+                $xml->addChild($key, htmlspecialchars($value));
+            }
+        }
     }
 }
