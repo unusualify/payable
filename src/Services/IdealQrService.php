@@ -3,22 +3,56 @@
 
 namespace Unusualify\Payable\Services;
 
-use Illuminate\Http\Request as HttpRequest;
-use Unusualify\Payable\Models\Payment as ModelsPayment;
-use Illuminate\Support\Facades\Redirect;
+use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Unusualify\Payable\Models\Payment;
+use Unusualify\Payable\Models\Enums\PaymentStatus;
 
+class IdealQrService extends BuckarooService
+{
+    /**
+     * Has Refund
+     *
+     * @var bool
+     */
+    public static $hasRefund = true;
 
-class IdealQrService extends BuckarooService{
+    /**
+     * Has Cancel
+     *
+     * @var bool
+     */
+    public static $hasCancel = false;
 
-    
     public function __construct($mode = null)
     {
-        $this->service = 'ideal-qr';
+        parent::__construct( $mode, 'ideal-qr');
+    }
 
-        parent::__construct(
-            $this->service
-        );
+    /**
+     * Hydrate params
+     *
+     * @param  array|object $params
+     * @return array
+     */
+    public function hydrateParams(array|object $params): array
+    {
+        $params = (array) $params;
+        $amount = (float) $params['amount'] / 100;
 
+        return [
+            'description' => $params['description'] ?? 'Purchase',
+            'returnURL' => $this->getRedirectUrl(),
+            'minAmount' => $amount,
+            'maxAmount' => $amount,
+            'amount' => $amount,
+            'expiration' => date('Y-m-d', strtotime('+1 day')),
+            'purchaseId' => $params['order_id'],
+            'amountIsChangeable' => false,
+            'isOneOff' => true,
+            'imageSize' => '600',
+            'isProcessing' => false,
+        ];
     }
 
      /**
@@ -29,25 +63,8 @@ class IdealQrService extends BuckarooService{
      */
     public function pay(array $params)
     {
-        $payment = $this->createRecord(
-            $this->hydrateRecordParams($params)
-        );
-       
-        
-        $params['returnURL'] = route('payable.response').'?payment_service='. $this->service . '&payment_id=' . $payment->id;
-        $response = $this->buckaroo->method('ideal_qr')->generate([
-            'description' => $params['description'] ?? 'Purchase',
-            'returnURL' => $params['returnURL'],
-            'minAmount' =>  $params['paid_price'],
-            'maxAmount' =>  $params['paid_price'],
-            'imageSize' => '600',
-            'purchaseId' => $params['order_id'],
-            'isOneOff' => true,
-            'amount' => $params['paid_price'],
-            'amountIsChangeable' => false,
-            'expiration' => date('Y-m-d', strtotime('+1 day')),
-            'isProcessing' => false,
-        ]);
+        $payload = $this->hydrateParams($params);
+        $response = $this->buckaroo->method('ideal_qr')->generate($payload);
 
         if($response->isSuccess()){
             $servicesParams = $response->getServiceParameters();
@@ -60,118 +77,82 @@ class IdealQrService extends BuckarooService{
         }
     }
 
-
-
-    public function handleResponse(HttpRequest $request)
+    public function handleResponse(Request $request)
     {
-    
+        $responsePayload = Arr::except($request->all(), ['payment_id', 'payment_service']);
+
+        $this->payment->update([
+            'status' => $request->brq_statuscode == "190" ? PaymentStatus::COMPLETED : PaymentStatus::FAILED,
+            'response' => $responsePayload,
+        ]);
+
         $params = [
-            'id' => $request->query('payment_id'),
-            'payment_service' => $request->query('payment_service'),
+            'id' => $request->get('payment_id'),
+            'status' => $request->brq_statuscode == '190' ? self::RESPONSE_STATUS_SUCCESS : self::RESPONSE_STATUS_ERROR,
+            'payment_service' => $request->get('payment_service'),
             'order_id' => $request->brq_invoicenumber,
             'order_data' => json_encode($request->all()),
             'message' => $request->brq_statusmessage
         ];
 
-
-        if($request->brq_statuscode == "190"){
-            $params['status'] = $this::RESPONSE_STATUS_SUCCESS;
-          
-            $this->updateRecord(
-                $params['id'],
-                self::STATUS_COMPLETED,
-                json_encode($request->all()),
-            );
-
-            return $this->generatePostForm($params, route(config('payable.return_url')));
-
-        }else{
-            $params['status'] = $this::RESPONSE_STATUS_ERROR;
-
-            $this->updateRecord(
-                $params['id'],
-                self::STATUS_FAILED,
-                json_encode($request->all()),
-            );
-
-
-            return $this->generatePostForm($params, route(config('payable.return_url')));
-
-        }
+        return $this->generatePostForm($params, route(config('payable.return_url')));
     }
 
     public function refund(array $params)
     {
-        if(empty($params['payment_id'])){
-            return [
-                'status' => $this::RESPONSE_STATUS_ERROR,
-                'id' => $params['payment_id'],
-                'payment_service' => $this->service,
-                'message' => 'Payment id is required'
-            ];
-        }
-        $payment = ModelsPayment::find($params['payment_id']);
-        if(empty($payment)){
-            return [
-                'status' => $this::RESPONSE_STATUS_ERROR,
-                'id' => $params['payment_id'],
-                'payment_service' => $this->service,
-                'message' => 'Payment not found'
-            ];
+        $refundRequest = $this->validateRefundRequest($params);
+
+        if(!$refundRequest['validated']){
+            return $refundRequest;
         }
 
-        if($payment->status != 'COMPLETED'){
-            return [
-                'status' => $this::RESPONSE_STATUS_ERROR,
-                'id' => $params['payment_id'],
-                'payment_service' => $this->service,
-                'message' => 'Payment is not completed'
-            ];
-        }
+        $params = (array) $params;
+        $payment = $refundRequest['payment'];
 
-        if(empty($params['transaction_key']) || empty($params['order_id']) || empty($params['paid_price'])){
-            $payment_response = json_decode($payment->response);
-            if (isset($payment_response->brq_transactions)) {
-                $params['transaction_key'] = $payment_response->brq_transactions;
+        $paymentResponse = $payment->response;
+
+        $amount = (isset($params['amount']) && $params['amount'] > 0) ? $params['amount'] / 100 : $paymentResponse->brq_amount ?? (float) ($payment->amount / 100);
+        $invoice = $params['order_id'] ?? $paymentResponse->brq_invoicenumber ?? $payment->order_id;
+        $currency = $params['currency'] ?? $paymentResponse->brq_currency ?? $payment->currency;
+        $transactionKey = $params['transaction_key'] ?? null;
+
+        if(!$transactionKey){
+            if (isset($paymentResponse->brq_transactions)) {
+                $transactionKey = $paymentResponse->brq_transactions;
             } else {
-                return [
-                    'status' => $this::RESPONSE_STATUS_ERROR,
-                    'id' => $params['payment_id'],
-                    'payment_service' => $this->service,
+                return array_merge($refundRequest, [
                     'message' => 'Transaction key not found in payment response'
-                ];
+                ]);
             }
-            $params['order_id'] = $payment->order_id;
-            $params['paid_price'] = $payment->amount;
         }
 
         $response = $this->buckaroo->method('ideal')->refund([
-            'invoice' => $params['order_id'], //Set invoice number of the transaction to refund
-            'originalTransactionKey' => $params['transaction_key'], //Set transaction key of the transaction to refund
-            'amountCredit' => $params['paid_price'],
+            'originalTransactionKey' => $transactionKey, //Set transaction key of the transaction to refund
+            'invoice' => $invoice, //Set invoice number of the transaction to refund
+            'amountCredit' => $amount,
+            'currency' => $currency,
         ]);
+
+        $refundResponseStatus = $this::RESPONSE_STATUS_ERROR;
+        $message = 'Refund failed';
+
         if($response->isSuccess()){
-            $this->updateRecord(
-                $params['payment_id'],
-                self::STATUS_REFUNDED,
-                $response
-            );
-            return [
-                'status' => $this::RESPONSE_STATUS_SUCCESS,
-                'id' => $params['payment_id'],
-                'payment_service' => $this->service,
-                'order_data' => json_encode($response),
-                'message' => $response->getMessage()
-            ];
-        }else{
-            return [
-                'status' => $this::RESPONSE_STATUS_ERROR,
-                'id' => $params['payment_id'],
-                'payment_service' => $this->service,
-                'order_data' => $response->data(),
-                'message' => $response->getSomeError()
-            ];
+            if($payment){
+                $payment->update([
+                    'status' => PaymentStatus::REFUNDED,
+                    'response' => $response,
+                ]);
+            }
+
+            $refundResponseStatus = $this::RESPONSE_STATUS_SUCCESS;
+            $message = 'Refunded successfully';
         }
+
+        return array_merge($refundRequest, [
+            'status' => $refundResponseStatus,
+            'order_data' => json_encode($response),
+            'message' => $message
+        ]);
     }
 }
 
