@@ -105,7 +105,8 @@ class IyzicoService extends PaymentService
 
     public function setCredentials()
     {
-        $this->setConfig();
+        // $this->setConfig();
+
         $tempConfig = $this->config[$this->mode];
 
         $this->url = $tempConfig['url'];
@@ -164,6 +165,7 @@ class IyzicoService extends PaymentService
     {
         $endpoint = "/payment/3dsecure/initialize";
         $validatedParams = $this->validateParams($params);
+
         if ($validatedParams != true) {
             return "Missing parameter: " . $validatedParams;
         }
