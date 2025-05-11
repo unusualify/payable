@@ -74,6 +74,79 @@ $payment = Payment::create([
 ]);
 ```
 
+### Payment Payload Guide
+
+When using the `pay()` method, you need to provide a properly structured payload. Here's an example of a complete payment payload:
+
+```php
+$payload = [
+    // Required fields
+    'amount' => 1000,                           // Amount in the smallest currency unit (e.g., cents)
+    'currency' => 'USD',                        // Currency code in ISO 4217 format
+    'order_id' => uniqid(''),                // Unique order identifier
+    
+    // Locale and payment details
+    'locale' => 'en',                           // User's locale
+    'installment' => '1',                       // Number of installments (if supported)
+    'payment_group' => 'PRODUCT',               // Payment category
+    
+    // Card information
+    'card_name' => 'John Doe',                  // Cardholder name
+    'card_no' => '4111111111111111',            // Card number (no spaces)
+    'card_month' => '12',                       // Expiration month
+    'card_year' => '2025',                      // Expiration year
+    'card_cvv' => '123',                        // Security code
+    
+    // User information
+    'user_name' => 'John',                      // User's first name
+    'user_surname' => 'Doe',                    // User's last name
+    'user_gsm' => '+1234567890',                // User's phone number
+    'user_email' => 'john.doe@example.com',     // User's email
+    'user_ip' => '127.0.0.1',                   // User's IP address
+    
+    // Billing/shipping information
+    'company_name' => 'Example Corp',           // Company name
+    'user_address' => '123 Main St',            // Street address
+    'user_city' => 'New York',                  // City
+    'user_country' => 'US',                     // Country
+    'user_zip_code' => '10001',                 // Postal/ZIP code
+    
+    // Basket information
+    'basket_id' => uniqid(),                    // Unique basket identifier
+    'items' => [
+        [
+            'id' => '1',                        // Product ID
+            'name' => 'Product Name',           // Product name
+            'category1' => 'Category',          // Primary category
+            'category2' => 'Subcategory',       // Secondary category
+            'price' => 1000,                    // Product price
+            'type' => 'VIRTUAL',                // Product type
+        ],
+        // Add more items as needed
+    ],
+    
+    // Custom data (optional)
+    'custom_data' => [
+        'reference_id' => 'REF123',
+        'notes' => 'Special instructions'
+    ],
+];
+
+// Optional payment record attributes
+$paymentPayload = [
+    'price_id' => 1,                            // Reference to your price model
+    'payment_service_id' => 2,                  // Payment service ID
+    'currency_id' => 3,                         // Currency ID in your system
+];
+
+$payable = new Payable('gateway_slug');
+$result = $payable->pay($payload, $paymentPayload);
+```
+
+Notes:
+- The `amount` should be provided in the smallest currency unit (e.g., cents for USD/EUR, pence for GBP)
+- Different payment gateways may require different fields. Check your specific gateway's documentation
+- The `paymentPayload` parameter is optional and used to store additional data in the payment record
 
 ## Troubleshooting
 
@@ -85,20 +158,4 @@ $payment = Payment::create([
 
 ## License
 
-MIT License
-Copyright (c) 2024 Unusualify
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+The MIT License (MIT). Please see [License File](LICENSE.md) for more information.

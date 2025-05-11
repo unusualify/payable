@@ -20,7 +20,7 @@ class LaravelServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-               __DIR__ . '/../config/config.php' => config_path('payable.php'),
+               __DIR__ . '/../config/payable.php' => config_path('payable.php'),
             ], 'config');
             $this->publishMigrations();
         }
@@ -50,9 +50,13 @@ class LaravelServiceProvider extends ServiceProvider
         $this->registerProviders();
 
         $this->mergeConfigFrom(
-            __DIR__.'/../config/config.php',
+            __DIR__.'/../config/payable.php',
             'payable'
         );
+
+        $this->app->scoped('payable', function () {
+            return new Payable();
+        });
     }
 
     /**

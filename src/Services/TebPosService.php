@@ -27,8 +27,8 @@ class TebPosService extends PaymentService{
     */
     public function setCredentials()
     {
-        $this->setConfig();
-        $this->mode = $this->config['mode'];
+        // $this->setConfig();
+        // $this->mode = $this->config['mode'];
         $tempConfig = $this->config[$this->mode];
 
         $this->url = $tempConfig['url'];
@@ -63,7 +63,7 @@ class TebPosService extends PaymentService{
             'islemtipi' => $this->processType,
             // 'taksit' => $this->params['installment'],
             'taksit' => '',
-            'currency' => $this->params['currency']->iso_4217_number,
+            'currency' => Currency::getNumericCode($this->params['currency']),
             'storetype' => '3d_pay_hosting',
             'lang' => $this->params['locale'],
             'firmaadi' => '',
@@ -72,18 +72,16 @@ class TebPosService extends PaymentService{
         // dd($data,$this->params['currency']);
         // $currency = PriceService::find($priceID)->currency;
 
-        $this->createRecord(
-        [
-            'payment_gateway' => $this->serviceName,
-            'order_id' => $this->params['order_id'],
-            'payment_service_id' => $this->params['payment_service_id'],
-            'price_id' => $this->params['price_id'],
-            'currency_id' => $this->params['currency']->id,
-            'email' => '', //Add email to data
-            'installment' => $this->params['installment'],
-            'amount' => $this->params['paid_price'],
-            'parameters' => json_encode($data)
-        ]);
+        // $this->createRecord(
+        // [
+        //     'payment_gateway' => $this->serviceName,
+        //     'order_id' => $this->params['order_id'],
+        //     'currency' => $this->params['currency'],
+        //     'email' => '', //Add email to data
+        //     'installment' => $this->params['installment'],
+        //     'amount' => $this->params['paid_price'],
+        //     'parameters' => json_encode($data)
+        // ]);
         // dd($this->url,$endpoint);
         $response = $this->postReq($this->url,$endpoint,$data,[],'encoded');
         print($response);
@@ -126,9 +124,9 @@ class TebPosService extends PaymentService{
             'amount' => $this->params['paid_price'],
             'BillToCompany' => $this->params['company_name'],
             'BillToName' => $this->params['card_name'],
-            'callbackUrl' => route('payment.client.response'),
+            'callbackUrl' => route('payable.response'),
             'clientid' => $this->merchantID,
-            'currency' => $this->params['currency']->iso_4217_number,
+            'currency' => Currency::getNumericCode($this->params['currency']),
             'cv2' => $this->params['card_cvv'],
             'Ecom_Payment_Card_ExpDate_Month' => $this->params['card_month'],
             'Ecom_Payment_Card_ExpDate_Year' => $this->params['card_year'],
@@ -215,7 +213,7 @@ class TebPosService extends PaymentService{
 
         if($request->MdStatus == 1 && $request->BankResponseCode == '00'){
             $params = [
-                'status' => 'success',
+                'status' => $this::RESPONSE_STATUS_SUCCESS,
                 'id' => $request->query('payment_id'),
                 'service_payment_id' => $request->paymentId,
                 'order_id' => $request->conversationId,
@@ -224,24 +222,22 @@ class TebPosService extends PaymentService{
 
             $response = $this->updateRecord(
                 $params['id'],
-                'COMPLETED',
+                self::STATUS_COMPLETED,
                 $resp
             );
-            $params['custom_fields'] = $response['custom_fields'];
             // dd($params);
         }else{
 
             $params = [
-                'status' => 'fail',
+                'status' => $this::RESPONSE_STATUS_ERROR,
                 'id' => $request->query('payment_id'),
                 'service_payment_id' => $request->paymentId,
                 'order_id' => $request->order_id,
-                'order_data' => $request->all(),
-                'custom_fields' => $resp['custom_fields'],
+                'order_data' => $request->all()
             ];
             $response = $this->updateRecord(
                 $params['id'],
-                'COMPLETED',
+                self::STATUS_FAILED,
                 $resp
             );
         }

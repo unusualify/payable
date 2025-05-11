@@ -7,6 +7,8 @@
 
 return [
     'table' => 'unfy_payments',
+    'additional_fillable' => [],
+    'middleware' => [],
     'session_key' => 'payable',
     'return_url' => 'payment.response',
     'services' => [
@@ -44,7 +46,7 @@ return [
                 'api_secret' => env('IYZICO_PROD_API_SECRET'),
             ],
         ],
-        'garantipos' => [
+        'garanti-pos' => [
             'mode' => env('GARANTI_POS_MODE', 'sandbox'),
             'sandbox' => [
                 'url' => env('GARANTI_TEST_PAYMENT_URL', 'sandbox'),
@@ -52,6 +54,7 @@ return [
                 'terminal_id' => env('GARANTI_TEST_3D_TERMINAL_ID', ''),
                 '3dpay_terminal_id' => env('GARANTI_TEST_3D_PAY_TERMINAL_ID', ''),
                 '3d_oos_pay_terminal_id' => env('GARANTI_TEST_3D_OOS_PAY_TERMINAL_ID', ''),
+                'terminal_userid' => env('GARANTI_TEST_TERMINAL_USERID', ''),
                 'provision_userid' => env('GARANTI_TEST_PROV_USERID', ''),
                 'provision_pw' => env('GARANTI_TEST_PROV_PW', ''),
                 'secure_key' => env('GARANTI_TEST_SECURE_KEY', ''),
@@ -67,6 +70,7 @@ return [
                 '3d_terminal_id' => env('GARANTI_3D_TERMINAL_ID', ''),
                 '3d_oos_pay_terminal_id' => env('GARANTI_3D_PAY_TERMINAL_ID', ''),
                 'provision_userid' => env('GARANTI_PROV_USER_ID', ''),
+                'terminal_userid' => env('GARANTI_TERMINAL_USERID', ''),
                 'provision_pw' => env('GARANTI_PROV_USER_PW', ''),
                 'secure_key' => env('GARANTI_SECURE_KEY', ''),
                 'pay_provision_userid' => env('GARANTIPAY_PROV_USER_ID', ''),
@@ -76,7 +80,7 @@ return [
             'store_key' => env('GARANTI_STORE_KEY', ''),
             'payment_type' => 'creditcard'
         ],
-        'tebpos' => [
+        'teb-pos' => [
             'mode' => env('TEB_POS_MODE', 'sandbox'),
             'sandbox' => [
                 'url' => env('TEB_PAYMENT_URL'),
@@ -89,7 +93,7 @@ return [
                 'store_key' => env('TEB_STORE_KEY', '')
             ]
         ],
-        'tebcommonpos' => [
+        'teb-common-pos' => [
             'mode' => env('TEB_COMMON_POS_MODE', ''),
             'sandbox' => [
                 'url' => env('TEB_COMMON_TEST_URL', ''),
@@ -111,8 +115,19 @@ return [
                 'secret_key' => env('BUCKAROO_SANDBOX_SECRET_KEY',''),
             ],
             'live' => [
+                'website_key' => env('BUCKAROO_LIVE_WEBSITE_KEY',''),
+                'secret_key' => env('BUCKAROO_LIVE_SECRET_KEY',''),
+            ]
+        ],
+        'ideal-qr' => [
+            'mode' => env('BUCKAROO_MODE','sandbox'),
+            'sandbox' => [
                 'website_key' => env('BUCKAROO_SANDBOX_WEBSITE_KEY',''),
                 'secret_key' => env('BUCKAROO_SANDBOX_SECRET_KEY',''),
+            ],
+            'live' => [
+                'website_key' => env('BUCKAROO_LIVE_WEBSITE_KEY',''),
+                'secret_key' => env('BUCKAROO_LIVE_SECRET_KEY',''),
             ]
         ]
     ],

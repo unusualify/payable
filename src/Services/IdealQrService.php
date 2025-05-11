@@ -5,12 +5,10 @@ namespace Unusualify\Payable\Services;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Redirect;
-use Unusualify\Payable\Models\Enums\PaymentStatus;
 use Unusualify\Payable\Models\Payment;
+use Unusualify\Payable\Models\Enums\PaymentStatus;
 
-
-class IdealService extends BuckarooService
+class IdealQrService extends BuckarooService
 {
     /**
      * Has Refund
@@ -28,11 +26,36 @@ class IdealService extends BuckarooService
 
     public function __construct($mode = null)
     {
-        parent::__construct($mode, 'ideal');
-
+        parent::__construct( $mode, 'ideal-qr');
     }
 
     /**
+     * Hydrate params
+     *
+     * @param  array|object $params
+     * @return array
+     */
+    public function hydrateParams(array|object $params): array
+    {
+        $params = (array) $params;
+        $amount = (float) $params['amount'] / 100;
+
+        return [
+            'description' => $params['description'] ?? 'Purchase',
+            'returnURL' => $this->getRedirectUrl(),
+            'minAmount' => $amount,
+            'maxAmount' => $amount,
+            'amount' => $amount,
+            'expiration' => date('Y-m-d', strtotime('+1 day')),
+            'purchaseId' => $params['order_id'],
+            'amountIsChangeable' => false,
+            'isOneOff' => true,
+            'imageSize' => '600',
+            'isProcessing' => false,
+        ];
+    }
+
+     /**
      * pay
      *
      * @param  mixed $params
@@ -40,28 +63,14 @@ class IdealService extends BuckarooService
      */
     public function pay(array $params)
     {
-        $params = $this->hydrateParams($params);
+        $payload = $this->hydrateParams($params);
+        $response = $this->buckaroo->method('ideal_qr')->generate($payload);
 
-        $response = $this->buckaroo->method($this->service)->pay($params);
-
-        if($response->hasRedirect()){
-            $redirectUrl = $response->getRedirectUrl();
-            $transactionKey = $response->getTransactionKey();
-
-            // dd(
-            //     $redirectUrl,
-            //     $transactionKey,
-            //     $params,
-            //     $this->payment->response,
-            //     get_class_methods($response),
-            //     $response,
-
-            // );
-
-            return Redirect::to($redirectUrl);
-
+        if($response->isSuccess()){
+            $servicesParams = $response->getServiceParameters();
+            $qrimageurl = $servicesParams['qrimageurl'];
+            return $qrimageurl;
         }else if ($response->hasError()){
-            // dd($response->getSomeError());
             return $response->getSomeError();
         }else{
             return 'Something went wrong please contact with administrator.';
@@ -86,16 +95,10 @@ class IdealService extends BuckarooService
             'message' => $request->brq_statusmessage
         ];
 
-        return $this->generatePostForm($params, $this->getPayableReturnUrl());
+        return $this->generatePostForm($params, route(config('payable.return_url')));
     }
 
-    /**
-     * Refund
-     *
-     * @param  array|object $params
-     * @return void
-     */
-    public function refund(array|object $params)
+    public function refund(array $params)
     {
         $refundRequest = $this->validateRefundRequest($params);
 
@@ -129,21 +132,6 @@ class IdealService extends BuckarooService
             'amountCredit' => $amount,
             'currency' => $currency,
         ]);
-
-        // dd(
-        //     $transactionKey,
-        //     $response->isFailed(),
-        //     $response->isSuccess(),
-        //     $response->hasSomeError(),
-        //     $response->getSomeError(),
-        //     $response->hasError(),
-        //     $response->getFirstError(),
-        //     $response->hasMessage(),
-        //     $response->getMessage(),
-        //     $response,
-        //     get_class_methods($response)
-        // );
-
 
         $refundResponseStatus = $this::RESPONSE_STATUS_ERROR;
         $message = 'Refund failed';

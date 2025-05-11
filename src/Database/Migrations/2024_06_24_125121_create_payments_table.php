@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('payment_gateway')->nullable();
             $table->string('order_id');
             $table->integer('amount');
-            $table->integer('currency_id')->nullable();
-            $table->enum('status', ['PENDING','CANCELLED','COMPLETED','FAILED','REFUNDED']);
+            $table->string('currency',3)->nullable();
+            $table->string('status')->default('PENDING');
             $table->string('email')->nullable();
             $table->integer('installment')->nullable();
             $table->json('parameters')->nullable();
