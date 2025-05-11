@@ -27,8 +27,8 @@ class TebPosService extends PaymentService{
     */
     public function setCredentials()
     {
-        $this->setConfig();
-        $this->mode = $this->config['mode'];
+        // $this->setConfig();
+        // $this->mode = $this->config['mode'];
         $tempConfig = $this->config[$this->mode];
 
         $this->url = $tempConfig['url'];
@@ -72,16 +72,16 @@ class TebPosService extends PaymentService{
         // dd($data,$this->params['currency']);
         // $currency = PriceService::find($priceID)->currency;
 
-        $this->createRecord(
-        [
-            'payment_gateway' => $this->serviceName,
-            'order_id' => $this->params['order_id'],
-            'currency' => $this->params['currency'],
-            'email' => '', //Add email to data
-            'installment' => $this->params['installment'],
-            'amount' => $this->params['paid_price'],
-            'parameters' => json_encode($data)
-        ]);
+        // $this->createRecord(
+        // [
+        //     'payment_gateway' => $this->serviceName,
+        //     'order_id' => $this->params['order_id'],
+        //     'currency' => $this->params['currency'],
+        //     'email' => '', //Add email to data
+        //     'installment' => $this->params['installment'],
+        //     'amount' => $this->params['paid_price'],
+        //     'parameters' => json_encode($data)
+        // ]);
         // dd($this->url,$endpoint);
         $response = $this->postReq($this->url,$endpoint,$data,[],'encoded');
         print($response);
