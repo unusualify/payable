@@ -16,44 +16,21 @@ use Unusualify\Payable\Http\Controllers\TestController;
 |
 */
 
-// Route::controller(TestController::class)->prefix('test-api')->group(function(){
-//   Route::get('/',  'test')->name('payable.test');
+Route::controller(PaymentController::class)
+    ->as('payable.')
+    ->prefix('payable')
+    ->group(function(){
 
-//   Route::get('/paypal-return', 'paypalResponse')->name('payable.paypal.return');
-//   Route::get('/paypal', 'testPaypal')->name('payable.paypal.pay');
-
-//   Route::post('/garanti-return', 'garantiResponse')->name('payable.garanti.return');
-
-//   Route::post('/teb-return', 'tebResponse')->name('payable.teb.return');
-
-//   Route::post('/teb-common-return', 'tebCommonResponse')->name('payable.teb-common.return');
-
-//   Route::get('/iyzico', 'testIyzico')->name('payable.iyzico.pay');
-//   Route::post('/iyzico-return', 'iyzicoResponse')->name('payable.iyzico.return');
-
-//   Route::get('/cancel/{payment_service_id}/{payment_id}/{conversation_id}', 'cancel')->name('test.payable.cancel');
-
-//   Route::get('/refund/{payment_service_id}/{payment_id}/{conversation_id}', 'refund')->name('test.payable.refund');
-
-//   Route::get('/show/{payment_service_id}/{order_id}', 'show')->name('test.payable.show');
-
-//   Route::get('/test-relation', 'testRelation')->name('test.payable.relation');
-
-
-// });
-
-
-Route::controller(PaymentController::class)->prefix('payable')->group(function(){
-
-    Route::get('/pay/{payment_service_id}', 'pay')->name('payable.pay');
-    Route::get('/cancel/{payment_service_id}/{payment_id}', 'cancel')->name('payable.cancel');
-    Route::get('/refund/{payment_service_id}/{payment_id}', 'refund')->name('payable.refund');
-
-    Route::group([],function () {
-        Route::post('/return', 'response')->name('payable.response');
-        Route::get('/return', 'response')->name('payable.response');
+    Route::middleware(config('payable.middleware', []))->group(function(){
+        Route::get('/pay/{payment_service_id}', 'pay')->name('pay');
+        // Route::get('/cancel/{payment_service_id}/{payment_id}', 'cancel')->name('payable.cancel');
+        // Route::get('/refund/{payment_service_id}/{payment_id}', 'refund')->name('payable.refund');
+        Route::get('/cancel/{payment}', 'cancel')->name('cancel');
+        Route::get('/refund/{payment}', 'refund')->name('refund');
     });
 
+    Route::post('/return', 'response')->name('response');
+    Route::get('/return', 'response')->name('response');
 });
 
 
