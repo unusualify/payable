@@ -192,10 +192,10 @@ class PaypalService extends PaymentService
             $response = json_decode($response);
         }
 
-        $this->payment->update([
-            'status' => PaymentStatus::COMPLETED,
-            'response' => $data
-        ]);
+        // $this->payment->update([
+        //     'status' => PaymentStatus::COMPLETED,
+        //     'response' => $data
+        // ]);
 
         return $response;
     }
@@ -481,9 +481,9 @@ class PaypalService extends PaymentService
             }
 
         }else{
-            $recordResponse = json_encode(request()->all());
+            $recordResponse = request()->all();
 
-            $responseOrderData = request()->all();
+            $responseOrderData = json_encode(request()->all());
         }
 
         $this->payment->update([
