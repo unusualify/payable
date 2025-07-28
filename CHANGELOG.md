@@ -2,6 +2,23 @@
 
 All notable changes to `payable` will be documented in this file
 
+## v0.11.0 - 2025-07-28
+
+### :recycle: Refactors
+
+- :recycle: update PaypalService to improve response handling and clean up commented code by @OoBook in https://github.com/unusualify/payable/commit/21be8ed2089682ba4e1cf0e1b6e482eca1394c6a
+- :recycle: update BuckarooService and configuration for improved payment handling by @OoBook in https://github.com/unusualify/payable/commit/79d683299b808c268ea34679b632d947715e96b2
+- :recycle: enhance Payable configuration and model integration for improved payment handling by @OoBook in https://github.com/unusualify/payable/commit/b6a591327e773c9f1a9754830f1e060bef4a9866
+
+### :green_heart: Workflow
+
+- update release.yml by @web-flow in https://github.com/unusualify/payable/commit/792b7ad1f8205c771d7a39c4241058973133d124
+
+### :beers: Other Stuff
+
+- :package: update composer.json to include development dependencies and scripts by @OoBook in https://github.com/unusualify/payable/commit/faae95d77e8cc3bab3224b33c349cf736bc8de9b
+- :package: update test-coverage script in composer.json for consistency by @OoBook in https://github.com/unusualify/payable/commit/a102c846524f17d64a89718fe45d13d5fccb17a7
+
 ## v0.10.0 - 2025-05-11
 
 ### :rocket: Features
