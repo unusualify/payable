@@ -109,7 +109,7 @@ return [
             ]
         ],
         'ideal' => [
-            'mode' => env('BUCKAROO_MODE',''),
+            'mode' => env('BUCKAROO_MODE','sandbox'),
             'sandbox' => [
                 'website_key' => env('BUCKAROO_SANDBOX_WEBSITE_KEY',''),
                 'secret_key' => env('BUCKAROO_SANDBOX_SECRET_KEY',''),
