@@ -7,9 +7,10 @@ trait WebHooksEvents
     /**
      * List all events types for web hooks.
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/webhooks/v1/#webhooks-event-types_list
      */
@@ -25,9 +26,10 @@ trait WebHooksEvents
     /**
      * List all events notifications for web hooks.
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/webhooks/v1/#webhooks-events_list
      */
@@ -43,11 +45,11 @@ trait WebHooksEvents
     /**
      * List all events notifications for web hooks.
      *
-     * @param string $event_id
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/webhooks/v1/#webhooks-events_get
      */
@@ -63,12 +65,11 @@ trait WebHooksEvents
     /**
      * Resend notification for the event.
      *
-     * @param string $event_id
-     * @param array  $items
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/webhooks/v1/#webhooks-events_resend
      */

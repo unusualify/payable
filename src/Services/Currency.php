@@ -10,20 +10,22 @@ class Currency
         'EUR' => 978,
         'GBP' => 826,
         'CHF' => 756,
-        'JPY' => 392
+        'JPY' => 392,
     ];
 
     private $code;
+
     private $numericCode;
 
     public function __construct($currencyCode)
     {
         if (is_object($currencyCode) && isset($currencyCode->iso_4217_number)) {
             $this->numericCode = $currencyCode->iso_4217_number;
+
             return;
         }
 
-        if (!is_string($currencyCode) || !isset(self::CURRENCY_CODES[$currencyCode])) {
+        if (! is_string($currencyCode) || ! isset(self::CURRENCY_CODES[$currencyCode])) {
             throw new \InvalidArgumentException('Invalid or unsupported currency code');
         }
 
@@ -37,8 +39,8 @@ class Currency
             return $currencyCode->iso_4217_number;
         }
 
-        if (!isset(self::CURRENCY_CODES[$currencyCode])) {
-            throw new \InvalidArgumentException('Unsupported currency code: ' . $currencyCode);
+        if (! isset(self::CURRENCY_CODES[$currencyCode])) {
+            throw new \InvalidArgumentException('Unsupported currency code: '.$currencyCode);
         }
 
         return self::CURRENCY_CODES[$currencyCode];
@@ -59,6 +61,7 @@ class Currency
         if (is_object($currencyCode) && isset($currencyCode->iso_4217_number)) {
             return true;
         }
+
         return isset(self::CURRENCY_CODES[$currencyCode]);
     }
 
@@ -66,4 +69,4 @@ class Currency
     {
         return array_keys(self::CURRENCY_CODES);
     }
-} 
+}

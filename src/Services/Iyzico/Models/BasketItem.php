@@ -2,19 +2,22 @@
 
 namespace Unusualify\Payable\Services\Iyzico\Models;
 
-use Unusualify\Payable\Services\Iyzico\Models\IyzicoBaseModel;
-use Unusualify\Payable\Services\Iyzico\Models\JsonBuilder;
-use Unusualify\Payable\Services\Iyzico\Models\RequestStringBuilder;
-
 class BasketItem extends IyzicoBaseModel
 {
     private $id;
+
     private $price;
+
     private $name;
+
     private $category1;
+
     private $category2;
+
     private $itemType;
+
     private $subMerchantKey;
+
     private $subMerchantPrice;
 
     public function getId()
@@ -100,28 +103,28 @@ class BasketItem extends IyzicoBaseModel
     public function getJsonObject()
     {
         return JsonBuilder::create()
-            ->add("id", $this->getId())
-            ->addPrice("price", $this->getPrice())
-            ->add("name", $this->getName())
-            ->add("category1", $this->getCategory1())
-            ->add("category2", $this->getCategory2())
-            ->add("itemType", $this->getItemType())
-            ->add("subMerchantKey", $this->getSubMerchantKey())
-            ->addPrice("subMerchantPrice", $this->getSubMerchantPrice())
+            ->add('id', $this->getId())
+            ->addPrice('price', $this->getPrice())
+            ->add('name', $this->getName())
+            ->add('category1', $this->getCategory1())
+            ->add('category2', $this->getCategory2())
+            ->add('itemType', $this->getItemType())
+            ->add('subMerchantKey', $this->getSubMerchantKey())
+            ->addPrice('subMerchantPrice', $this->getSubMerchantPrice())
             ->getObject();
     }
 
     public function toPKIRequestString()
     {
         return RequestStringBuilder::create()
-            ->append("id", $this->getId())
-            ->appendPrice("price", $this->getPrice())
-            ->append("name", $this->getName())
-            ->append("category1", $this->getCategory1())
-            ->append("category2", $this->getCategory2())
-            ->append("itemType", $this->getItemType())
-            ->append("subMerchantKey", $this->getSubMerchantKey())
-            ->appendPrice("subMerchantPrice", $this->getSubMerchantPrice())
+            ->append('id', $this->getId())
+            ->appendPrice('price', $this->getPrice())
+            ->append('name', $this->getName())
+            ->append('category1', $this->getCategory1())
+            ->append('category2', $this->getCategory2())
+            ->append('itemType', $this->getItemType())
+            ->append('subMerchantKey', $this->getSubMerchantKey())
+            ->appendPrice('subMerchantPrice', $this->getSubMerchantPrice())
             ->getRequestString();
     }
 }

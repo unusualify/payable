@@ -9,11 +9,11 @@ trait BillingPlans
     /**
      * Create a new billing plan.
      *
-     * @param array $data
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/subscriptions/v1/#plans_create
      */
@@ -31,9 +31,10 @@ trait BillingPlans
     /**
      * List all billing plans.
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/subscriptions/v1/#plans_list
      */
@@ -49,12 +50,11 @@ trait BillingPlans
     /**
      * Update an existing billing plan.
      *
-     * @param string $plan_id
-     * @param array  $data
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/invoicing/v2/#invoices_update
      */
@@ -72,11 +72,11 @@ trait BillingPlans
     /**
      * Show details for an existing billing plan.
      *
-     * @param string $plan_id
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/subscriptions/v1/#plans_get
      */
@@ -92,11 +92,11 @@ trait BillingPlans
     /**
      * Activate an existing billing plan.
      *
-     * @param string $plan_id
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/subscriptions/v1/#plans_activate
      */
@@ -112,11 +112,11 @@ trait BillingPlans
     /**
      * Deactivate an existing billing plan.
      *
-     * @param string $plan_id
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/subscriptions/v1/#plans_deactivate
      */
@@ -132,12 +132,11 @@ trait BillingPlans
     /**
      * Update pricing for an existing billing plan.
      *
-     * @param string $plan_id
-     * @param array  $pricing
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/subscriptions/v1/#plans_update-pricing-schemes
      */

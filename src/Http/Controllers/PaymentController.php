@@ -5,19 +5,20 @@ namespace Unusualify\Payable\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\SystemPayment\Entities\PaymentService;
-use Unusualify\Payable\Payable;
 use Unusualify\Payable\Facades\Payable as PayableFacade;
-use Unusualify\Payable\Models\Payment;
+use Unusualify\Payable\Payable;
 
 class PaymentController extends Controller
 {
-
-    public function cancel(Request $request, Payment $payment)
+    public function cancel(Request $request, $payment_id)
     {
+        $paymentModel = config('payable.model');
+        $payment = $paymentModel::findOrFail($payment_id);
+
         $cancelResponse = PayableFacade::setService($payment->payment_gateway)
             ->cancel($payment->id, $payment->response);
 
-        if($request->ajax()){
+        if ($request->ajax()) {
             return response()->json([
                 'message' => $cancelResponse['message'] ?? 'Cancelled successfully',
                 'variant' => $cancelResponse['status'] ?? 'success',
@@ -40,12 +41,15 @@ class PaymentController extends Controller
         // dd($status);
     }
 
-    public function refund(Request $request, Payment $payment)
+    public function refund(Request $request, $payment_id)
     {
+        $paymentModel = config('payable.model');
+        $payment = $paymentModel::findOrFail($payment_id);
+
         $refundResponse = PayableFacade::setService($payment->payment_gateway)
             ->refund($payment->id, $payment->response);
 
-        if($request->ajax()){
+        if ($request->ajax()) {
             return response()->json([
                 'message' => $refundResponse['message'] ?? 'Refunded successfully',
                 'variant' => $refundResponse['status'] ?? 'success',
@@ -65,9 +69,10 @@ class PaymentController extends Controller
                 'price' => '1.2',
                 'locale' => 'tr',
             ]);
-        } else if ($slug == 'paypal') {
+        } elseif ($slug == 'paypal') {
             $payment->service->getAccessToken();
-            $captureId = json_decode(Payment::where('order_id', $orderId)->get()[0]->response)
+            $paymentModel = config('payable.model');
+            $captureId = json_decode($paymentModel::where('order_id', $orderId)->get()[0]->response)
                 ->purchase_units[0]
                 ->payments
                 ->captures[0]
@@ -77,7 +82,7 @@ class PaymentController extends Controller
                 'capture_id' => $captureId,
                 'order_id' => $orderId,
                 'amount' => '100.00',
-                'priceID' => 1
+                'priceID' => 1,
             ]);
         }
         dd($status);
@@ -94,8 +99,8 @@ class PaymentController extends Controller
 
     public function pay($params)
     {
-        //Params should include $payment_service_id, $price_id
-        //This controller functions should be moved to SystemPayment module instead since it has $payment_service_id
+        // Params should include $payment_service_id, $price_id
+        // This controller functions should be moved to SystemPayment module instead since it has $payment_service_id
         $paymentServiceName = PaymentService::find($params['payment_service_id'])->name;
         $payment = new Payable($paymentServiceName);
         $payment->pay($params);

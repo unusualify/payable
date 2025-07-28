@@ -1,12 +1,9 @@
 <?php
 
-
 namespace Unusualify\Payable\Services;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
-use Unusualify\Payable\Models\Payment;
-use Unusualify\Payable\Models\Enums\PaymentStatus;
 
 class IdealQrService extends BuckarooService
 {
@@ -26,14 +23,11 @@ class IdealQrService extends BuckarooService
 
     public function __construct($mode = null)
     {
-        parent::__construct( $mode, 'ideal-qr');
+        parent::__construct($mode, 'ideal-qr');
     }
 
     /**
      * Hydrate params
-     *
-     * @param  array|object $params
-     * @return array
      */
     public function hydrateParams(array|object $params): array
     {
@@ -55,10 +49,10 @@ class IdealQrService extends BuckarooService
         ];
     }
 
-     /**
+    /**
      * pay
      *
-     * @param  mixed $params
+     * @param  mixed  $params
      * @return void
      */
     public function pay(array $params)
@@ -66,13 +60,14 @@ class IdealQrService extends BuckarooService
         $payload = $this->hydrateParams($params);
         $response = $this->buckaroo->method('ideal_qr')->generate($payload);
 
-        if($response->isSuccess()){
+        if ($response->isSuccess()) {
             $servicesParams = $response->getServiceParameters();
             $qrimageurl = $servicesParams['qrimageurl'];
+
             return $qrimageurl;
-        }else if ($response->hasError()){
+        } elseif ($response->hasError()) {
             return $response->getSomeError();
-        }else{
+        } else {
             return 'Something went wrong please contact with administrator.';
         }
     }
@@ -82,7 +77,7 @@ class IdealQrService extends BuckarooService
         $responsePayload = Arr::except($request->all(), ['payment_id', 'payment_service']);
 
         $this->payment->update([
-            'status' => $request->brq_statuscode == "190" ? PaymentStatus::COMPLETED : PaymentStatus::FAILED,
+            'status' => $request->brq_statuscode == '190' ? $this->getStatusEnum()::COMPLETED : $this->getStatusEnum()::FAILED,
             'response' => $responsePayload,
         ]);
 
@@ -92,7 +87,7 @@ class IdealQrService extends BuckarooService
             'payment_service' => $request->get('payment_service'),
             'order_id' => $request->brq_invoicenumber,
             'order_data' => json_encode($request->all()),
-            'message' => $request->brq_statusmessage
+            'message' => $request->brq_statusmessage,
         ];
 
         return $this->generatePostForm($params, route(config('payable.return_url')));
@@ -102,7 +97,7 @@ class IdealQrService extends BuckarooService
     {
         $refundRequest = $this->validateRefundRequest($params);
 
-        if(!$refundRequest['validated']){
+        if (! $refundRequest['validated']) {
             return $refundRequest;
         }
 
@@ -116,19 +111,19 @@ class IdealQrService extends BuckarooService
         $currency = $params['currency'] ?? $paymentResponse->brq_currency ?? $payment->currency;
         $transactionKey = $params['transaction_key'] ?? null;
 
-        if(!$transactionKey){
+        if (! $transactionKey) {
             if (isset($paymentResponse->brq_transactions)) {
                 $transactionKey = $paymentResponse->brq_transactions;
             } else {
                 return array_merge($refundRequest, [
-                    'message' => 'Transaction key not found in payment response'
+                    'message' => 'Transaction key not found in payment response',
                 ]);
             }
         }
 
         $response = $this->buckaroo->method('ideal')->refund([
-            'originalTransactionKey' => $transactionKey, //Set transaction key of the transaction to refund
-            'invoice' => $invoice, //Set invoice number of the transaction to refund
+            'originalTransactionKey' => $transactionKey, // Set transaction key of the transaction to refund
+            'invoice' => $invoice, // Set invoice number of the transaction to refund
             'amountCredit' => $amount,
             'currency' => $currency,
         ]);
@@ -136,10 +131,10 @@ class IdealQrService extends BuckarooService
         $refundResponseStatus = $this::RESPONSE_STATUS_ERROR;
         $message = 'Refund failed';
 
-        if($response->isSuccess()){
-            if($payment){
+        if ($response->isSuccess()) {
+            if ($payment) {
                 $payment->update([
-                    'status' => PaymentStatus::REFUNDED,
+                    'status' => $this->getStatusEnum()::REFUNDED,
                     'response' => $response,
                 ]);
             }
@@ -151,10 +146,7 @@ class IdealQrService extends BuckarooService
         return array_merge($refundRequest, [
             'status' => $refundResponseStatus,
             'order_data' => json_encode($response),
-            'message' => $message
+            'message' => $message,
         ]);
     }
 }
-
-
-

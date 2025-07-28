@@ -7,11 +7,11 @@ trait PaymentRefunds
     /**
      * Show details for authorized payment.
      *
-     * @param string $refund_id
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/payments/v2/#authorizations_get
      */

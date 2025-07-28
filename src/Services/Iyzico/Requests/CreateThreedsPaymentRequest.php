@@ -1,49 +1,50 @@
 <?php
+
 namespace Unusualify\Payable\Services\Iyzico\Requests;
 
 use Unusualify\Payable\Services\Iyzico\Models\JsonBuilder;
-use Unusualify\Payable\Services\Iyzico\Requests\Request;
 use Unusualify\Payable\Services\Iyzico\Models\RequestStringBuilder;
 
 class CreateThreedsPaymentRequest extends Request
 {
-  private $paymentId;
-  private $conversationData;
+    private $paymentId;
 
-  public function getPaymentId()
-  {
-    return $this->paymentId;
-  }
+    private $conversationData;
 
-  public function setPaymentId($paymentId)
-  {
-    $this->paymentId = $paymentId;
-  }
+    public function getPaymentId()
+    {
+        return $this->paymentId;
+    }
 
-  public function getConversationData()
-  {
-    return $this->conversationData;
-  }
+    public function setPaymentId($paymentId)
+    {
+        $this->paymentId = $paymentId;
+    }
 
-  public function setConversationData($conversationData)
-  {
-    $this->conversationData = $conversationData;
-  }
+    public function getConversationData()
+    {
+        return $this->conversationData;
+    }
 
-  public function getJsonObject()
-  {
-    return JsonBuilder::fromJsonObject(parent::getJsonObject())
-      ->add("paymentId", $this->getPaymentId())
-      ->add("conversationData", $this->getConversationData())
-      ->getObject();
-  }
+    public function setConversationData($conversationData)
+    {
+        $this->conversationData = $conversationData;
+    }
 
-  public function toPKIRequestString()
-  {
-    return RequestStringBuilder::create()
-      ->appendSuper(parent::toPKIRequestString())
-      ->append("paymentId", $this->getPaymentId())
-      ->append("conversationData", $this->getConversationData())
-      ->getRequestString();
-  }
+    public function getJsonObject()
+    {
+        return JsonBuilder::fromJsonObject(parent::getJsonObject())
+            ->add('paymentId', $this->getPaymentId())
+            ->add('conversationData', $this->getConversationData())
+            ->getObject();
+    }
+
+    public function toPKIRequestString()
+    {
+        return RequestStringBuilder::create()
+            ->appendSuper(parent::toPKIRequestString())
+            ->append('paymentId', $this->getPaymentId())
+            ->append('conversationData', $this->getConversationData())
+            ->getRequestString();
+    }
 }

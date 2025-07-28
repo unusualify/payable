@@ -3,29 +3,46 @@
 namespace Unusualify\Payable\Services\Iyzico\Requests;
 
 use Unusualify\Payable\Services\Iyzico\Constants;
-use Unusualify\Payable\Services\Iyzico\Models\JsonBuilder;
 use Unusualify\Payable\Services\Iyzico\Models\IyzicoModel;
+use Unusualify\Payable\Services\Iyzico\Models\JsonBuilder;
 use Unusualify\Payable\Services\Iyzico\Models\RequestStringBuilder;
 
 class CreatePaymentRequest extends IyzicoModel
 {
     private $price;
+
     private $paidPrice;
+
     private $installment;
+
     private $paymentChannel;
+
     private $basketId;
+
     private $paymentGroup;
+
     private $reward;
+
     private $paymentCard;
+
     private $buyer;
+
     private $shippingAddress;
+
     private $billingAddress;
+
     private $basketItems;
+
     private $paymentSource;
+
     private $currency;
+
     private $posOrderId;
+
     private $connectorName;
+
     private $plusInstallmentUsage;
+
     private $callbackUrl;
 
     public function __construct()
@@ -216,24 +233,24 @@ class CreatePaymentRequest extends IyzicoModel
     public function getJsonObject()
     {
         return JsonBuilder::fromJsonObject(parent::getJsonObject())
-            ->addPrice("price", $this->getPrice())
-            ->addPrice("paidPrice", $this->getPaidPrice())
-            ->add("installment", $this->getInstallment())
-            ->add("paymentChannel", $this->getPaymentChannel())
-            ->add("basketId", $this->getBasketId())
-            ->add("paymentGroup", $this->getPaymentGroup())
-            ->add("reward", $this->getReward())
-            ->add("paymentCard", $this->getPaymentCard())
-            ->add("buyer", $this->getBuyer())
-            ->add("shippingAddress", $this->getShippingAddress())
-            ->add("billingAddress", $this->getBillingAddress())
-            ->addArray("basketItems", $this->getBasketItems())
-            ->add("paymentSource", $this->getPaymentSource())
-            ->add("currency", $this->getCurrency())
-            ->add("posOrderId", $this->getPosOrderId())
-            ->add("connectorName", $this->getConnectorName())
-            ->add("plusInstallmentUsage", $this->getPlusInstallmentUsage())
-            ->add("callbackUrl", $this->getCallbackUrl())
+            ->addPrice('price', $this->getPrice())
+            ->addPrice('paidPrice', $this->getPaidPrice())
+            ->add('installment', $this->getInstallment())
+            ->add('paymentChannel', $this->getPaymentChannel())
+            ->add('basketId', $this->getBasketId())
+            ->add('paymentGroup', $this->getPaymentGroup())
+            ->add('reward', $this->getReward())
+            ->add('paymentCard', $this->getPaymentCard())
+            ->add('buyer', $this->getBuyer())
+            ->add('shippingAddress', $this->getShippingAddress())
+            ->add('billingAddress', $this->getBillingAddress())
+            ->addArray('basketItems', $this->getBasketItems())
+            ->add('paymentSource', $this->getPaymentSource())
+            ->add('currency', $this->getCurrency())
+            ->add('posOrderId', $this->getPosOrderId())
+            ->add('connectorName', $this->getConnectorName())
+            ->add('plusInstallmentUsage', $this->getPlusInstallmentUsage())
+            ->add('callbackUrl', $this->getCallbackUrl())
             ->getObject();
     }
 
@@ -241,23 +258,23 @@ class CreatePaymentRequest extends IyzicoModel
     {
         return RequestStringBuilder::create()
             ->appendSuper(parent::toPKIRequestString())
-            ->appendPrice("price", $this->getPrice())
-            ->appendPrice("paidPrice", $this->getPaidPrice())
-            ->append("installment", $this->getInstallment())
-            ->append("paymentChannel", $this->getPaymentChannel())
-            ->append("basketId", $this->getBasketId())
-            ->append("paymentGroup", $this->getPaymentGroup())
-            ->append("paymentCard", $this->getPaymentCard())
-            ->append("buyer", $this->getBuyer())
-            ->append("shippingAddress", $this->getShippingAddress())
-            ->append("billingAddress", $this->getBillingAddress())
-            ->appendArray("basketItems", $this->getBasketItems())
-            ->append("paymentSource", $this->getPaymentSource())
-            ->append("currency", $this->getCurrency())
-            ->append("posOrderId", $this->getPosOrderId())
-            ->append("connectorName", $this->getConnectorName())
-            ->append("plusInstallmentUsage", $this->getPlusInstallmentUsage())
-            ->append("callbackUrl", $this->getCallbackUrl())
+            ->appendPrice('price', $this->getPrice())
+            ->appendPrice('paidPrice', $this->getPaidPrice())
+            ->append('installment', $this->getInstallment())
+            ->append('paymentChannel', $this->getPaymentChannel())
+            ->append('basketId', $this->getBasketId())
+            ->append('paymentGroup', $this->getPaymentGroup())
+            ->append('paymentCard', $this->getPaymentCard())
+            ->append('buyer', $this->getBuyer())
+            ->append('shippingAddress', $this->getShippingAddress())
+            ->append('billingAddress', $this->getBillingAddress())
+            ->appendArray('basketItems', $this->getBasketItems())
+            ->append('paymentSource', $this->getPaymentSource())
+            ->append('currency', $this->getCurrency())
+            ->append('posOrderId', $this->getPosOrderId())
+            ->append('connectorName', $this->getConnectorName())
+            ->append('plusInstallmentUsage', $this->getPlusInstallmentUsage())
+            ->append('callbackUrl', $this->getCallbackUrl())
             ->getRequestString();
     }
 }

@@ -1,11 +1,11 @@
 <?php
+
 namespace Unusualify\Payable\Services\Paypal\Traits;
 
 use RuntimeException;
 
 trait PaypalConfig
 {
-
     protected $config;
 
     //  Modify HERE according to RequestService requirements
@@ -50,8 +50,6 @@ trait PaypalConfig
 
     /**
      * Set ExpressCheckout API endpoints & options.
-     *
-     * @param array $credentials
      */
     public function setOptions(array $credentials): void
     {
@@ -77,7 +75,6 @@ trait PaypalConfig
     /**
      * Set configuration details for the provider.
      *
-     * @param array $credentials
      *
      * @throws \Exception
      */
@@ -113,16 +110,13 @@ trait PaypalConfig
 
     /**
      * Set Currency
-     *
-     * @param string $currency
-     * @return \Unusualify\Payable\Services\PayPalService
      */
     public function setCurrency(string $currency = 'USD'): \Unusualify\Payable\Services\PayPalService
     {
         $allowedCurrencies = ['AUD', 'BRL', 'CAD', 'CZK', 'DKK', 'EUR', 'HKD', 'HUF', 'ILS', 'INR', 'JPY', 'MYR', 'MXN', 'NOK', 'NZD', 'PHP', 'PLN', 'GBP', 'SGD', 'SEK', 'CHF', 'TWD', 'THB', 'USD', 'RUB', 'CNY'];
 
         // Check if provided currency is valid.
-        if (!in_array($currency, $allowedCurrencies, true)) {
+        if (! in_array($currency, $allowedCurrencies, true)) {
             throw new RuntimeException('Currency is not supported by Paypal.');
         }
 

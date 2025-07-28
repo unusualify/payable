@@ -2,13 +2,10 @@
 
 namespace Unusualify\Payable\Services;
 
-use Unusualify\Payable\Models\Payment;
 use Illuminate\Support\Str;
-use Unusualify\Payable\Models\Enums\PaymentStatus;
 
 abstract class PaymentService extends URequest
 {
-
     /**
      * Mode
      *
@@ -49,7 +46,7 @@ abstract class PaymentService extends URequest
      *
      * @var int
      */
-    protected $token_refresh_time; //by minute
+    protected $token_refresh_time; // by minute
 
     /**
      * Redirect URL
@@ -78,6 +75,13 @@ abstract class PaymentService extends URequest
      * @var string
      */
     public $name;
+
+    /**
+     * Status Enum
+     *
+     * @var string
+     */
+    protected $statusEnum;
 
     /**
      * Payment Model
@@ -124,12 +128,14 @@ abstract class PaymentService extends URequest
         'Content-Type' => 'application/json',
     ];
 
-    public function __construct( $headers = null, $redirect_url = null)
+    public function __construct($headers = null, $redirect_url = null)
     {
         parent::__construct(
             mode : $this->mode,
             headers: $this->headers,
         );
+
+        $this->statusEnum = config('payable.status_enum');
 
         $this->root_path = base_path();
 
@@ -180,7 +186,7 @@ abstract class PaymentService extends URequest
     /**
      * Set Mode
      *
-     * @param string $mode
+     * @param  string  $mode
      * @return void
      */
     public function setMode($mode)
@@ -207,11 +213,16 @@ abstract class PaymentService extends URequest
         return $this->addQueryParameters($this->payableReturnUrl, $payload);
     }
 
+    public function getStatusEnum()
+    {
+        return $this->statusEnum;
+    }
+
     public function addQueryParameters($url, $payload = [])
     {
         $url_parts = parse_url($url);
 
-        $base_url = $url_parts['scheme'] . '://' . $url_parts['host'];
+        $base_url = $url_parts['scheme'].'://'.$url_parts['host'];
 
         if (isset($url_parts['path'])) {
             $base_url .= $url_parts['path'];
@@ -235,13 +246,13 @@ abstract class PaymentService extends URequest
         // Construct the new URL
         $query_string = array_to_query_string($merged_params);
 
-        return $base_url . ($query_string != '' ? '?' . $query_string : '');
+        return $base_url.($query_string != '' ? '?'.$query_string : '');
     }
 
     /**
      * Set Payment
      *
-     * @param \Unusualify\Payable\Models\Payment $payment
+     * @param  \Unusualify\Payable\Models\Payment  $payment
      * @return void
      */
     public function setPayment($payment)
@@ -254,16 +265,15 @@ abstract class PaymentService extends URequest
     /**
      * Hydrate Params
      *
-     * @param array $params
      * @return void
      */
-    abstract function hydrateParams(array $params);
+    abstract public function hydrateParams(array $params);
 
     /**
      * Generate Post Form
      *
-     * @param array $params
-     * @param string $actionUrl
+     * @param  array  $params
+     * @param  string  $actionUrl
      * @return void
      */
     public function generatePostForm($params, $actionUrl)
@@ -275,7 +285,6 @@ abstract class PaymentService extends URequest
     /**
      * Generate Return Url
      *
-     * @param array $parameters
      * @return string
      */
     protected function generateReturnUrl(array $parameters)
@@ -286,12 +295,13 @@ abstract class PaymentService extends URequest
     /**
      * Create Record
      *
-     * @param array $data
      * @return void
      */
     public function createRecord(array $data)
     {
-        $payment = Payment::create($data);
+        $paymentModel = config('payable.model');
+
+        $payment = $paymentModel::create($data);
 
         return $payment;
     }
@@ -299,29 +309,31 @@ abstract class PaymentService extends URequest
     /**
      * Update Record
      *
-     * @param int $id
-     * @param string $status
-     * @param string $response
+     * @param  int  $id
+     * @param  string  $status
+     * @param  string  $response
      * @return void
      */
     public static function updateRecord($id, $status, $response)
     {
-        try{
+        try {
 
             // if(is_array($response) || is_object($response)){
             //     $response = json_encode($response);
             // }
 
-            $payment = Payment::findOrFail($id);
+            $paymentModel = config('payable.model');
+
+            $payment = $paymentModel::findOrFail($id);
 
             $updated = $payment->update([
                 'status' => $status,
-                'response' => $response
+                'response' => $response,
             ]);
 
             return $updated;
 
-        }catch(\Illuminate\Database\Eloquent\ModelNotFoundException $e){
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return $e->getMessage();
         }
 
@@ -350,7 +362,6 @@ abstract class PaymentService extends URequest
     /**
      * Validate Refund
      *
-     * @param array|object $params
      * @return bool
      */
     public function validateRefundRequest(array|object $params)
@@ -371,11 +382,13 @@ abstract class PaymentService extends URequest
             'payment_service' => $paymentService,
         ];
 
-        if(!$paymentId){
+        $paymentModel = config('payable.model');
+
+        if (! $paymentId) {
             $message = 'Payment id is required';
-        } else if(($payment = Payment::find($paymentId)) == null){
+        } elseif (($payment = $paymentModel::find($paymentId)) == null) {
             $message = 'Payment not found';
-        } else if($payment->status != PaymentStatus::COMPLETED){
+        } elseif ($payment->status != $this->getStatusEnum()::COMPLETED) {
             $message = 'Payment is not completed';
         } else {
             $validated = true;
@@ -387,5 +400,4 @@ abstract class PaymentService extends URequest
             'message' => $message,
         ]);
     }
-
 }

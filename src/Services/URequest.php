@@ -6,49 +6,57 @@ use GuzzleHttp\Client;
 
 abstract class URequest implements URequestInterface
 {
-
     /**
      * Invoice Operation Mode
-     * @var String
+     *
+     * @var string
      */
     public $mode = 'sandbox';
+
     /**
      * Test TOKEN URL
-     * @var String
+     *
+     * @var string
      */
     protected $testTokenUrl;
+
     /**
      * Prod TOKEN URL
-     * @var String
+     *
+     * @var string
      */
     protected $prodTokenUrl;
 
     /**
      * Test API URL
-     * @var String
+     *
+     * @var string
      */
     protected $url;
 
     /**
      * API Key for service
-     * @var String
+     *
+     * @var string
      */
     protected $apiKey;
 
     /**
      * API Secret Hash for service
-     * @var String
+     *
+     * @var string
      */
     protected $apiSecret;
 
     protected $returnQueries = [
         'success' => '?success=true',
-        'error' => '?error=true'
+        'error' => '?error=true',
     ];
 
     /**
      * API Token Created
-     * @var String
+     *
+     * @var string
      */
     protected $token;
 
@@ -60,36 +68,36 @@ abstract class URequest implements URequestInterface
         $mode = 'sandbox',
         $headers = null,
 
-        ) {
-            $this->setHeaders($headers);
-            $this->client = new Client();
+    ) {
+        $this->setHeaders($headers);
+        $this->client = new Client;
     }
 
     public function setHeaders($headers)
     {
         $this->headers = $headers;
-        foreach($this->headers as $key => $value){
-            if(str_contains(strtolower($key), 'authorization')){
+        foreach ($this->headers as $key => $value) {
+            if (str_contains(strtolower($key), 'authorization')) {
                 // dd($this->apiKey);
-                $this->headers[$key] = $this->headers[$key] . ' ' .$this->apiKey;
+                $this->headers[$key] = $this->headers[$key].' '.$this->apiKey;
             }
         }
     }
 
-    function postReq($url, $endPoint, $postFields, $headers, $type, $mode = null)
+    public function postReq($url, $endPoint, $postFields, $headers, $type, $mode = null)
     {
         // dd($url.$endPoint);
-        //dd($postFields);
-        try{
+        // dd($postFields);
+        try {
             if ($type == 'json') {
                 // dd($this->client);
                 if (count($headers) < 1) {
                     $headers = [
-                        "Content-Type" => "application/json",
-                        "Accept"=> "*/*",
+                        'Content-Type' => 'application/json',
+                        'Accept' => '*/*',
                     ];
                 }
-                $headers["Accept"] = "*/*";
+                $headers['Accept'] = '*/*';
                 if ($mode == 'test') {
                     // dd(
                     //     json_encode($postFields),
@@ -100,23 +108,23 @@ abstract class URequest implements URequestInterface
                 // dd($postFields, "{$url}{$endPoint}", $this->headers);
                 $res = $this->client->post("{$url}{$endPoint}", [
                     'headers' => $headers,
-                    'json' => $postFields
+                    'json' => $postFields,
                 ]);
                 // dd($postFields,$headers, "{$url}{$endPoint}" );
-            }else if ($type == 'encoded') {
+            } elseif ($type == 'encoded') {
                 // dd($postFields);
                 if (count($headers) < 1) {
-                    $headers['Content-Type'] = "application/x-www-form-urlencoded";
+                    $headers['Content-Type'] = 'application/x-www-form-urlencoded';
                 }
                 // dd($postFields);
                 // dd($url.$endPoint, $postFields, $headers);
                 $res = $this->client->post("{$url}{$endPoint}", [
                     'headers' => $headers,
-                    'form_params' => $postFields
+                    'form_params' => $postFields,
                 ]);
-            } else if ($type == 'raw'){
+            } elseif ($type == 'raw') {
                 if (count($headers) < 1) {
-                    $headers['Content-Type'] = "text/plain";
+                    $headers['Content-Type'] = 'text/plain';
                 }
                 if ($mode == 'test') {
                     // dd($postFields, $headers, "{$url}{$endPoint}");
@@ -126,86 +134,89 @@ abstract class URequest implements URequestInterface
                 // dd($postFields, $headers);
                 $res = $this->client->post("{$url}{$endPoint}", [
                     'headers' => $headers,
-                    'body' => $postFields
+                    'body' => $postFields,
                 ]);
-            } else if ($type == 'xml') {
+            } elseif ($type == 'xml') {
                 if (count($headers) < 1) {
-                    $headers['Content-Type'] = "application/xml";
+                    $headers['Content-Type'] = 'application/xml';
                 }
                 $res = $this->client->post("{$url}{$endPoint}", [
                     'headers' => $headers,
-                    'body' => $postFields
+                    'body' => $postFields,
                 ]);
-            } else if($type == 'multipart'){
+            } elseif ($type == 'multipart') {
                 if (count($headers) < 1) {
-                    $headers['Content-Type'] = "multipart/form-data";
+                    $headers['Content-Type'] = 'multipart/form-data';
                 }
                 // dd($headers);
-                $res = $this->client->post("{$url}{$endPoint}",[
+                $res = $this->client->post("{$url}{$endPoint}", [
                     'multipart' => $postFields,
                     // 'headers' => $headers
                 ]);
-            }else {
+            } else {
                 $res = $this->client->post("{$url}/{$endPoint}", [
                     'headers' => $headers,
-                    'body' => json_encode($postFields)
+                    'body' => json_encode($postFields),
                 ]);
             }
             // return $res;
             // dd($res->getBody()->getContents());
             $safeData = $res->getBody()->getContents();
             // dd($safeData);
-            if(json_decode($res->getBody()->getContents()) != null){
+            if (json_decode($res->getBody()->getContents()) != null) {
                 return $res->getBody()->getContents();
             }
+
             // dd($safeData);
             return $safeData;
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    function getReq($url, $endPoint, $parameters = [], $headers = [])
+    public function getReq($url, $endPoint, $parameters = [], $headers = [])
     {
         $headers['Accept'] = '*/*';
-        try{
+        try {
             // dd("{$url}{$endPoint}", $headers, $parameters);
             $res = $this->client->get(
                 "{$url}{$endPoint}",
                 [
                     'query' => $parameters,
-                    'headers' => $headers
+                    'headers' => $headers,
                 ]
             );
+
             // dd(json_encode($res));
             // dd($res,"{$url}{$endPoint}", $headers, $parameters, $res->getBody()->getContents());
             // return $res;
             return json_decode($res->getBody()->getContents());
 
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    function deleteReq($url, $endPoint, $parameters = [], $headers = [])
+    public function deleteReq($url, $endPoint, $parameters = [], $headers = [])
     {
         try {
             $res = $this->client->delete(
                 "{$url}/{$endPoint}",
                 [
                     'query' => $parameters,
-                    'headers' => $headers
+                    'headers' => $headers,
                 ]
             );
+
             return json_decode($res->getBody()->getContents());
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
-    abstract function setConfig();
+    abstract public function setConfig();
 
-    abstract function setMode($mode);
+    abstract public function setMode($mode);
 
-    abstract function hydrateParams(array $params);
+    abstract public function hydrateParams(array $params);
 }

@@ -2,23 +2,30 @@
 
 namespace Unusualify\Payable\Services\Iyzico\Models;
 
-use Unusualify\Payable\Services\Iyzico\Models\IyzicoBaseModel;
-use Unusualify\Payable\Services\Iyzico\Models\JsonBuilder;
-use Unusualify\Payable\Services\Iyzico\Models\RequestStringBuilder;
-
 class PaymentCard extends IyzicoBaseModel
 {
     private $cardHolderName;
+
     private $cardNumber;
+
     private $expireYear;
+
     private $expireMonth;
+
     private $cvc;
+
     private $registerCard;
+
     private $cardAlias;
+
     private $cardToken;
+
     private $cardUserKey;
+
     private $registerConsumerCard;
+
     private $ucsToken;
+
     private $consumerToken;
 
     public function getCardHolderName()
@@ -144,36 +151,36 @@ class PaymentCard extends IyzicoBaseModel
     public function getJsonObject()
     {
         return JsonBuilder::create()
-            ->add("cardHolderName", $this->getCardHolderName())
-            ->add("cardNumber", $this->getCardNumber())
-            ->add("expireYear", $this->getExpireYear())
-            ->add("expireMonth", $this->getExpireMonth())
-            ->add("cvc", $this->getCvc())
-            ->add("registerCard", $this->getRegisterCard())
-            ->add("cardAlias", $this->getCardAlias())
-            ->add("cardToken", $this->getCardToken())
-            ->add("cardUserKey", $this->getCardUserKey())
-            ->add("registerConsumerCard", $this->getRegisterConsumerCard())
-            ->add("consumerToken", $this->getConsumerToken())
-            ->add("ucsToken", $this->getUcsToken())
+            ->add('cardHolderName', $this->getCardHolderName())
+            ->add('cardNumber', $this->getCardNumber())
+            ->add('expireYear', $this->getExpireYear())
+            ->add('expireMonth', $this->getExpireMonth())
+            ->add('cvc', $this->getCvc())
+            ->add('registerCard', $this->getRegisterCard())
+            ->add('cardAlias', $this->getCardAlias())
+            ->add('cardToken', $this->getCardToken())
+            ->add('cardUserKey', $this->getCardUserKey())
+            ->add('registerConsumerCard', $this->getRegisterConsumerCard())
+            ->add('consumerToken', $this->getConsumerToken())
+            ->add('ucsToken', $this->getUcsToken())
             ->getObject();
     }
 
     public function toPKIRequestString()
     {
         return RequestStringBuilder::create()
-            ->append("cardHolderName", $this->getCardHolderName())
-            ->append("cardNumber", $this->getCardNumber())
-            ->append("expireYear", $this->getExpireYear())
-            ->append("expireMonth", $this->getExpireMonth())
-            ->append("cvc", $this->getCvc())
-            ->append("registerCard", $this->getRegisterCard())
-            ->append("cardAlias", $this->getCardAlias())
-            ->append("cardToken", $this->getCardToken())
-            ->append("cardUserKey", $this->getCardUserKey())
-            ->append("registerConsumerCard", $this->getRegisterConsumerCard())
-            ->append("consumerToken", $this->getConsumerToken())
-            ->append("ucsToken", $this->getUcsToken())
+            ->append('cardHolderName', $this->getCardHolderName())
+            ->append('cardNumber', $this->getCardNumber())
+            ->append('expireYear', $this->getExpireYear())
+            ->append('expireMonth', $this->getExpireMonth())
+            ->append('cvc', $this->getCvc())
+            ->append('registerCard', $this->getRegisterCard())
+            ->append('cardAlias', $this->getCardAlias())
+            ->append('cardToken', $this->getCardToken())
+            ->append('cardUserKey', $this->getCardUserKey())
+            ->append('registerConsumerCard', $this->getRegisterConsumerCard())
+            ->append('consumerToken', $this->getConsumerToken())
+            ->append('ucsToken', $this->getUcsToken())
             ->getRequestString();
     }
 }

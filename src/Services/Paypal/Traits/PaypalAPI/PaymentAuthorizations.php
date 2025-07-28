@@ -7,11 +7,11 @@ trait PaymentAuthorizations
     /**
      * Show details for authorized payment.
      *
-     * @param string $authorization_id
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/payments/v2/#authorizations_get
      */
@@ -27,14 +27,11 @@ trait PaymentAuthorizations
     /**
      * Capture an authorized payment.
      *
-     * @param string $authorization_id
-     * @param string $invoice_id
-     * @param float  $amount
-     * @param string $note
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/payments/v2/#authorizations_capture
      */
@@ -44,10 +41,10 @@ trait PaymentAuthorizations
 
         $this->options['json'] = [
             'amount' => [
-                'value'         => $amount,
+                'value' => $amount,
                 'currency_code' => $this->currency,
             ],
-            'invoice_id'    => $invoice_id,
+            'invoice_id' => $invoice_id,
             'note_to_payer' => $note,
             'final_capture' => true,
         ];
@@ -60,12 +57,11 @@ trait PaymentAuthorizations
     /**
      * Reauthorize an authorized payment.
      *
-     * @param string $authorization_id
-     * @param float  $amount
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/payments/v2/#authorizations_reauthorize
      */
@@ -75,7 +71,7 @@ trait PaymentAuthorizations
 
         $this->options['json'] = [
             'amount' => [
-                'value'         => $amount,
+                'value' => $amount,
                 'currency_code' => $this->currency,
             ],
         ];
@@ -88,11 +84,11 @@ trait PaymentAuthorizations
     /**
      * Void an authorized payment.
      *
-     * @param string $authorization_id
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/payments/v2/#authorizations_void
      */

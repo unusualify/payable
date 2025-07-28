@@ -9,11 +9,11 @@ trait Orders
     /**
      * Creates an order.
      *
-     * @param array $data
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/orders/v2/#orders_create
      */
@@ -25,7 +25,7 @@ trait Orders
         $this->type = 'json';
         $this->verb = 'post';
         // dd($this->apiEndPoint);
-        $resp =  $this->doPaypalRequest();
+        $resp = $this->doPaypalRequest();
 
         // $this->createRecord(
         //     [
@@ -43,11 +43,11 @@ trait Orders
     /**
      * Shows details for an order.
      *
-     * @param string $order_id
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/orders/v2/#orders_get
      */
@@ -63,12 +63,11 @@ trait Orders
     /**
      * Update order details.
      *
-     * @param string $order_id
-     * @param array  $data
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/orders/v2/#orders_patch
      */
@@ -86,12 +85,11 @@ trait Orders
     /**
      * Confirm the order.
      *
-     * @param string $order_id
-     * @param array  $data
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      */
     public function confirmOrder(string $order_id, array $data)
     {
@@ -107,12 +105,11 @@ trait Orders
     /**
      * Authorizes payment for an order.
      *
-     * @param string $order_id
-     * @param array  $data
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/orders/v2/#orders_authorize
      */
@@ -130,12 +127,11 @@ trait Orders
     /**
      * Captures payment for an order.
      *
-     * @param string $order_id
-     * @param array  $data
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/orders/v2/#orders_capture
      */

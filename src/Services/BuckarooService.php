@@ -42,11 +42,11 @@ class BuckarooService extends PaymentService
      */
     protected $issuer;
 
-        /**
+    /**
      * Constructor for BuckarooService
      *
-     * @param string|null $mode
-     * @param string|null $service
+     * @param  string|null  $mode
+     * @param  string|null  $service
      */
     public function __construct($mode = null, $service = 'ideal')
     {
@@ -54,12 +54,11 @@ class BuckarooService extends PaymentService
             headers: $this->headers,
         );
 
-
         $this->setCredentials();
 
         $this->service = $service;
 
-        $this->buckaroo = new BuckarooClient($this->websiteKey, $this->secretKey);
+        $this->buckaroo = new BuckarooClient($this->websiteKey, $this->secretKey, $this->mode);
     }
 
     /**
@@ -69,33 +68,28 @@ class BuckarooService extends PaymentService
      */
     public function setCredentials()
     {
-        // $this->setConfig();
-        $this->mode = $this->config['mode'];
+        $this->mode = $this->config['mode'] == 'live' ? 'live' : 'test';
 
-        $tempConfig = $this->config[$this->mode];
+        $tempConfig = $this->config[$this->config['mode']];
 
         $this->websiteKey = $tempConfig['website_key'];
 
         $this->secretKey = $tempConfig['secret_key'];
     }
 
-
     /**
      * hydrateParams
-     *
-     * @param  array|object $params
-     * @return array
      */
-    public function hydrateParams(array|object $params) : array
+    public function hydrateParams(array|object $params): array
     {
         $params = (array) $params;
         $payload = Arr::only($params, ['issuer']);
 
         $payload = array_merge($payload, [
-            'returnURL' => $this->getRedirectUrl(['status' => 'success']), //Returns to this url aftere payment.
-            'returnURLCancel' => $this->getRedirectUrl(['status' => 'cancel']), //Returns to this url aftere payment if user cancels the payment.
-            'returnURLError' => $this->getRedirectUrl(['status' => 'error']), //Returns to this url aftere payment if there is an error.
-            'returnURLReject' => $this->getRedirectUrl(['status' => 'reject']), //Returns to this url aftere payment if the payment is rejected.
+            'returnURL' => $this->getRedirectUrl(['status' => 'success']), // Returns to this url aftere payment.
+            'returnURLCancel' => $this->getRedirectUrl(['status' => 'cancel']), // Returns to this url aftere payment if user cancels the payment.
+            'returnURLError' => $this->getRedirectUrl(['status' => 'error']), // Returns to this url aftere payment if there is an error.
+            'returnURLReject' => $this->getRedirectUrl(['status' => 'reject']), // Returns to this url aftere payment if the payment is rejected.
             'amountDebit' => (float) $params['amount'] / 100, // The amount we want to charge
             'currency' => $params['currency'] ?? 'EUR',
             'invoice' => $params['order_id'], // Each payment must contain a unique invoice number
@@ -104,4 +98,3 @@ class BuckarooService extends PaymentService
         return $payload;
     }
 }
-

@@ -11,14 +11,11 @@ trait PricingSchemes
     /**
      * Add pricing scheme for the billing plan.
      *
-     * @param string $interval_unit
-     * @param int    $interval_count
-     * @param float  $price
-     * @param bool   $trial
      *
-     * @throws Throwable
      *
      * @return \Srmklive\Paypal\Services\Paypal
+     *
+     * @throws Throwable
      */
     public function addPricingScheme(string $interval_unit, int $interval_count, float $price, bool $trial = false)
     {
@@ -30,9 +27,10 @@ trait PricingSchemes
     /**
      * Process pricing updates for an existing billing plan.
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      */
     public function processBillingPlanPricingUpdates()
     {

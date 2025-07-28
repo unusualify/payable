@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('payment_gateway')->nullable();
             $table->string('order_id');
             $table->integer('amount');
-            $table->string('currency',3)->nullable();
+            $table->string('currency', 3)->nullable();
             $table->string('status')->default('PENDING');
             $table->string('email')->nullable();
             $table->integer('installment')->nullable();
@@ -34,7 +34,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists(config('payable.tables.payments', 'umod_payments'));
-
 
     }
 };

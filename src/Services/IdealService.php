@@ -1,14 +1,10 @@
 <?php
 
-
 namespace Unusualify\Payable\Services;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Redirect;
-use Unusualify\Payable\Models\Enums\PaymentStatus;
-use Unusualify\Payable\Models\Payment;
-
 
 class IdealService extends BuckarooService
 {
@@ -35,7 +31,7 @@ class IdealService extends BuckarooService
     /**
      * pay
      *
-     * @param  mixed $params
+     * @param  mixed  $params
      * @return void
      */
     public function pay(array $params)
@@ -44,7 +40,7 @@ class IdealService extends BuckarooService
 
         $response = $this->buckaroo->method($this->service)->pay($params);
 
-        if($response->hasRedirect()){
+        if ($response->hasRedirect()) {
             $redirectUrl = $response->getRedirectUrl();
             $transactionKey = $response->getTransactionKey();
 
@@ -60,10 +56,10 @@ class IdealService extends BuckarooService
 
             return Redirect::to($redirectUrl);
 
-        }else if ($response->hasError()){
+        } elseif ($response->hasError()) {
             // dd($response->getSomeError());
             return $response->getSomeError();
-        }else{
+        } else {
             return 'Something went wrong please contact with administrator.';
         }
     }
@@ -73,7 +69,7 @@ class IdealService extends BuckarooService
         $responsePayload = Arr::except($request->all(), ['payment_id', 'payment_service']);
 
         $this->payment->update([
-            'status' => $request->brq_statuscode == "190" ? PaymentStatus::COMPLETED : PaymentStatus::FAILED,
+            'status' => $request->brq_statuscode == '190' ? $this->getStatusEnum()::COMPLETED : $this->getStatusEnum()::FAILED,
             'response' => $responsePayload,
         ]);
 
@@ -83,7 +79,7 @@ class IdealService extends BuckarooService
             'payment_service' => $request->get('payment_service'),
             'order_id' => $request->brq_invoicenumber,
             'order_data' => json_encode($request->all()),
-            'message' => $request->brq_statusmessage
+            'message' => $request->brq_statusmessage,
         ];
 
         return $this->generatePostForm($params, $this->getPayableReturnUrl());
@@ -92,14 +88,13 @@ class IdealService extends BuckarooService
     /**
      * Refund
      *
-     * @param  array|object $params
      * @return void
      */
     public function refund(array|object $params)
     {
         $refundRequest = $this->validateRefundRequest($params);
 
-        if(!$refundRequest['validated']){
+        if (! $refundRequest['validated']) {
             return $refundRequest;
         }
 
@@ -113,19 +108,19 @@ class IdealService extends BuckarooService
         $currency = $params['currency'] ?? $paymentResponse->brq_currency ?? $payment->currency;
         $transactionKey = $params['transaction_key'] ?? null;
 
-        if(!$transactionKey){
+        if (! $transactionKey) {
             if (isset($paymentResponse->brq_transactions)) {
                 $transactionKey = $paymentResponse->brq_transactions;
             } else {
                 return array_merge($refundRequest, [
-                    'message' => 'Transaction key not found in payment response'
+                    'message' => 'Transaction key not found in payment response',
                 ]);
             }
         }
 
         $response = $this->buckaroo->method('ideal')->refund([
-            'originalTransactionKey' => $transactionKey, //Set transaction key of the transaction to refund
-            'invoice' => $invoice, //Set invoice number of the transaction to refund
+            'originalTransactionKey' => $transactionKey, // Set transaction key of the transaction to refund
+            'invoice' => $invoice, // Set invoice number of the transaction to refund
             'amountCredit' => $amount,
             'currency' => $currency,
         ]);
@@ -144,14 +139,13 @@ class IdealService extends BuckarooService
         //     get_class_methods($response)
         // );
 
-
         $refundResponseStatus = $this::RESPONSE_STATUS_ERROR;
         $message = 'Refund failed';
 
-        if($response->isSuccess()){
-            if($payment){
+        if ($response->isSuccess()) {
+            if ($payment) {
                 $payment->update([
-                    'status' => PaymentStatus::REFUNDED,
+                    'status' => $this->getStatusEnum()::REFUNDED,
                     'response' => $response,
                 ]);
             }
@@ -163,10 +157,7 @@ class IdealService extends BuckarooService
         return array_merge($refundRequest, [
             'status' => $refundResponseStatus,
             'order_data' => json_encode($response),
-            'message' => $message
+            'message' => $message,
         ]);
     }
 }
-
-
-
