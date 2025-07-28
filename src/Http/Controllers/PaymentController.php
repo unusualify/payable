@@ -12,8 +12,11 @@ use Unusualify\Payable\Models\Payment;
 class PaymentController extends Controller
 {
 
-    public function cancel(Request $request, Payment $payment)
+    public function cancel(Request $request, $payment_id)
     {
+        $paymentModel = config('payable.model');
+        $payment = $paymentModel::findOrFail($payment_id);
+
         $cancelResponse = PayableFacade::setService($payment->payment_gateway)
             ->cancel($payment->id, $payment->response);
 
@@ -40,8 +43,11 @@ class PaymentController extends Controller
         // dd($status);
     }
 
-    public function refund(Request $request, Payment $payment)
+    public function refund(Request $request, $payment_id)
     {
+        $paymentModel = config('payable.model');
+        $payment = $paymentModel::findOrFail($payment_id);
+
         $refundResponse = PayableFacade::setService($payment->payment_gateway)
             ->refund($payment->id, $payment->response);
 
@@ -67,7 +73,8 @@ class PaymentController extends Controller
             ]);
         } else if ($slug == 'paypal') {
             $payment->service->getAccessToken();
-            $captureId = json_decode(Payment::where('order_id', $orderId)->get()[0]->response)
+            $paymentModel = config('payable.model');
+            $captureId = json_decode($paymentModel::where('order_id', $orderId)->get()[0]->response)
                 ->purchase_units[0]
                 ->payments
                 ->captures[0]

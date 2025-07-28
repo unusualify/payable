@@ -4,8 +4,6 @@ namespace Unusualify\Payable\Services;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request as HttpRequest;
-use Unusualify\Payable\Models\Enums\PaymentStatus;
-use Unusualify\Payable\Models\Payment;
 
 class TebCommonPosService extends PaymentService
 {
@@ -166,7 +164,7 @@ class TebCommonPosService extends PaymentService
         }, ARRAY_FILTER_USE_KEY);
 
         $responseStatus = ($request->MdStatus == 1 && $request->BankResponseCode == '00' ? self::RESPONSE_STATUS_SUCCESS : self::RESPONSE_STATUS_ERROR);
-        $recordStatus = ($request->MdStatus == 1 && $request->BankResponseCode == '00' ? PaymentStatus::COMPLETED : PaymentStatus::FAILED);
+        $recordStatus = ($request->MdStatus == 1 && $request->BankResponseCode == '00' ? $this->getStatusEnum()::COMPLETED : $this->getStatusEnum()::FAILED);
         $responseMessage = ($request->MdStatus == 1 && $request->BankResponseCode == '00' ? 'Payment successful' : 'Payment failed');
 
         $this->payment->update([

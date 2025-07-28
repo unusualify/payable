@@ -7,6 +7,8 @@
 
 return [
     'table' => 'unfy_payments',
+    'model' => \Unusualify\Payable\Models\Payment::class,
+    'status_enum' => \Unusualify\Payable\Models\Enums\PaymentStatus::class,
     'additional_fillable' => [],
     'middleware' => [],
     'session_key' => 'payable',

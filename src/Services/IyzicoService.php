@@ -347,7 +347,8 @@ class IyzicoService extends PaymentService
 
         $request = new ReportingPaymentDetailRequest();
 
-        $order = Payment::where('order_id',$orderId)->get()[0];
+        $paymentModel = config('payable.model');
+        $order = $paymentModel::where('order_id',$orderId)->get()[0];
         $paymentId = json_decode($order->response)->paymentId;
         $request->setPaymentConversationId($paymentId);
         $request->setConversationId($orderId);
