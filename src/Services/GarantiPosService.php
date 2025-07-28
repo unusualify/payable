@@ -5,7 +5,6 @@ namespace Unusualify\Payable\Services;
 use Unusualify\Payable\Services\PaymentService;
 use Unusualify\Payable\Services\Currency;
 use Illuminate\Http\Request as HttpRequest;
-use Unusualify\Payable\Models\Enums\PaymentStatus;
 
 class GarantiPosService extends PaymentService
 {
@@ -547,7 +546,7 @@ class GarantiPosService extends PaymentService
         }, ARRAY_FILTER_USE_KEY);
 
         $responseStatus = $request->mdstatus == 1 ? self::RESPONSE_STATUS_SUCCESS : self::RESPONSE_STATUS_ERROR;
-        $recordStatus = $request->mdstatus == 1 ? PaymentStatus::COMPLETED : PaymentStatus::FAILED;
+        $recordStatus = $request->mdstatus == 1 ? $this->getStatusEnum()::COMPLETED : $this->getStatusEnum()::FAILED;
         $responseMessage = $this->mdStatuses[$request->mdstatus];
 
         $this->payment->update([

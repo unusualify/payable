@@ -7,6 +7,8 @@
 
 return [
     'table' => 'unfy_payments',
+    'model' => \Unusualify\Payable\Models\Payment::class,
+    'status_enum' => \Unusualify\Payable\Models\Enums\PaymentStatus::class,
     'additional_fillable' => [],
     'middleware' => [],
     'session_key' => 'payable',
@@ -109,7 +111,7 @@ return [
             ]
         ],
         'ideal' => [
-            'mode' => env('BUCKAROO_MODE',''),
+            'mode' => env('BUCKAROO_MODE','sandbox'),
             'sandbox' => [
                 'website_key' => env('BUCKAROO_SANDBOX_WEBSITE_KEY',''),
                 'secret_key' => env('BUCKAROO_SANDBOX_SECRET_KEY',''),

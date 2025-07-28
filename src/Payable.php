@@ -6,8 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
-use Unusualify\Payable\Models\Enums\PaymentStatus;
-use Unusualify\Payable\Models\Payment;
 
 class Payable
 {
@@ -24,8 +22,26 @@ class Payable
      */
     public $service;
 
+    /**
+     * Payment Model
+     *
+     * @var string
+     */
+    private $paymentModel;
+
+    /**
+     * Status Enum
+     *
+     * @var string
+     */
+    private $statusEnum;
+
     public function __construct($slug = null)
     {
+        $this->paymentModel = config('payable.model');
+
+        $this->statusEnum = config('payable.status_enum');
+
         if(!$slug) return;
 
         $this->setService($slug);
@@ -91,7 +107,7 @@ class Payable
             throw new \Exception('Cancel is not supported for the ' . $this->service->name);
         }
 
-        $payment = Payment::findOrFail($payment_id);
+        $payment = $this->paymentModel::findOrFail($payment_id);
 
         return $this->service
             ->setRedirectUrl($this->generateReturnUrl([
@@ -108,7 +124,7 @@ class Payable
             throw new \Exception('Refund is not supported for the ' . $this->service->name);
         }
 
-        $payment = Payment::findOrFail($payment_id);
+        $payment = $this->paymentModel::findOrFail($payment_id);
 
         return $this->service
             ->setPayment($payment)
@@ -138,7 +154,7 @@ class Payable
             throw new \Exception('Payment ID is required');
         }
 
-        $payment = Payment::find($request->get('payment_id'));
+        $payment = $this->paymentModel::find($request->get('payment_id'));
 
         return $this->service
             ->setPayment($payment)
@@ -207,7 +223,7 @@ class Payable
      * Create Payment Record
      *
      * @param array $data
-     * @return \Unusualify\Payable\Models\Payment
+     * @return config('payable.model')
      */
     public function createPaymentRecord($payload, $paymentAttributes = [])
     {
@@ -218,7 +234,7 @@ class Payable
             'installment' => $payload['installment'] ?? 1,
             'order_id' => $payload['order_id'],
             'payment_gateway' => $this->slug,
-            'status' => PaymentStatus::PENDING,
+            'status' => $this->statusEnum::PENDING,
 
             'parameters' => Arr::except($payload, [
                 'user_email',
@@ -232,9 +248,9 @@ class Payable
 
         // If payment id is provided, update the payment
         if(isset($paymentAttributes['id'])){
-            $payment = Payment::findOrFail($paymentAttributes['id']);
+            $payment = $this->paymentModel::findOrFail($paymentAttributes['id']);
 
-            if(!in_array($payment->status, [PaymentStatus::PENDING, PaymentStatus::FAILED])){
+            if(!in_array($payment->status, [$this->statusEnum::PENDING, $this->statusEnum::FAILED])){
                 throw new \Exception('Payment is not in pending or failed status');
             }
 
@@ -245,7 +261,7 @@ class Payable
             return $payment;
         }
 
-        return Payment::create(array_merge($paymentAttributes, $originalPayload));
+        return $this->paymentModel::create(array_merge($paymentAttributes, $originalPayload));
     }
 
     public function updatePaymentRecord($payment, $status, $response)

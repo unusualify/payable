@@ -5,8 +5,6 @@ namespace Unusualify\Payable\Services;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
-use Unusualify\Payable\Models\Payment;
-use Unusualify\Payable\Models\Enums\PaymentStatus;
 
 class IdealQrService extends BuckarooService
 {
@@ -82,7 +80,7 @@ class IdealQrService extends BuckarooService
         $responsePayload = Arr::except($request->all(), ['payment_id', 'payment_service']);
 
         $this->payment->update([
-            'status' => $request->brq_statuscode == "190" ? PaymentStatus::COMPLETED : PaymentStatus::FAILED,
+            'status' => $request->brq_statuscode == "190" ? $this->getStatusEnum()::COMPLETED : $this->getStatusEnum()::FAILED,
             'response' => $responsePayload,
         ]);
 
@@ -139,7 +137,7 @@ class IdealQrService extends BuckarooService
         if($response->isSuccess()){
             if($payment){
                 $payment->update([
-                    'status' => PaymentStatus::REFUNDED,
+                    'status' => $this->getStatusEnum()::REFUNDED,
                     'response' => $response,
                 ]);
             }

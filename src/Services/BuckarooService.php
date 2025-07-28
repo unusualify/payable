@@ -54,12 +54,11 @@ class BuckarooService extends PaymentService
             headers: $this->headers,
         );
 
-
         $this->setCredentials();
 
         $this->service = $service;
 
-        $this->buckaroo = new BuckarooClient($this->websiteKey, $this->secretKey);
+        $this->buckaroo = new BuckarooClient($this->websiteKey, $this->secretKey, $this->mode);
     }
 
     /**
@@ -69,10 +68,9 @@ class BuckarooService extends PaymentService
      */
     public function setCredentials()
     {
-        // $this->setConfig();
-        $this->mode = $this->config['mode'];
+        $this->mode = $this->config['mode'] == 'live' ? 'live' : 'test';
 
-        $tempConfig = $this->config[$this->mode];
+        $tempConfig = $this->config[$this->config['mode']];
 
         $this->websiteKey = $tempConfig['website_key'];
 

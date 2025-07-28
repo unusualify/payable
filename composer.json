@@ -15,11 +15,20 @@
         "oobook/post-redirector": "^1.0",
 		"buckaroo/sdk": "^1.0"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0|^10.0.7|^11.0",
+        "vlucas/phpdotenv": "^5.4",
+        "friendsofphp/php-cs-fixer": "^3.13"
+    },
     "extra": {
         "laravel": {
             "providers": [
                 "Unusualify\\Payable\\LaravelServiceProvider"
             ]
         }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
     }
 }

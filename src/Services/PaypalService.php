@@ -4,9 +4,7 @@ namespace Unusualify\Payable\Services;
 
 use Exception;
 use Illuminate\Http\Request;
-use Unusualify\Payable\Models\{Payment, Enums\PaymentStatus};
 use Unusualify\Payable\Services\Paypal\Traits\{PaypalAPI, PaypalConfig, PaypalVerifyIPN};
-
 
 class PaypalService extends PaymentService
 {
@@ -166,7 +164,7 @@ class PaypalService extends PaymentService
         ];
 
         $this->payment->update([
-            'status' => PaymentStatus::FAILED,
+            'status' => $this->getStatusEnum()::FAILED,
             'response' => $response
         ]);
 
@@ -191,11 +189,6 @@ class PaypalService extends PaymentService
         if(is_string($response)){
             $response = json_decode($response);
         }
-
-        $this->payment->update([
-            'status' => PaymentStatus::COMPLETED,
-            'response' => $data
-        ]);
 
         return $response;
     }
@@ -254,7 +247,7 @@ class PaypalService extends PaymentService
         if(isset($response->status) && $response->status == "COMPLETED") {
             if($payment){
                 $payment->update([
-                    'status' => PaymentStatus::REFUNDED,
+                    'status' => $this->getStatusEnum()::REFUNDED,
                     'response' => $response
                 ]);
             }
@@ -351,7 +344,7 @@ class PaypalService extends PaymentService
             $cancelResponseStatus = $this::RESPONSE_STATUS_SUCCESS;
             if($this->payment){
                 $this->payment->update([
-                    'status' => PaymentStatus::CANCELLED,
+                    'status' => $this->getStatusEnum()::CANCELLED,
                     'response' => $response
                 ]);
             }
@@ -453,7 +446,7 @@ class PaypalService extends PaymentService
         $allParams = $request->query();
 
         // for payments table record
-        $recordStatus = PaymentStatus::FAILED;
+        $recordStatus = $this->getStatusEnum()::FAILED;
         $recordResponse = '';
         $recordId = $allParams['payment_id'];
 
@@ -474,16 +467,16 @@ class PaypalService extends PaymentService
             $responseOrderData = $paypalResponse;
 
             if(isset($paypalResponse->status) && $paypalResponse->status == "COMPLETED"){
-                $recordStatus = PaymentStatus::COMPLETED;
+                $recordStatus = $this->getStatusEnum()::COMPLETED;
 
                 $responseStatus = $this::RESPONSE_STATUS_SUCCESS;
                 $responseOrderId = $paypalResponse->purchase_units[0]->payments->captures[0]->custom_id;
             }
 
         }else{
-            $recordResponse = json_encode(request()->all());
+            $recordResponse = request()->all();
 
-            $responseOrderData = request()->all();
+            $responseOrderData = json_encode(request()->all());
         }
 
         $this->payment->update([

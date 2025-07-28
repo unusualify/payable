@@ -2,9 +2,7 @@
 
 namespace Unusualify\Payable\Services;
 
-use Unusualify\Payable\Models\Payment;
 use Illuminate\Support\Str;
-use Unusualify\Payable\Models\Enums\PaymentStatus;
 
 abstract class PaymentService extends URequest
 {
@@ -80,6 +78,13 @@ abstract class PaymentService extends URequest
     public $name;
 
     /**
+     * Status Enum
+     *
+     * @var string
+     */
+    protected $statusEnum;
+
+    /**
      * Payment Model
      *
      * @var \Unusualify\Payable\Models\Payment
@@ -130,6 +135,8 @@ abstract class PaymentService extends URequest
             mode : $this->mode,
             headers: $this->headers,
         );
+
+        $this->statusEnum = config('payable.status_enum');
 
         $this->root_path = base_path();
 
@@ -205,6 +212,11 @@ abstract class PaymentService extends URequest
     protected function getPayableReturnUrl($payload = [])
     {
         return $this->addQueryParameters($this->payableReturnUrl, $payload);
+    }
+
+    public function getStatusEnum()
+    {
+        return $this->statusEnum;
     }
 
     public function addQueryParameters($url, $payload = [])
@@ -291,7 +303,9 @@ abstract class PaymentService extends URequest
      */
     public function createRecord(array $data)
     {
-        $payment = Payment::create($data);
+        $paymentModel = config('payable.model');
+
+        $payment = $paymentModel::create($data);
 
         return $payment;
     }
@@ -312,7 +326,9 @@ abstract class PaymentService extends URequest
             //     $response = json_encode($response);
             // }
 
-            $payment = Payment::findOrFail($id);
+            $paymentModel = config('payable.model');
+
+            $payment = $paymentModel::findOrFail($id);
 
             $updated = $payment->update([
                 'status' => $status,
@@ -371,11 +387,13 @@ abstract class PaymentService extends URequest
             'payment_service' => $paymentService,
         ];
 
+        $paymentModel = config('payable.model');
+
         if(!$paymentId){
             $message = 'Payment id is required';
-        } else if(($payment = Payment::find($paymentId)) == null){
+        } else if(($payment = $paymentModel::find($paymentId)) == null){
             $message = 'Payment not found';
-        } else if($payment->status != PaymentStatus::COMPLETED){
+        } else if($payment->status != $this->getStatusEnum()::COMPLETED){
             $message = 'Payment is not completed';
         } else {
             $validated = true;

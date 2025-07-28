@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Unusualify\Payable\Models\Enums\PaymentStatus;
 use Unusualify\Payable\Payable;
 
 class Payment extends Model
@@ -33,10 +32,11 @@ class Payment extends Model
     public function __construct(array $attributes = [])
     {
         $this->mergeFillable(config('payable.additional_fillable', []));
+
         $this->mergeCasts([
             'parameters' => 'object',
             'response' => 'object',
-            'status' => PaymentStatus::class,
+            'status' => config('payable.status_enum'),
         ]);
         $this->append([
             'is_refundable',
@@ -56,14 +56,14 @@ class Payment extends Model
     protected function isRefundable(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => $this->status === PaymentStatus::COMPLETED && $this->serviceClass::hasRefund($this->response),
+            get: fn ($value) => $this->status === config('payable.status_enum')::COMPLETED && $this->serviceClass::hasRefund($this->response),
         );
     }
 
     protected function isCancelable(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => $this->status === PaymentStatus::COMPLETED && $this->serviceClass::hasCancel($this->response),
+            get: fn ($value) => $this->status === config('payable.status_enum')::COMPLETED && $this->serviceClass::hasCancel($this->response),
         );
     }
 
