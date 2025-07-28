@@ -9,11 +9,11 @@ trait PaymentMethodsTokens
     /**
      * Create a payment method token.
      *
-     * @param array $data
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/payment-tokens/v3/#payment-tokens_create
      */
@@ -31,9 +31,6 @@ trait PaymentMethodsTokens
     /**
      * List all the payment tokens.
      *
-     * @param int  $page
-     * @param int  $page_size
-     * @param bool $totals
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
      *
@@ -51,7 +48,6 @@ trait PaymentMethodsTokens
     /**
      * Show details for a payment method token.
      *
-     * @param string $token
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
      *
@@ -69,7 +65,6 @@ trait PaymentMethodsTokens
     /**
      * Show details for a payment token.
      *
-     * @param string $token
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
      *
@@ -87,11 +82,11 @@ trait PaymentMethodsTokens
     /**
      * Create a payment setup token.
      *
-     * @param array $data
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/payment-tokens/v3/#setup-tokens_create
      */
@@ -109,7 +104,6 @@ trait PaymentMethodsTokens
     /**
      * Show details for a payment setup token.
      *
-     * @param string $token
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
      *

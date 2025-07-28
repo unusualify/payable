@@ -2,24 +2,32 @@
 
 namespace Unusualify\Payable\Services\Iyzico\Models;
 
-use Unusualify\Payable\Services\Iyzico\Models\IyzicoBaseModel;
-use Unusualify\Payable\Services\Iyzico\Models\JsonBuilder;
-use Unusualify\Payable\Services\Iyzico\Models\RequestStringBuilder;
-
 class Buyer extends IyzicoBaseModel
 {
     private $id;
+
     private $name;
+
     private $surname;
+
     private $identityNumber;
+
     private $email;
+
     private $gsmNumber;
+
     private $registrationDate;
+
     private $lastLoginDate;
+
     private $registrationAddress;
+
     private $city;
+
     private $country;
+
     private $zipCode;
+
     private $ip;
 
     public function getId()
@@ -155,38 +163,38 @@ class Buyer extends IyzicoBaseModel
     public function getJsonObject()
     {
         return JsonBuilder::create()
-            ->add("id", $this->getId())
-            ->add("name", $this->getName())
-            ->add("surname", $this->getSurname())
-            ->add("identityNumber", $this->getIdentityNumber())
-            ->add("email", $this->getEmail())
-            ->add("gsmNumber", $this->getGsmNumber())
-            ->add("registrationDate", $this->getRegistrationDate())
-            ->add("lastLoginDate", $this->getLastLoginDate())
-            ->add("registrationAddress", $this->getRegistrationAddress())
-            ->add("city", $this->getCity())
-            ->add("country", $this->getCountry())
-            ->add("zipCode", $this->getZipCode())
-            ->add("ip", $this->getIp())
+            ->add('id', $this->getId())
+            ->add('name', $this->getName())
+            ->add('surname', $this->getSurname())
+            ->add('identityNumber', $this->getIdentityNumber())
+            ->add('email', $this->getEmail())
+            ->add('gsmNumber', $this->getGsmNumber())
+            ->add('registrationDate', $this->getRegistrationDate())
+            ->add('lastLoginDate', $this->getLastLoginDate())
+            ->add('registrationAddress', $this->getRegistrationAddress())
+            ->add('city', $this->getCity())
+            ->add('country', $this->getCountry())
+            ->add('zipCode', $this->getZipCode())
+            ->add('ip', $this->getIp())
             ->getObject();
     }
 
     public function toPKIRequestString()
     {
         return RequestStringBuilder::create()
-            ->append("id", $this->getId())
-            ->append("name", $this->getName())
-            ->append("surname", $this->getSurname())
-            ->append("identityNumber", $this->getIdentityNumber())
-            ->append("email", $this->getEmail())
-            ->append("gsmNumber", $this->getGsmNumber())
-            ->append("registrationDate", $this->getRegistrationDate())
-            ->append("lastLoginDate", $this->getLastLoginDate())
-            ->append("registrationAddress", $this->getRegistrationAddress())
-            ->append("city", $this->getCity())
-            ->append("country", $this->getCountry())
-            ->append("zipCode", $this->getZipCode())
-            ->append("ip", $this->getIp())
+            ->append('id', $this->getId())
+            ->append('name', $this->getName())
+            ->append('surname', $this->getSurname())
+            ->append('identityNumber', $this->getIdentityNumber())
+            ->append('email', $this->getEmail())
+            ->append('gsmNumber', $this->getGsmNumber())
+            ->append('registrationDate', $this->getRegistrationDate())
+            ->append('lastLoginDate', $this->getLastLoginDate())
+            ->append('registrationAddress', $this->getRegistrationAddress())
+            ->append('city', $this->getCity())
+            ->append('country', $this->getCountry())
+            ->append('zipCode', $this->getZipCode())
+            ->append('ip', $this->getIp())
             ->getRequestString();
     }
 }

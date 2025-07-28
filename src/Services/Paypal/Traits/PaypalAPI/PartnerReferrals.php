@@ -7,11 +7,11 @@ trait PartnerReferrals
     /**
      * Create a Partner Referral.
      *
-     * @param array $partner_data
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/partner-referrals/v2/#partner-referrals_create
      */
@@ -29,11 +29,11 @@ trait PartnerReferrals
     /**
      * Get Partner Referral Details.
      *
-     * @param string $partner_referral_id
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/partner-referrals/v2/#partner-referrals_read
      */
@@ -49,12 +49,11 @@ trait PartnerReferrals
     /**
      * List Seller Tracking Information.
      *
-     * @param string $partner_id
-     * @param string $tracking_id
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/partner-referrals/v1/#merchant-integration_find
      */
@@ -70,12 +69,11 @@ trait PartnerReferrals
     /**
      * Show Seller Status.
      *
-     * @param string $partner_id
-     * @param string $merchant_id
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/partner-referrals/v1/#merchant-integration_status
      */
@@ -91,11 +89,11 @@ trait PartnerReferrals
     /**
      * List Merchant Credentials.
      *
-     * @param string $partner_id
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/partner-referrals/v1/#merchant-integration_credentials
      */

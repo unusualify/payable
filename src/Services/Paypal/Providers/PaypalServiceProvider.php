@@ -55,7 +55,7 @@ class PaypalServiceProvider extends ServiceProvider
     private function registerPaypal()
     {
         $this->app->singleton('paypal_client', static function () {
-            return new PaypalClient();
+            return new PaypalClient;
         });
     }
 

@@ -4,11 +4,13 @@ namespace Unusualify\Payable\Services;
 
 use Exception;
 use Illuminate\Http\Request;
-use Unusualify\Payable\Services\Paypal\Traits\{PaypalAPI, PaypalConfig, PaypalVerifyIPN};
+use Unusualify\Payable\Services\Paypal\Traits\PaypalAPI;
+use Unusualify\Payable\Services\Paypal\Traits\PaypalConfig;
+use Unusualify\Payable\Services\Paypal\Traits\PaypalVerifyIPN;
 
 class PaypalService extends PaymentService
 {
-    use PaypalConfig, PaypalVerifyIPN, PaypalAPI;
+    use PaypalAPI, PaypalConfig, PaypalVerifyIPN;
 
     /**
      * Has Refund
@@ -66,16 +68,14 @@ class PaypalService extends PaymentService
      */
     protected $service;
 
-
     /**
      * Paypal constructor.
      *
-     * @param array $config
      *
      * @throws Exception
      */
 
-    //TODO: Subscription service will be added
+    // TODO: Subscription service will be added
 
     public function __construct(array $config = [])
     {
@@ -100,8 +100,8 @@ class PaypalService extends PaymentService
 
     public function doPaypalRequest(bool $decode = true)
     {
-        if($this->verb == 'post'){
-            if(!isset($this->options['request_body'])){
+        if ($this->verb == 'post') {
+            if (! isset($this->options['request_body'])) {
                 $this->options['request_body'] = [];
             }
 
@@ -113,7 +113,7 @@ class PaypalService extends PaymentService
                 $this->type,
                 $this->mode
             );
-        }else{ //Get request
+        } else { // Get request
             $response = $this->getReq(
                 $this->url,
                 $this->apiEndPoint,
@@ -131,7 +131,7 @@ class PaypalService extends PaymentService
 
         $validatedParams = $this->validateParams($params);
 
-        if($validatedParams != true){
+        if ($validatedParams != true) {
             return $validatedParams;
         }
 
@@ -141,13 +141,13 @@ class PaypalService extends PaymentService
 
         $response = $this->doPaypalRequest();
 
-        if(is_string($response)){
+        if (is_string($response)) {
             $response = json_decode($response);
         }
 
         if (isset($response->id) && $response->id != null && isset($response->status) && $response->status == 'PAYER_ACTION_REQUIRED' && isset($response->links)) {
             $allParams['record_params']['order_id'] = $params['order_id'];
-            foreach  ($response->links as $link) {
+            foreach ($response->links as $link) {
                 if ($link->rel == 'payer-action') {
                     return redirect()->away($link->href);
                 }
@@ -160,12 +160,12 @@ class PaypalService extends PaymentService
             'id' => $this->payment->id,
             'payment_service' => $this->service,
             'order_id' => $params['order_id'],
-            'order_data' => json_encode($response)
+            'order_data' => json_encode($response),
         ];
 
         $this->payment->update([
             'status' => $this->getStatusEnum()::FAILED,
-            'response' => $response
+            'response' => $response,
         ]);
 
         return $this->generatePostForm($payResponse, route(config('payable.return_url')));
@@ -173,7 +173,7 @@ class PaypalService extends PaymentService
 
     public function capturePayment($params, array $data = [])
     {
-        //If authorization will be used
+        // If authorization will be used
         // $this->apiEndPoint = "v2/checkout/orders/{$params['token']}/authorize";
 
         $this->apiEndPoint = "v2/checkout/orders/{$params['token']}/capture";
@@ -186,7 +186,7 @@ class PaypalService extends PaymentService
 
         $response = $this->doPaypalRequest();
 
-        if(is_string($response)){
+        if (is_string($response)) {
             $response = json_decode($response);
         }
 
@@ -197,14 +197,13 @@ class PaypalService extends PaymentService
     /**
      * Refund Paypal Payment
      *
-     * @param array|object $params
      * @return array
      */
     public function refund(array|object $params)
     {
         $refundRequest = $this->validateRefundRequest($params);
 
-        if(!$refundRequest['validated']){
+        if (! $refundRequest['validated']) {
             return $refundRequest;
         }
 
@@ -213,19 +212,19 @@ class PaypalService extends PaymentService
         $captureId = $params['capture_id'] ?? null;
         $payment = $refundRequest['payment'] ?? null;
 
-        if(empty($captureId)){
+        if (empty($captureId)) {
             if ($payment && $payment->response->purchase_units[0]->payments->captures[0]->id) {
                 $captureId = $payment->response->purchase_units[0]->payments->captures[0]->id;
             } else {
                 return array_merge($refundRequest, [
-                    'message' => 'Capture ID not found in payment response'
+                    'message' => 'Capture ID not found in payment response',
                 ]);
             }
         }
 
         $source = $this->showFromSource($payment->response->id);
 
-        if($source->status != "COMPLETED" || $source->intent != "CAPTURE"){
+        if ($source->status != 'COMPLETED' || $source->intent != 'CAPTURE') {
             throw new \Exception('Payment cannot be refunded');
         }
 
@@ -237,18 +236,18 @@ class PaypalService extends PaymentService
 
         $response = $this->doPaypalRequest();
 
-        if(is_string($response)){
+        if (is_string($response)) {
             $response = json_decode($response);
         }
 
         $refundResponseStatus = $this::RESPONSE_STATUS_ERROR;
         $message = 'Refund failed';
 
-        if(isset($response->status) && $response->status == "COMPLETED") {
-            if($payment){
+        if (isset($response->status) && $response->status == 'COMPLETED') {
+            if ($payment) {
                 $payment->update([
                     'status' => $this->getStatusEnum()::REFUNDED,
-                    'response' => $response
+                    'response' => $response,
                 ]);
             }
 
@@ -258,7 +257,7 @@ class PaypalService extends PaymentService
         } else {
             $error_content = json_decode($response->getContent(), true);
 
-            if(isset($error_content['error'])){
+            if (isset($error_content['error'])) {
                 $message = $error_content['error'];
             }
         }
@@ -266,14 +265,13 @@ class PaypalService extends PaymentService
         return array_merge($refundRequest, [
             'status' => $refundResponseStatus,
             'order_data' => json_encode($response),
-            'message' => $message
+            'message' => $message,
         ]);
     }
 
     /**
      * Cancel Paypal Payment
      *
-     * @param array|object $params
      * @return array
      */
     public function cancel(array|object $params)
@@ -284,30 +282,29 @@ class PaypalService extends PaymentService
 
         $captureId = null;
 
-        if($this->payment && $this->payment->response){
+        if ($this->payment && $this->payment->response) {
 
-            if(isset($this->payment->response->id)){
+            if (isset($this->payment->response->id)) {
                 $captureId = $this->payment->response->purchase_units[0]->payments->captures[0]->id;
-            }else {
+            } else {
                 throw new \Exception('Order ID not found in payment response');
             }
 
-        }else {
-            if($params['authorization_id'] || $params['order_id'] || $params['id']){
+        } else {
+            if ($params['authorization_id'] || $params['order_id'] || $params['id']) {
                 $captureId = $params['authorization_id'] ?? $params['capture_id'] ?? $params['order_id'] ?? $params['id'];
-            }else {
+            } else {
                 throw new \Exception('Authorization ID, Order ID or Payment ID is required');
             }
         }
 
         $source = $this->showFromSource($captureId);
 
-        if($source->status != "COMPLETED" || $source->intent != "AUTHORIZED"){
+        if ($source->status != 'COMPLETED' || $source->intent != 'AUTHORIZED') {
             throw new \Exception('Payment cannot be cancelled');
         }
 
         // dd($source);
-
 
         // $this->apiEndPoint = "v2/payments/authorizations/{$orderId}/void";
         $this->type = 'raw';
@@ -328,11 +325,11 @@ class PaypalService extends PaymentService
         $this->verb = 'post';
         $this->apiEndPoint = "v2/payments/authorizations/{$orderId}/void";
 
-        $response =  $this->doPaypalRequest();
+        $response = $this->doPaypalRequest();
 
         dd($response);
 
-        if(is_string($response)){
+        if (is_string($response)) {
             $response = json_decode($response);
         }
 
@@ -340,12 +337,12 @@ class PaypalService extends PaymentService
         $paymentId = $this->payment ? $this->payment->id : ($params['payment_id'] ?? null);
         $paymentService = $this->payment ? $this->payment->payment_gateway : ($params['payment_service'] ?? $this->service);
 
-        if(isset($response->status) && $response->status == "VOIDED"){
+        if (isset($response->status) && $response->status == 'VOIDED') {
             $cancelResponseStatus = $this::RESPONSE_STATUS_SUCCESS;
-            if($this->payment){
+            if ($this->payment) {
                 $this->payment->update([
                     'status' => $this->getStatusEnum()::CANCELLED,
-                    'response' => $response
+                    'response' => $response,
                 ]);
             }
         }
@@ -355,9 +352,8 @@ class PaypalService extends PaymentService
             'status' => $cancelResponseStatus,
             'id' => $paymentId,
             'payment_service' => $paymentService,
-            'order_data' => json_encode($response)
+            'order_data' => json_encode($response),
         ];
-
 
         return $cancelResponse;
     }
@@ -375,8 +371,8 @@ class PaypalService extends PaymentService
 
     public function hydrateParams(array $params)
     {
-        //If authorization will be used
-        //'intent' => 'AUTHORIZE',
+        // If authorization will be used
+        // 'intent' => 'AUTHORIZE',
 
         return [
             'intent' => $params['intent'] ?? 'CAPTURE',
@@ -384,19 +380,19 @@ class PaypalService extends PaymentService
                 [
                     'amount' => [
                         'currency_code' => $params['currency'] ?? 'USD',
-                        'value' => $this->formatAmount($params['amount'])
+                        'value' => $this->formatAmount($params['amount']),
                     ],
-                    'description' => 'Order: ' . $params['order_id'],
+                    'description' => 'Order: '.$params['order_id'],
                     'custom_id' => $params['order_id'],
                 ],
             ],
             'payment_source' => [
                 'paypal' => [
-                    "name" => [
-                        "given_name" => $params['user_name'],
+                    'name' => [
+                        'given_name' => $params['user_name'],
                         'surname' => $params['user_surname'],
                     ],
-                    "email_address" => $params['user_email'],
+                    'email_address' => $params['user_email'],
                     'experience_context' => [
                         'payment_method_preference' => 'IMMEDIATE_PAYMENT_REQUIRED',
                         'brand_name' => $params['company_name'],
@@ -408,14 +404,14 @@ class PaypalService extends PaymentService
                         'cancel_url' => $this->getRedirectUrl(['success' => 'false']),
                     ],
                 ],
-            ]
+            ],
         ];
 
     }
 
     public function formatAmount($amount)
     {
-        return number_format((float) $amount/100 , 2, '.', '');
+        return number_format((float) $amount / 100, 2, '.', '');
     }
 
     public function validateParams($params)
@@ -424,7 +420,7 @@ class PaypalService extends PaymentService
         $requiredParams = [
             'order_id',
             'price',
-            'currency' ,
+            'currency',
             'installment',
             'user_name',
             'user_surname',
@@ -434,10 +430,10 @@ class PaypalService extends PaymentService
 
         $missingParams = array_diff($requiredParams, array_keys($params));
 
-        if(empty($missingParams)){
+        if (empty($missingParams)) {
             return true;
-        }else{
-            return 'These keys are missing for this payment service' . implode(', ', $missingParams);
+        } else {
+            return 'These keys are missing for this payment service'.implode(', ', $missingParams);
         }
     }
 
@@ -455,25 +451,25 @@ class PaypalService extends PaymentService
         $responseId = $allParams['payment_id'];
         $responsePaymentService = $allParams['payment_service'];
         $responseToken = $allParams['token'] ?? '';
-        $responsePayerId = isset($allParams['PayerID'] )? $allParams['PayerID'] : '';
+        $responsePayerId = isset($allParams['PayerID']) ? $allParams['PayerID'] : '';
         $responseOrderData = [];
         $responseOrderId = '';
 
-        if($allParams['success'] == 'true'){
+        if ($allParams['success'] == 'true') {
             $paypalResponse = $this->capturePayment($allParams);
 
             $recordResponse = $paypalResponse;
 
             $responseOrderData = $paypalResponse;
 
-            if(isset($paypalResponse->status) && $paypalResponse->status == "COMPLETED"){
+            if (isset($paypalResponse->status) && $paypalResponse->status == 'COMPLETED') {
                 $recordStatus = $this->getStatusEnum()::COMPLETED;
 
                 $responseStatus = $this::RESPONSE_STATUS_SUCCESS;
                 $responseOrderId = $paypalResponse->purchase_units[0]->payments->captures[0]->custom_id;
             }
 
-        }else{
+        } else {
             $recordResponse = request()->all();
 
             $responseOrderData = json_encode(request()->all());
@@ -481,7 +477,7 @@ class PaypalService extends PaymentService
 
         $this->payment->update([
             'status' => $recordStatus,
-            'response' => $recordResponse
+            'response' => $recordResponse,
         ]);
 
         $responsePayload = [
@@ -499,17 +495,17 @@ class PaypalService extends PaymentService
 
     public function isCancellable($payload)
     {
-        if(!$payload){
+        if (! $payload) {
             return false;
         }
 
         $payload = (object) $payload;
 
-        if(!isset($payload->id)){
+        if (! isset($payload->id)) {
             throw new \Exception('Payment id is required');
         }
 
-        if(!isset($payload->status)){
+        if (! isset($payload->status)) {
             throw new \Exception('Payment status is required');
         }
 
@@ -517,22 +513,22 @@ class PaypalService extends PaymentService
 
         $source = $this->showFromSource($orderId);
 
-        return $source->status == "COMPLETED" && $source->intent == "AUTHORIZED";
+        return $source->status == 'COMPLETED' && $source->intent == 'AUTHORIZED';
     }
 
     public function isRefundable($payload)
     {
-        if(!$payload){
+        if (! $payload) {
             return false;
         }
 
         $payload = (object) $payload;
 
-        if(!isset($payload->id)){
+        if (! isset($payload->id)) {
             throw new \Exception('Payment id is required');
         }
 
-        if(!isset($payload->status)){
+        if (! isset($payload->status)) {
             throw new \Exception('Payment status is required');
         }
 
@@ -540,6 +536,6 @@ class PaypalService extends PaymentService
 
         $source = $this->showFromSource($orderId);
 
-        return $source->status == "COMPLETED" && $source->intent == "CAPTURED";
+        return $source->status == 'COMPLETED' && $source->intent == 'CAPTURED';
     }
 }

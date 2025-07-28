@@ -7,9 +7,10 @@ trait PaymentExperienceWebProfiles
     /**
      * List Web Experience Profiles.
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/payment-experience/v1/#web-profiles_get-list
      */
@@ -25,11 +26,11 @@ trait PaymentExperienceWebProfiles
     /**
      * Create a Web Experience Profile.
      *
-     * @param array $data
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/payment-experience/v1/#web-profile_create
      */
@@ -47,11 +48,11 @@ trait PaymentExperienceWebProfiles
     /**
      * Delete a Web Experience Profile.
      *
-     * @param string $profile_id
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/payment-experience/v1/#web-profile_delete
      */
@@ -67,12 +68,11 @@ trait PaymentExperienceWebProfiles
     /**
      * Partially update a Web Experience Profile.
      *
-     * @param string $profile_id
-     * @param array  $data
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/payment-experience/v1/#web-profile_partial-update
      */
@@ -90,12 +90,11 @@ trait PaymentExperienceWebProfiles
     /**
      * Partially update a Web Experience Profile.
      *
-     * @param string $profile_id
-     * @param array  $data
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/payment-experience/v1/#web-profile_update
      */
@@ -113,11 +112,11 @@ trait PaymentExperienceWebProfiles
     /**
      * Delete a Web Experience Profile.
      *
-     * @param string $profile_id
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/payment-experience/v1/#web-profile_get
      */

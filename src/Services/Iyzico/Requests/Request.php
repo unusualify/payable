@@ -3,12 +3,13 @@
 namespace Unusualify\Payable\Services\Iyzico\Requests;
 
 use Unusualify\Payable\Services\Iyzico\Models\IyzicoModel;
-use Unusualify\Payable\Services\Iyzico\Models\RequestStringBuilder;
 use Unusualify\Payable\Services\Iyzico\Models\JsonBuilder;
+use Unusualify\Payable\Services\Iyzico\Models\RequestStringBuilder;
 
 class Request extends IyzicoModel
 {
     private $locale;
+
     private $conversationId;
 
     public function getLocale()
@@ -34,16 +35,16 @@ class Request extends IyzicoModel
     public function getJsonObject()
     {
         return JsonBuilder::create()
-            ->add("locale", $this->getLocale())
-            ->add("conversationId", $this->getConversationId())
+            ->add('locale', $this->getLocale())
+            ->add('conversationId', $this->getConversationId())
             ->getObject();
     }
 
     public function toPKIRequestString()
     {
         return RequestStringBuilder::create()
-            ->append("locale", $this->getLocale())
-            ->append("conversationId", $this->getConversationId())
+            ->append('locale', $this->getLocale())
+            ->append('conversationId', $this->getConversationId())
             ->getRequestString();
     }
 }

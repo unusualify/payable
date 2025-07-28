@@ -2,17 +2,16 @@
 
 namespace Unusualify\Payable\Services\Iyzico\Models;
 
-
-use Unusualify\Payable\Services\Iyzico\Models\IyzicoBaseModel;
-use Unusualify\Payable\Services\Iyzico\Models\JsonBuilder;
-use Unusualify\Payable\Services\Iyzico\Models\RequestStringBuilder;
-
 class Address extends IyzicoBaseModel
 {
     private $address;
+
     private $zipCode;
+
     private $contactName;
+
     private $city;
+
     private $country;
 
     public function getAddress()
@@ -68,22 +67,22 @@ class Address extends IyzicoBaseModel
     public function getJsonObject()
     {
         return JsonBuilder::create()
-            ->add("address", $this->getAddress())
-            ->add("zipCode", $this->getZipCode())
-            ->add("contactName", $this->getContactName())
-            ->add("city", $this->getCity())
-            ->add("country", $this->getCountry())
+            ->add('address', $this->getAddress())
+            ->add('zipCode', $this->getZipCode())
+            ->add('contactName', $this->getContactName())
+            ->add('city', $this->getCity())
+            ->add('country', $this->getCountry())
             ->getObject();
     }
 
     public function toPKIRequestString()
     {
         return RequestStringBuilder::create()
-            ->append("address", $this->getAddress())
-            ->append("zipCode", $this->getZipCode())
-            ->append("contactName", $this->getContactName())
-            ->append("city", $this->getCity())
-            ->append("country", $this->getCountry())
+            ->append('address', $this->getAddress())
+            ->append('zipCode', $this->getZipCode())
+            ->append('contactName', $this->getContactName())
+            ->append('city', $this->getCity())
+            ->append('country', $this->getCountry())
             ->getRequestString();
     }
 }

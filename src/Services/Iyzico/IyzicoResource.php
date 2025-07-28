@@ -2,44 +2,50 @@
 
 namespace Unusualify\Payable\Services\Iyzico;
 
-use Unusualify\Payable\Services\Iyzico\Requests\Request;
 use Unusualify\Payable\Services\Iyzico\Models\Options;
+use Unusualify\Payable\Services\Iyzico\Requests\Request;
 
-class IyzicoResource 
+class IyzicoResource
 {
     private $status;
+
     private $errorCode;
+
     private $errorMessage;
+
     private $errorGroup;
+
     private $locale;
+
     private $systemTime;
+
     private $conversationId;
 
     protected static function getHttpHeaders(Request $request, Options $options)
     {
-        $header = array(
-            "Accept: application/json",
-            "Content-type: application/json",
-        );
+        $header = [
+            'Accept: application/json',
+            'Content-type: application/json',
+        ];
 
         $rnd = uniqid();
-        array_push($header, "Authorization: " . self::prepareAuthorizationString($request, $options, $rnd));
-        array_push($header, "x-iyzi-rnd: " . $rnd);
-        array_push($header, "x-iyzi-client-version: " . "iyzipay-php-2.0.54");
+        array_push($header, 'Authorization: '.self::prepareAuthorizationString($request, $options, $rnd));
+        array_push($header, 'x-iyzi-rnd: '.$rnd);
+        array_push($header, 'x-iyzi-client-version: '.'iyzipay-php-2.0.54');
 
         return $header;
     }
 
-    protected static function getHttpHeadersV2($uri, Request $request = null, Options $options)
+    protected static function getHttpHeadersV2($uri, ?Request $request, Options $options)
     {
-        $header = array(
-            "Accept: application/json",
-            "Content-type: application/json",
-        );
+        $header = [
+            'Accept: application/json',
+            'Content-type: application/json',
+        ];
 
         $rnd = uniqid();
-        array_push($header, "Authorization: " . self::prepareAuthorizationStringV2($uri, $request, $options, $rnd));
-        array_push($header, "x-iyzi-client-version: " . "iyzipay-php-2.0.43");
+        array_push($header, 'Authorization: '.self::prepareAuthorizationStringV2($uri, $request, $options, $rnd));
+        array_push($header, 'x-iyzi-client-version: '.'iyzipay-php-2.0.43');
 
         return $header;
     }
@@ -47,10 +53,11 @@ class IyzicoResource
     protected static function prepareAuthorizationString(Request $request, Options $options, $rnd)
     {
         $authContent = HashGenerator::generateHash($options->getApiKey(), $options->getSecretKey(), $rnd, $request);
-        return vsprintf("IYZWS %s:%s", array($options->getApiKey(), $authContent));
+
+        return vsprintf('IYZWS %s:%s', [$options->getApiKey(), $authContent]);
     }
 
-    protected static function prepareAuthorizationStringV2($uri, Request $request = null, Options $options, $rnd)
+    protected static function prepareAuthorizationStringV2($uri, ?Request $request, Options $options, $rnd)
     {
         $hash = IyziAuthV2Generator::generateAuthContent($uri, $options->getApiKey(), $options->getSecretKey(), $rnd, $request);
 

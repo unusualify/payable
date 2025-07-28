@@ -7,11 +7,11 @@ trait Trackers
     /**
      * Adds tracking information, with or without tracking numbers, for multiple Paypal transactions.
      *
-     * @param array $data
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/tracking/v1/#trackers-batch_post
      */
@@ -29,11 +29,11 @@ trait Trackers
     /**
      * Adds tracking information for a Paypal transaction.
      *
-     * @param array $data
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/tracking/v1/#trackers_post
      */
@@ -51,18 +51,17 @@ trait Trackers
     /**
      * List tracking information based on Transaction ID or tracking number.
      *
-     * @param string $transaction_id
-     * @param string $tracking_number
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
      *
+     * @throws \Throwable
+     *
      * @see https://developer.paypal.com/docs/api/tracking/v1/#trackers-batch_get
      */
-    public function listTrackingDetails(string $transaction_id, string $tracking_number = null)
+    public function listTrackingDetails(string $transaction_id, ?string $tracking_number = null)
     {
-        $this->apiEndPoint = "v1/shipping/trackers?transaction_id={$transaction_id}".!empty($tracking_number) ? "&tracking_number={$tracking_number}" : '';
+        $this->apiEndPoint = "v1/shipping/trackers?transaction_id={$transaction_id}".! empty($tracking_number) ? "&tracking_number={$tracking_number}" : '';
 
         $this->verb = 'get';
 
@@ -72,12 +71,11 @@ trait Trackers
     /**
      * Update tracking information.
      *
-     * @param string $tracking_id
-     * @param array  $data
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/tracking/v1/#trackers_put
      */
@@ -95,11 +93,11 @@ trait Trackers
     /**
      * Show tracking information.
      *
-     * @param string $tracking_id
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/tracking/v1/#trackers_get
      */

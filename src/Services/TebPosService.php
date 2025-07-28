@@ -2,16 +2,19 @@
 
 namespace Unusualify\Payable\Services;
 
-use Unusualify\Priceable\Facades\PriceService;
 use Illuminate\Http\Request as HttpRequest;
+use Unusualify\Priceable\Facades\PriceService;
 
-
-class TebPosService extends PaymentService{
-
+class TebPosService extends PaymentService
+{
     protected $merchantID;
+
     protected $storeKey;
+
     protected $params = [];
+
     public $processType;
+
     public $rnd;
 
     public function __construct($mode = null)
@@ -22,6 +25,7 @@ class TebPosService extends PaymentService{
         $this->setCredentials();
 
     }
+
     /*
     * Set proper .env variables to proper attributes
     */
@@ -83,23 +87,21 @@ class TebPosService extends PaymentService{
         //     'parameters' => json_encode($data)
         // ]);
         // dd($this->url,$endpoint);
-        $response = $this->postReq($this->url,$endpoint,$data,[],'encoded');
-        print($response);
+        $response = $this->postReq($this->url, $endpoint, $data, [], 'encoded');
+        echo $response;
         exit();
-
 
     }
 
     public function amountFormat($price)
     {
-        return number_format((float)$price, 2, ',', '');
+        return number_format((float) $price, 2, ',', '');
     }
 
     public function generateHash()
     {
         $rnd = time();
         $taksit = '';
-
 
         // 'pan' => $this->params['card_no'],
         //     'Ecom_Payment_Card_ExpDate_Month' => $this->params['card_month'],
@@ -140,58 +142,56 @@ class TebPosService extends PaymentService{
             'rnd' => $rnd,
             'storetype' => '3D_PAY',
             'taksit' => $taksit,
-            'TranType' => 'Auth'
+            'TranType' => 'Auth',
         ];
 
         // Build hash string maintaining order
         $hashString = '';
         $isFirst = true;
         foreach ($orderedMap as $value) {
-            $escapedValue = str_replace("|", "\\|", str_replace("\\", "\\\\", $value));
+            $escapedValue = str_replace('|', '\\|', str_replace('\\', '\\\\', $value));
             if ($isFirst) {
                 $hashString = $escapedValue;
                 $isFirst = false;
             } else {
-                $hashString .= "|" . $escapedValue;
+                $hashString .= '|'.$escapedValue;
             }
         }
-        $hashString .= "|" . $this->storeKey;
+        $hashString .= '|'.$this->storeKey;
 
         return base64_encode(pack('H*', hash('sha512', $hashString)));
     }
 
-    public function hydrateParams(array $params)
-    {
-
-    }
+    public function hydrateParams(array $params) {}
 
     public function getSchema()
     {
 
         $schema = [
 
-            "cardname" => "_USER_cardname",
-            "cardnumber" => "_USER_cardno",
-            "cardexpiredatemonth" => "_USER_exp_month",
-            "cardexpiredateyear" => "_USER_exp_year",
-            "cardcvv2" => "_USER_cvv",
-            "companyname" => "_SYSTEM_brand",
-            "orderid" => "_SYSTEM_order_id",
-            "customeremailaddress" => "_SYSTEM_email",
-            "customeripaddress" => "_SYSTEM_ip",
-            "txnamount" => "_SYSTEM_amount",
-            "txncurrencycode" => "_SYSTEM_currency_no_4217",
-            "txninstallmentcount" => "0",
-            "lang" => "_SYSTEM_locale",
-            "iscommission" => 0,
+            'cardname' => '_USER_cardname',
+            'cardnumber' => '_USER_cardno',
+            'cardexpiredatemonth' => '_USER_exp_month',
+            'cardexpiredateyear' => '_USER_exp_year',
+            'cardcvv2' => '_USER_cvv',
+            'companyname' => '_SYSTEM_brand',
+            'orderid' => '_SYSTEM_order_id',
+            'customeremailaddress' => '_SYSTEM_email',
+            'customeripaddress' => '_SYSTEM_ip',
+            'txnamount' => '_SYSTEM_amount',
+            'txncurrencycode' => '_SYSTEM_currency_no_4217',
+            'txninstallmentcount' => '0',
+            'lang' => '_SYSTEM_locale',
+            'iscommission' => 0,
             'previous_url' => '_SYSTEM_previous_url',
-            'email' => '_SYSTEM_email'
+            'email' => '_SYSTEM_email',
         ];
 
         return $schema;
     }
 
-    public function handleResponse(HttpRequest $request){
+    public function handleResponse(HttpRequest $request)
+    {
         // dd($request);
         $paramsToRemoved = [
             'card_name',
@@ -207,17 +207,17 @@ class TebPosService extends PaymentService{
             'terminalid',
         ];
         // dd($request->all());
-        $resp = array_filter($request->all(), function($key) use ($paramsToRemoved) {
-            return !in_array($key, $paramsToRemoved);
+        $resp = array_filter($request->all(), function ($key) use ($paramsToRemoved) {
+            return ! in_array($key, $paramsToRemoved);
         }, ARRAY_FILTER_USE_KEY);
 
-        if($request->MdStatus == 1 && $request->BankResponseCode == '00'){
+        if ($request->MdStatus == 1 && $request->BankResponseCode == '00') {
             $params = [
                 'status' => $this::RESPONSE_STATUS_SUCCESS,
                 'id' => $request->query('payment_id'),
                 'service_payment_id' => $request->paymentId,
                 'order_id' => $request->conversationId,
-                'order_data' => $request->conversationData
+                'order_data' => $request->conversationData,
             ];
 
             $response = $this->updateRecord(
@@ -226,14 +226,14 @@ class TebPosService extends PaymentService{
                 $resp
             );
             // dd($params);
-        }else{
+        } else {
 
             $params = [
                 'status' => $this::RESPONSE_STATUS_ERROR,
                 'id' => $request->query('payment_id'),
                 'service_payment_id' => $request->paymentId,
                 'order_id' => $request->order_id,
-                'order_data' => $request->all()
+                'order_data' => $request->all(),
             ];
             $response = $this->updateRecord(
                 $params['id'],
@@ -241,6 +241,7 @@ class TebPosService extends PaymentService{
                 $resp
             );
         }
+
         return $this->generatePostForm($params, route(config('payable.return_url')));
 
         //     [
@@ -265,5 +266,4 @@ class TebPosService extends PaymentService{
         //   "traceId" => "6703a7750e3073523a579676ae097952"
         // ]
     }
-
 }

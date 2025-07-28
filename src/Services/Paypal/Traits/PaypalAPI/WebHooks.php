@@ -7,12 +7,11 @@ trait WebHooks
     /**
      * Create a new web hook.
      *
-     * @param string $url
-     * @param array  $events
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/webhooks/v1/#webhooks_post
      */
@@ -35,9 +34,10 @@ trait WebHooks
     /**
      * List all web hooks.
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/webhooks/v1/#webhooks_list
      */
@@ -53,11 +53,11 @@ trait WebHooks
     /**
      * Delete a web hook.
      *
-     * @param string $web_hook_id
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/webhooks/v1/#webhooks_delete
      */
@@ -73,12 +73,11 @@ trait WebHooks
     /**
      * Update an existing web hook.
      *
-     * @param string $web_hook_id
-     * @param array  $data
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/webhooks/v1/#webhooks_update
      */
@@ -96,11 +95,11 @@ trait WebHooks
     /**
      * Show details for an existing web hook.
      *
-     * @param string $web_hook_id
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/webhooks/v1/#webhooks_get
      */
@@ -116,11 +115,10 @@ trait WebHooks
     /**
      * List events for an existing web hook.
      *
-     * @param string $web_hook_id
+     * @param  string  $web_hook_id
+     * @return array|\Psr\Http\Message\StreamInterface|string
      *
      * @throws \Throwable
-     *
-     * @return array|\Psr\Http\Message\StreamInterface|string
      *
      * @see https://developer.paypal.com/docs/api/webhooks/v1/#webhooks_get
      */

@@ -7,11 +7,11 @@ trait PaymentCaptures
     /**
      * Show details for a captured payment.
      *
-     * @param string $capture_id
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/payments/v2/#captures_get
      */
@@ -27,14 +27,11 @@ trait PaymentCaptures
     /**
      * Refund a captured payment.
      *
-     * @param string $capture_id
-     * @param string $invoice_id
-     * @param float  $amount
-     * @param string $note
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/payments/v2/#captures_refund
      */
@@ -44,10 +41,10 @@ trait PaymentCaptures
 
         $this->options['json'] = [
             'amount' => [
-                'value'         => $amount,
+                'value' => $amount,
                 'currency_code' => $this->currency,
             ],
-            'invoice_id'    => $invoice_id,
+            'invoice_id' => $invoice_id,
             'note_to_payer' => $note,
         ];
 

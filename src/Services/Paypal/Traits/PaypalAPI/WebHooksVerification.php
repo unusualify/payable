@@ -7,11 +7,11 @@ trait WebHooksVerification
     /**
      * Verify a web hook from Paypal.
      *
-     * @param array $data
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/webhooks/v1/#verify-webhook-signature_post
      */

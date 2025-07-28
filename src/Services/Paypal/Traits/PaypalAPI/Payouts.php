@@ -7,11 +7,11 @@ trait Payouts
     /**
      * Create a Batch Payout.
      *
-     * @param array $data
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/payments.payouts-batch/v1/#payouts_post
      */
@@ -29,11 +29,11 @@ trait Payouts
     /**
      * Show Batch Payout details by ID.
      *
-     * @param string $payout_id
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/payments.payouts-batch/v1/#payouts_get
      */
@@ -49,11 +49,11 @@ trait Payouts
     /**
      * Show Payout Item details by ID.
      *
-     * @param string $payout_item_id
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/payments.payouts-batch/v1/#payouts-item_get
      */
@@ -69,11 +69,11 @@ trait Payouts
     /**
      * Show Payout Item details by ID.
      *
-     * @param string $payout_item_id
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/payments.payouts-batch/v1/#payouts-item_cancel
      */

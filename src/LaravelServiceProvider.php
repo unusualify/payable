@@ -1,12 +1,12 @@
 <?php
 
 namespace Unusualify\Payable;
-use Unusualify\Payable\Providers\RouteServiceProvider;
+
 use Illuminate\Support\ServiceProvider;
+use Unusualify\Payable\Providers\RouteServiceProvider;
 
 class LaravelServiceProvider extends ServiceProvider
 {
-
     protected $providers = [
         RouteServiceProvider::class,
     ];
@@ -20,7 +20,7 @@ class LaravelServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-               __DIR__ . '/../config/payable.php' => config_path('payable.php'),
+                __DIR__.'/../config/payable.php' => config_path('payable.php'),
             ], 'config');
             $this->publishMigrations();
         }
@@ -55,7 +55,7 @@ class LaravelServiceProvider extends ServiceProvider
         );
 
         $this->app->scoped('payable', function () {
-            return new Payable();
+            return new Payable;
         });
     }
 
@@ -66,8 +66,8 @@ class LaravelServiceProvider extends ServiceProvider
      */
     public function bootViews()
     {
-        $sourcePathBlade = __DIR__ .  '/Resources/views';
-        $sourcePathJS = __DIR__ .  '/Resources/js';
+        $sourcePathBlade = __DIR__.'/Resources/views';
+        $sourcePathJS = __DIR__.'/Resources/js';
 
         // $this->loadViewsFrom( $sourcePathBlade, 'unusual_form');
 
@@ -87,13 +87,12 @@ class LaravelServiceProvider extends ServiceProvider
         }
     }
 
-
     /**
      * {@inheritdoc}
      */
     private function registerHelpers()
     {
-        foreach (glob( __DIR__ . '/../Helpers/*.php') as $file) {
+        foreach (glob(__DIR__.'/../Helpers/*.php') as $file) {
             require_once $file;
         }
     }
@@ -101,10 +100,7 @@ class LaravelServiceProvider extends ServiceProvider
     /**
      * {@inheritdoc}
      */
-    private function macros()
-    {
-
-    }
+    private function macros() {}
 
     /**
      * Publish migration files.
@@ -115,7 +111,7 @@ class LaravelServiceProvider extends ServiceProvider
     {
         $timestamp = date('Y_m_d_His');
 
-        $stubPath = __DIR__ . '/../stubs/create_payments_table.stub';
+        $stubPath = __DIR__.'/../stubs/create_payments_table.stub';
         $targetPath = database_path("migrations/{$timestamp}_create_payments_table.php");
 
         $this->publishes([
@@ -138,8 +134,5 @@ class LaravelServiceProvider extends ServiceProvider
     //     });
 
     //  }
-
-
-
 
 }

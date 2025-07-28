@@ -18,7 +18,6 @@ class Payable
 
     /**
      * Service
-     *
      */
     public $service;
 
@@ -42,7 +41,9 @@ class Payable
 
         $this->statusEnum = config('payable.status_enum');
 
-        if(!$slug) return;
+        if (! $slug) {
+            return;
+        }
 
         $this->setService($slug);
 
@@ -55,7 +56,7 @@ class Payable
 
         $serviceClass = $this->getServiceClass($this->slug);
 
-        $this->service = new $serviceClass();
+        $this->service = new $serviceClass;
 
         return $this;
     }
@@ -67,10 +68,11 @@ class Payable
      */
     public static function getServiceClass($slug)
     {
-        $class = __NAMESPACE__ . '\\Services\\' . Str::studly($slug) . 'Service';
+        $class = __NAMESPACE__.'\\Services\\'.Str::studly($slug).'Service';
 
-        if(!class_exists($class))
-            throw new \Exception('Service class not found for slug: ' . $slug);
+        if (! class_exists($class)) {
+            throw new \Exception('Service class not found for slug: '.$slug);
+        }
 
         return $class;
         // return __NAMESPACE__ . '\\Services\\' . $this->toPascalCase($this->slug) . 'Service';
@@ -94,17 +96,16 @@ class Payable
             ->pay($payload, $paymentPayload);
     }
 
-
     /**
      * Cancel Payment
      *
-     * @param int $payment_id
-     * @param array|object $params
+     * @param  int  $payment_id
+     * @param  array|object  $params
      */
     public function cancel($payment_id, $params = [])
     {
-        if(!$this->service->hasCancel($params) && method_exists($this->service, 'cancel')){
-            throw new \Exception('Cancel is not supported for the ' . $this->service->name);
+        if (! $this->service->hasCancel($params) && method_exists($this->service, 'cancel')) {
+            throw new \Exception('Cancel is not supported for the '.$this->service->name);
         }
 
         $payment = $this->paymentModel::findOrFail($payment_id);
@@ -120,8 +121,8 @@ class Payable
 
     public function refund($payment_id, $params = [])
     {
-        if(!$this->service->hasRefund($params) && method_exists($this->service, 'refund')){
-            throw new \Exception('Refund is not supported for the ' . $this->service->name);
+        if (! $this->service->hasRefund($params) && method_exists($this->service, 'refund')) {
+            throw new \Exception('Refund is not supported for the '.$this->service->name);
         }
 
         $payment = $this->paymentModel::findOrFail($payment_id);
@@ -135,22 +136,23 @@ class Payable
     {
         $exceptionals = config('payable.exceptional_fields.'.$this->slug);
         // dd($exceptionals, 'payable.exceptional_fields.' . $this->slug);
-        if($exceptionals)
-            foreach($exceptionals as $index => $exception){
+        if ($exceptionals) {
+            foreach ($exceptionals as $index => $exception) {
                 // dd(array_key_exists($exception, $params), $exception, $params);
-                if(array_key_exists($exception, $params))
-                {
+                if (array_key_exists($exception, $params)) {
                     // dd($index);
                     unset($params[$exception]);
                 }
             }
+        }
+
         // dd($params);
         return $params;
     }
 
     public function handleResponse(Request $request)
     {
-        if(!$request->get('payment_id')){
+        if (! $request->get('payment_id')) {
             throw new \Exception('Payment ID is required');
         }
 
@@ -161,12 +163,11 @@ class Payable
             ->handleResponse($request);
     }
 
-
     protected function validatePayload($payload)
     {
-        if(!isset($payload['amount'])){
+        if (! isset($payload['amount'])) {
             throw new \Exception('Amount is required');
-        } else if(!isset($payload['order_id'])){
+        } elseif (! isset($payload['order_id'])) {
             throw new \Exception('Order ID is required');
         }
 
@@ -215,14 +216,14 @@ class Payable
                 'category2' => '',
                 'type' => '',
                 'price' => '',
-            ]
+            ],
         ];
     }
 
     /**
      * Create Payment Record
      *
-     * @param array $data
+     * @param  array  $data
      * @return config('payable.model')
      */
     public function createPaymentRecord($payload, $paymentAttributes = [])
@@ -247,10 +248,10 @@ class Payable
         ];
 
         // If payment id is provided, update the payment
-        if(isset($paymentAttributes['id'])){
+        if (isset($paymentAttributes['id'])) {
             $payment = $this->paymentModel::findOrFail($paymentAttributes['id']);
 
-            if(!in_array($payment->status, [$this->statusEnum::PENDING, $this->statusEnum::FAILED])){
+            if (! in_array($payment->status, [$this->statusEnum::PENDING, $this->statusEnum::FAILED])) {
                 throw new \Exception('Payment is not in pending or failed status');
             }
 
@@ -276,5 +277,4 @@ class Payable
     {
         return route('payable.response', $params);
     }
-
 }

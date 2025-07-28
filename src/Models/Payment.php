@@ -26,7 +26,7 @@ class Payment extends Model
         'email',
         'installment',
         'parameters',
-        'response'
+        'response',
     ];
 
     public function __construct(array $attributes = [])
@@ -71,5 +71,4 @@ class Payment extends Model
     {
         return config('payable.table', parent::getTable());
     }
-
 }

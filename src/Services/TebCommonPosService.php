@@ -7,19 +7,23 @@ use Illuminate\Http\Request as HttpRequest;
 
 class TebCommonPosService extends PaymentService
 {
-
     protected $clientId;
+
     protected $apiUser;
+
     protected $apiPass;
+
     public $rnd;
+
     public $timeSpan;
+
     protected $params = [];
 
     public function __construct($mode = null)
     {
 
         parent::__construct(
-        headers: $this->headers,
+            headers: $this->headers,
         );
 
         $this->setCredentials();
@@ -45,9 +49,9 @@ class TebCommonPosService extends PaymentService
 
     public function generateHash()
     {
-        $hashString = $this->apiPass . $this->clientId . $this->apiUser . $this->rnd . $this->timeSpan;
+        $hashString = $this->apiPass.$this->clientId.$this->apiUser.$this->rnd.$this->timeSpan;
 
-        $hashingBytes = hash("sha512", ($hashString), true);
+        $hashingBytes = hash('sha512', ($hashString), true);
         $hash = base64_encode($hashingBytes);
 
         return $hash;
@@ -61,7 +65,7 @@ class TebCommonPosService extends PaymentService
 
         $this->headers = [
             'Content-Type' => 'application/json',
-            'Accept' => '*/*'
+            'Accept' => '*/*',
         ];
 
         $this->params += $params;
@@ -82,20 +86,20 @@ class TebCommonPosService extends PaymentService
             'isCommission' => 0,
             'amount' => $amount,
             'totalAmount' => $totalAmount,
-            'currency' =>  Currency::getNumericCode($this->params['currency']),
+            'currency' => Currency::getNumericCode($this->params['currency']),
             'installmentCount' => $this->params['installment'],
             'description' => '',
             'echo' => '',
-            'extraParameters' => ''
+            'extraParameters' => '',
         ];
         // dd($data, $this->params['currency']);
-        $response = $this->postReq($this->url, $endpoint, json_encode($data), $this->headers,'raw');
+        $response = $this->postReq($this->url, $endpoint, json_encode($data), $this->headers, 'raw');
         $responseObject = json_decode($response);
         // dd($responseObject, $response);
         if ($responseObject->Code == 0) {
             // dd($this->params);
             return $responseObject->ThreeDSessionId;
-        }else{
+        } else {
             return json_decode($responseObject);
         }
     }
@@ -113,35 +117,33 @@ class TebCommonPosService extends PaymentService
             ],
             [
                 'name' => 'CardHolderName',
-                'contents' =>  $this->params['card_name'],
+                'contents' => $this->params['card_name'],
             ],
             [
                 'name' => 'CardNo',
-                'contents' =>   $this->params['card_no'],
+                'contents' => $this->params['card_no'],
             ],
             [
                 'name' => 'ExpireDate',
-                'contents' =>   $this->formatCardExpireDate($this->params['card_month'], $this->params['card_year']),
+                'contents' => $this->formatCardExpireDate($this->params['card_month'], $this->params['card_year']),
             ],
             [
                 'name' => 'Cvv',
-                'contents' =>   $this->params['card_cvv'],
+                'contents' => $this->params['card_cvv'],
             ],
         ];
 
-        $response = $this->postReq($this->url,$endpoint,$multipart,[],'multipart');
+        $response = $this->postReq($this->url, $endpoint, $multipart, [], 'multipart');
 
-        print($response);
+        echo $response;
     }
 
     public function formatCardExpireDate($month, $year)
     {
-        return $month . substr($year, -2);
+        return $month.substr($year, -2);
     }
 
-    public function hydrateParams(array $params)
-    {
-    }
+    public function hydrateParams(array $params) {}
 
     public function handleResponse(HttpRequest $request)
     {
@@ -159,8 +161,8 @@ class TebCommonPosService extends PaymentService
             'terminalid',
         ];
 
-        $cleanedResponse = array_filter($request->all(), function($key) use ($paramsToRemoved) {
-            return !in_array($key, $paramsToRemoved);
+        $cleanedResponse = array_filter($request->all(), function ($key) use ($paramsToRemoved) {
+            return ! in_array($key, $paramsToRemoved);
         }, ARRAY_FILTER_USE_KEY);
 
         $responseStatus = ($request->MdStatus == 1 && $request->BankResponseCode == '00' ? self::RESPONSE_STATUS_SUCCESS : self::RESPONSE_STATUS_ERROR);
@@ -169,7 +171,7 @@ class TebCommonPosService extends PaymentService
 
         $this->payment->update([
             'status' => $recordStatus,
-            'response' => $cleanedResponse
+            'response' => $cleanedResponse,
         ]);
 
         $responsePayload = [
@@ -178,7 +180,7 @@ class TebCommonPosService extends PaymentService
             'payment_service' => $request->query('payment_service'),
             'order_id' => $request->query('order_id'),
             'order_data' => $request->all(),
-            'message' => $responseMessage
+            'message' => $responseMessage,
         ];
 
         return $this->generatePostForm($responsePayload, route(config('payable.return_url')));
@@ -187,6 +189,7 @@ class TebCommonPosService extends PaymentService
     public function formatPrice($price)
     {
         return $price;
+
         return round($price, 2) * 100;
     }
 }

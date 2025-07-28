@@ -9,9 +9,10 @@ trait InvoicesSearch
     /**
      * Search and return existing invoices.
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/invoicing/v2/#invoices_list
      */

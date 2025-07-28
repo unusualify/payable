@@ -6,14 +6,14 @@ class JsonBuilder
 {
     private $json;
 
-    function __construct($json)
+    public function __construct($json)
     {
         $this->json = $json;
     }
 
     public static function create()
     {
-        return new JsonBuilder(array());
+        return new JsonBuilder([]);
     }
 
     public static function fromJsonObject($json)
@@ -22,8 +22,6 @@ class JsonBuilder
     }
 
     /**
-     * @param $key
-     * @param $value
      * @return JsonBuilder
      */
     public function add($key, $value = null)
@@ -35,12 +33,11 @@ class JsonBuilder
                 $this->json[$key] = $value;
             }
         }
+
         return $this;
     }
 
     /**
-     * @param $key
-     * @param $value
      * @return JsonBuilder
      */
     public function addPrice($key, $value = null)
@@ -48,15 +45,14 @@ class JsonBuilder
         if (isset($value)) {
             $this->json[$key] = RequestFormatter::formatPrice($value);
         }
+
         return $this;
     }
 
     /**
-     * @param $key
-     * @param array $array
      * @return JsonBuilder
      */
-    public function addArray($key, array $array = null)
+    public function addArray($key, ?array $array = null)
     {
         if (isset($array)) {
             foreach ($array as $index => $value) {
@@ -67,6 +63,7 @@ class JsonBuilder
                 }
             }
         }
+
         return $this;
     }
 
@@ -77,7 +74,7 @@ class JsonBuilder
 
     public static function jsonEncode($jsonObject)
     {
-        return json_encode($jsonObject,JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+        return json_encode($jsonObject, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
     public static function jsonDecode($rawResult)

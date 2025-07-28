@@ -4,7 +4,7 @@ namespace Unusualify\Payable\Services\Paypal\Traits;
 
 trait PaypalAPI
 {
-    use PaypalAPI\Trackers;
+    use PaypalAPI\BillingPlans;
     use PaypalAPI\CatalogProducts;
     use PaypalAPI\Disputes;
     use PaypalAPI\DisputesActions;
@@ -14,37 +14,37 @@ trait PaypalAPI
     use PaypalAPI\InvoicesTemplates;
     use PaypalAPI\Orders;
     use PaypalAPI\PartnerReferrals;
-    use PaypalAPI\PaymentExperienceWebProfiles;
-    use PaypalAPI\PaymentMethodsTokens;
     use PaypalAPI\PaymentAuthorizations;
     use PaypalAPI\PaymentCaptures;
+    use PaypalAPI\PaymentExperienceWebProfiles;
+    use PaypalAPI\PaymentMethodsTokens;
     use PaypalAPI\PaymentRefunds;
     use PaypalAPI\Payouts;
     use PaypalAPI\ReferencedPayouts;
-    use PaypalAPI\BillingPlans;
-    use PaypalAPI\Subscriptions;
     use PaypalAPI\Reporting;
+    use PaypalAPI\Subscriptions;
+    use PaypalAPI\Trackers;
     use PaypalAPI\WebHooks;
-    use PaypalAPI\WebHooksVerification;
     use PaypalAPI\WebHooksEvents;
+    use PaypalAPI\WebHooksVerification;
 
     /**
      * Login through Paypal API to get access token.
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/get-an-access-token-curl/
      * @see https://developer.paypal.com/docs/api/get-an-access-token-postman/
      */
-
     public function getAccessToken()
     {
         $this->apiEndPoint = 'v1/oauth2/token';
         $this->options['auth'] = [$this->config['client_id'], $this->config['client_secret']];
         $this->options['request_body'] = [
-        'grant_type' => 'client_credentials',
+            'grant_type' => 'client_credentials',
         ];
         $this->type = 'encoded';
         $this->generateBasicAuthHeaders();
@@ -56,7 +56,7 @@ trait PaypalAPI
         unset($this->options[$this->httpBodyParam]);
         // dd($response);
         if (isset($response->access_token)) {
-        $this->setAccessToken($response);
+            $this->setAccessToken($response);
         }
 
         return $response;
@@ -65,13 +65,12 @@ trait PaypalAPI
     public function generateBasicAuthHeaders()
     {
         // dd($this->headers);
-        $this->headers['Authorization'] = 'Basic ' . base64_encode($this->options['auth'][0] . ':' . $this->options['auth'][1]);
+        $this->headers['Authorization'] = 'Basic '.base64_encode($this->options['auth'][0].':'.$this->options['auth'][1]);
     }
 
     /**
      * Set Paypal Rest API access token.
      *
-     * @param object $response
      *
      * @return void
      */
@@ -86,22 +85,21 @@ trait PaypalAPI
         //     $response->token_type, $this->access_token);
         $this->setRequestHeader('Authorization', "{$response->token_type} {$this->access_token}");
 
-        if(isset($_SESSION['Paypal-Request-Id'])){
-        $this->setRequestHeader('Paypal-Request-Id', "{$_SESSION['Paypal-Request-Id']}". uniqid());
-        }else{
-        $_SESSION['Paypal-Request-Id'] = session()->getId(). uniqid();
-        $this->setRequestHeader('Paypal-Request-Id', "{$_SESSION['Paypal-Request-Id']}");
+        if (isset($_SESSION['Paypal-Request-Id'])) {
+            $this->setRequestHeader('Paypal-Request-Id', "{$_SESSION['Paypal-Request-Id']}".uniqid());
+        } else {
+            $_SESSION['Paypal-Request-Id'] = session()->getId().uniqid();
+            $this->setRequestHeader('Paypal-Request-Id', "{$_SESSION['Paypal-Request-Id']}");
         }
         // dd($this->headers);
     }
-    public function generateRequestId(){
 
-    }
+    public function generateRequestId() {}
+
     /**
      * Set Paypal App ID.
      *
-     * @param object $response
-     *
+     * @param  object  $response
      * @return void
      */
     private function setPaypalAppId($response)
@@ -114,7 +112,6 @@ trait PaypalAPI
     /**
      * Set records per page for list resources API calls.
      *
-     * @param int $size
      *
      * @return \Unusualify\Payable\Services\Paypal\PaypalService
      */
@@ -128,8 +125,7 @@ trait PaypalAPI
     /**
      * Set the current page for list resources API calls.
      *
-     * @param int $size
-     *
+     * @param  int  $size
      * @return \Unusualify\Payable\Services\Paypal\PaypalService
      */
     public function setCurrentPage(int $page): \Unusualify\Payable\Services\PaypalService
@@ -142,9 +138,8 @@ trait PaypalAPI
     /**
      * Toggle whether totals for list resources are returned after every API call.
      *
-     * @param bool $totals
      *
-     * @return  \Unusualify\Payable\Services\Paypal\PaypalService
+     * @return \Unusualify\Payable\Services\Paypal\PaypalService
      */
     public function showTotals(bool $totals): \Unusualify\Payable\Services\PaypalService
     {

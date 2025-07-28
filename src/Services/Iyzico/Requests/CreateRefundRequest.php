@@ -3,100 +3,104 @@
 namespace Unusualify\Payable\Services\Iyzico\Requests;
 
 use Unusualify\Payable\Services\Iyzico\Models\JsonBuilder;
-use Unusualify\Payable\Services\Iyzico\Requests\Request;
 use Unusualify\Payable\Services\Iyzico\Models\RequestStringBuilder;
 
 class CreateRefundRequest extends Request
 {
-  private $paymentTransactionId;
-  private $price;
-  private $ip;
-  private $currency;
-  private $reason;
-  private $description;
+    private $paymentTransactionId;
 
-  public function getPaymentTransactionId()
-  {
-    return $this->paymentTransactionId;
-  }
+    private $price;
 
-  public function setPaymentTransactionId($paymentTransactionId)
-  {
-    $this->paymentTransactionId = $paymentTransactionId;
-  }
+    private $ip;
 
-  public function getPrice()
-  {
-    return $this->price;
-  }
+    private $currency;
 
-  public function setPrice($price)
-  {
-    $this->price = $price;
-  }
+    private $reason;
 
-  public function getIp()
-  {
-    return $this->ip;
-  }
+    private $description;
 
-  public function setIp($ip)
-  {
-    $this->ip = $ip;
-  }
+    public function getPaymentTransactionId()
+    {
+        return $this->paymentTransactionId;
+    }
 
-  public function getCurrency()
-  {
-    return $this->currency;
-  }
+    public function setPaymentTransactionId($paymentTransactionId)
+    {
+        $this->paymentTransactionId = $paymentTransactionId;
+    }
 
-  public function setCurrency($currency)
-  {
-    $this->currency = $currency;
-  }
+    public function getPrice()
+    {
+        return $this->price;
+    }
 
-  public function getReason()
-  {
-    return $this->reason;
-  }
+    public function setPrice($price)
+    {
+        $this->price = $price;
+    }
 
-  public function setReason($reason)
-  {
-    $this->reason = $reason;
-  }
+    public function getIp()
+    {
+        return $this->ip;
+    }
 
-  public function getDescription()
-  {
-    return $this->description;
-  }
+    public function setIp($ip)
+    {
+        $this->ip = $ip;
+    }
 
-  public function setDescription($description)
-  {
-    $this->description = $description;
-  }
+    public function getCurrency()
+    {
+        return $this->currency;
+    }
 
-  public function getJsonObject()
-  {
-    return JsonBuilder::fromJsonObject(parent::getJsonObject())
-      ->add("paymentTransactionId", $this->getPaymentTransactionId())
-      ->addPrice("price", $this->getPrice())
-      ->add("ip", $this->getIp())
-      ->add("currency", $this->getCurrency())
-      ->add("reason", $this->getReason())
-      ->add("description", $this->getDescription())
-      ->getObject();
-  }
+    public function setCurrency($currency)
+    {
+        $this->currency = $currency;
+    }
 
-  public function toPKIRequestString()
-  {
-    return RequestStringBuilder::create()
-      ->appendSuper(parent::toPKIRequestString())
-      ->append("paymentTransactionId", $this->getPaymentTransactionId())
-      ->appendPrice("price", $this->getPrice())
-      ->append("ip", $this->getIp())
-      ->append("currency", $this->getCurrency())
-      ->append("reason", $this->getReason())
-      ->append("description", $this->getDescription())
-      ->getRequestString();
-  }
+    public function getReason()
+    {
+        return $this->reason;
+    }
+
+    public function setReason($reason)
+    {
+        $this->reason = $reason;
+    }
+
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    public function setDescription($description)
+    {
+        $this->description = $description;
+    }
+
+    public function getJsonObject()
+    {
+        return JsonBuilder::fromJsonObject(parent::getJsonObject())
+            ->add('paymentTransactionId', $this->getPaymentTransactionId())
+            ->addPrice('price', $this->getPrice())
+            ->add('ip', $this->getIp())
+            ->add('currency', $this->getCurrency())
+            ->add('reason', $this->getReason())
+            ->add('description', $this->getDescription())
+            ->getObject();
+    }
+
+    public function toPKIRequestString()
+    {
+        return RequestStringBuilder::create()
+            ->appendSuper(parent::toPKIRequestString())
+            ->append('paymentTransactionId', $this->getPaymentTransactionId())
+            ->appendPrice('price', $this->getPrice())
+            ->append('ip', $this->getIp())
+            ->append('currency', $this->getCurrency())
+            ->append('reason', $this->getReason())
+            ->append('description', $this->getDescription())
+            ->getRequestString();
+    }
 }

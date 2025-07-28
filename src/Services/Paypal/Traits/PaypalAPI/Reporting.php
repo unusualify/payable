@@ -9,12 +9,11 @@ trait Reporting
     /**
      * List all transactions.
      *
-     * @param array  $filters
-     * @param string $fields
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/transaction-search/v1/#transactions_get
      */
@@ -35,12 +34,11 @@ trait Reporting
     /**
      * List available balance.
      *
-     * @param string $date
-     * @param string $balance_currency
      *
-     * @throws \Throwable
      *
      * @return array|\Psr\Http\Message\StreamInterface|string
+     *
+     * @throws \Throwable
      *
      * @see https://developer.paypal.com/docs/api/transaction-search/v1/#balances_get
      */
