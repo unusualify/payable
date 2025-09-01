@@ -3,6 +3,7 @@
 namespace Unusualify\Payable\Services;
 
 use Illuminate\Support\Str;
+use Unusualify\Payable\Contracts\ShouldEmbedForm;
 
 abstract class PaymentService extends URequest
 {
@@ -103,6 +104,13 @@ abstract class PaymentService extends URequest
      * @var bool
      */
     public static $hasCancel = false;
+
+    /**
+     * Service
+     *
+     * @var string
+     */
+    public static $hasBuiltInForm = false;
 
     public const STATUS_PENDING = 'PENDING';
 
@@ -216,6 +224,19 @@ abstract class PaymentService extends URequest
     public function getStatusEnum()
     {
         return $this->statusEnum;
+    }
+
+    /**
+     * Check if the service has a built-in form and implements the ShouldEmbedForm contract
+     *
+     * @return bool
+     */
+    public static function hasBuiltInForm()
+    {
+        $implements = class_implements(static::class);
+
+        return (static::$hasBuiltInForm ?? false)
+            && in_array(ShouldEmbedForm::class, $implements);
     }
 
     public function addQueryParameters($url, $payload = [])
@@ -357,6 +378,26 @@ abstract class PaymentService extends URequest
     public static function hasCancel($payload = null)
     {
         return static::$hasCancel && (method_exists(static::class, 'isCancellable') ? (new static)->isCancellable($payload) : true);
+    }
+
+    public function checkout(array $payload)
+    {
+        if($this->hasBuiltInForm()) {
+            $validated = $this->validateCheckoutPayload($payload);
+
+            if($validated !== true) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $validated,
+                ], 403);
+            }
+
+            $payload = $this->hydrateCheckoutPayload($payload);
+
+            return $this->getBuiltInFormAttributes($payload);
+        }
+
+        return [];
     }
 
     /**
