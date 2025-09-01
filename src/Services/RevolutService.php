@@ -3,13 +3,22 @@
 namespace Unusualify\Payable\Services;
 
 use Illuminate\Http\Request as HttpRequest;
-use function config;
+use Unusualify\Payable\Contracts\ShouldEmbedForm;
+
 
 /**
  * @property \Unusualify\Payable\Models\Payment|null $payment
  */
-class RevolutService extends PaymentService
+class RevolutService extends PaymentService implements ShouldEmbedForm
 {
+    /**
+     * @var bool
+     */
+    public static $hasBuiltInForm = true;
+
+    public static $hasCancel = false;
+
+    public static $hasRefund = true;
 
     /** Gateway id */
     protected string $service = 'revolut';
@@ -53,14 +62,38 @@ class RevolutService extends PaymentService
     }
 
     /** Minimal validation for widget flow */
-    public function validateParams($params)
+    public function validateCheckoutPayload(array $payload)
     {
         $required = ['order_id', 'currency'];
-        $missing  = array_diff($required, array_keys($params));
+        $missing  = array_diff($required, array_keys($payload));
+
         if (!empty($missing)) {
             return 'These keys are missing for Revolut: '.implode(', ', $missing);
         }
+
         return true;
+    }
+
+    public function hydrateCheckoutPayload(array $payload): array
+    {
+        $amountMinor = $this->normalizeAmountMinor($payload);
+
+        return [
+            'amount'                    => $amountMinor,
+            'currency'                  => $payload['currency'] ?? 'EUR',
+            'merchant_order_ext_ref'    => $payload['order_id'],
+            'merchant_customer_ext_ref' => $payload['user_id'] ?? null,
+            'description'               => $payload['description'] ?? ('Payment for order '.$payload['order_id']),
+            'customer'                  => [
+                'email' => $payload['user_email'] ?? null,
+            ],
+            'metadata' => [
+                'order_id'   => $payload['order_id'],
+                'user_email' => $payload['user_email'] ?? null,
+                'ip'         => $payload['user_ip'] ?? null,
+            ],
+            // Optional: 'capture_mode' => 'automatic' | 'manual'
+        ];
     }
 
     /** Convert to minor units */
@@ -75,28 +108,11 @@ class RevolutService extends PaymentService
     /** Build Create Order payload */
     public function hydrateParams(array $params): array
     {
-        $amountMinor = $this->normalizeAmountMinor($params);
-
-        return [
-            'amount'                    => $amountMinor,
-            'currency'                  => $params['currency'] ?? 'EUR',
-            'merchant_order_ext_ref'    => $params['order_id'],
-            'merchant_customer_ext_ref' => $params['user_id'] ?? null,
-            'description'               => $params['description'] ?? ('Payment for order '.$params['order_id']),
-            'customer'                  => [
-                'email' => $params['user_email'] ?? null,
-            ],
-            'metadata' => [
-                'order_id'   => $params['order_id'],
-                'user_email' => $params['user_email'] ?? null,
-                'ip'         => $params['user_ip'] ?? null,
-            ],
-            // Optional: 'capture_mode' => 'automatic' | 'manual'
-        ];
+        return [];
     }
 
     /** POST /orders */
-    protected function createOrder(array $payload): array
+    protected function createRevolutOrder(array $payload): array
     {
         $resp = $this->postReq(
             $this->url,
@@ -111,7 +127,7 @@ class RevolutService extends PaymentService
     }
 
     /** GET /orders/{id} (optional UX or webhook confirm) */
-    protected function retrieveOrder(string $orderId): array
+    protected function retrieveRevolutOrder(string $orderId): array
     {
         $resp = $this->getReq(
             $this->url,
@@ -119,6 +135,7 @@ class RevolutService extends PaymentService
             [],
             $this->headers
         );
+
         return is_string($resp) ? (array) json_decode($resp, true) : (array) $resp;
     }
 
@@ -126,30 +143,53 @@ class RevolutService extends PaymentService
      * Main entry for Card Field / Card Pop-up.
      * Creates the order and returns data your JS embed will use.
      */
-    public function createWidgetOrder(array $params): array
+    public function createWidgetOrder_(array $params): array
     {
         $validated = $this->validateParams($params);
+
         if ($validated !== true) return ['error' => $validated];
 
         $payload = $this->hydrateParams($params);
-        $order   = $this->createOrder($payload);
-        
+        $revolutOrder   = $this->createRevolutOrder($payload);
+
         // Persist PENDING with raw provider response
         $this->payment?->update([
             'status'   => $this->getStatusEnum()::PENDING,
-            'response' => $order,
+            'response' => $revolutOrder,
         ]);
 
+        dd($this->payment, $revolutOrder);
+
         return [
-            'token'     => $order['token'] ?? null,           // REQUIRED by RevolutCheckout()
-            'order_id'  => $order['id'] ?? null,
-            'env'       => $this->mode === 'production' ? 'production' : 'sandbox',
+            'token'     => $revolutOrder['token'] ?? null,           // REQUIRED by RevolutCheckout()
+            'order_id'  => $revolutOrder['id'] ?? null,
+            'env'       => $this->mode === 'live' ? 'prod' : 'sandbox',
             'amount'    => $payload['amount'] ?? null,
             'currency'  => $payload['currency'] ?? null,
             'email'     => $payload['customer']['email'] ?? null,
         ];
     }
 
+    public function getBuiltInFormAttributes(array $payload): array
+    {
+        $revolutOrder = $this->createRevolutOrder($payload);
+
+        $this->payment?->update([
+            'status'   => $this->getStatusEnum()::PENDING,
+            'response' => $revolutOrder,
+        ]);
+
+        return [
+            'token'     => $revolutOrder['token'] ?? null,           // REQUIRED by RevolutCheckout()
+            'paymentId' => $this->payment->id ?? null,
+            'orderId'  => $this->payment->order_id ?? null,
+            'revolutOrderId'  => $revolutOrder['id'] ?? null,
+            'env'       => $this->mode === 'live' ? 'prod' : 'sandbox',
+            'amount'    => $payload['amount'] ?? null,
+            'currency'  => $payload['currency'] ?? null,
+            'email'     => $payload['customer']['email'] ?? null,
+        ];
+    }
     /**
      * Optional: keep pay() compatible — just return directive for widget flow.
      * Your controller/UI should call createWidgetOrder() and then run the JS.
@@ -157,15 +197,24 @@ class RevolutService extends PaymentService
     public function pay(array $params)
     {
         $data = $this->createWidgetOrder($params);
+
         if (!empty($data['token'])) {
-            return [
+            return response()->json([
                 'type'      => 'widget',
                 'order_id'  => $data['order_id'],
                 'token'     => $data['token'],
                 'env'       => $data['env'],
                 'message'   => 'Use Card Field or Pop-up with RevolutCheckout(token, env).',
-            ];
+            ]);
+            // return [
+            //     'type'      => 'widget',
+            //     'order_id'  => $data['order_id'],
+            //     'token'     => $data['token'],
+            //     'env'       => $data['env'],
+            //     'message'   => 'Use Card Field or Pop-up with RevolutCheckout(token, env).',
+            // ];
         }
+
         return ['type' => 'error', 'message' => $data['error'] ?? 'Unable to initialize Revolut order'];
     }
 
@@ -229,16 +278,30 @@ class RevolutService extends PaymentService
     }
 
     /** POST /orders/{id}/cancel (void before capture) */
-    public function cancel(array $params)
+    public function cancel(array|object $params)
     {
-        $orderId = $params['order_id'] ?? $this->payment->order_id ?? null;
+
+        $params = (array) $params;
+
+        $orderId = $params['id'] ?? $this->payment->response->id ?? null;
+
         if (!$orderId) return ['status' => 'error', 'message' => 'Order ID is required'];
 
         $resp = $this->postReq($this->url, '/orders/'.urlencode($orderId).'/cancel', (object)[], $this->headers, 'json', $this->mode);
-        $data = is_string($resp) ? (array) json_decode($resp, true) : (array) $resp;
+
+        $statusCode = 200;
+        $message = 'Cancel successful';
+        if(is_array($resp) && isset($resp['status']) && $resp['status'] == 'error') {
+            $message = json_decode($resp['message'], true)['message'];
+            $statusCode = $resp['code'] ?? 500;
+            $data = $resp;
+        } else {
+            $data = is_string($resp) ? (array) json_decode($resp, true) : (array) $resp;
+        }
 
         $status = self::RESPONSE_STATUS_ERROR;
-        if (!isset($data['error'])) {
+
+        if (!isset($data['status']) || $data['status'] !== 'error') {
             $this->payment?->update([
                 'status'   => $this->getStatusEnum()::CANCELLED,
                 'response' => $data,
@@ -249,6 +312,8 @@ class RevolutService extends PaymentService
         return [
             'type'            => 'cancel',
             'status'          => $status,
+            'code'            => $statusCode,
+            'message'         => $message,
             'id'              => $this->payment->id ?? ($params['payment_id'] ?? null),
             'payment_service' => $this->service,
             'order_data'      => json_encode($data),
@@ -259,37 +324,53 @@ class RevolutService extends PaymentService
     public function refund(array|object $params)
     {
         $refundRequest = $this->validateRefundRequest($params);
+
         if (!$refundRequest['validated']) return $refundRequest;
 
         $params  = (array) $params;
         $payment = $refundRequest['payment'] ?? null;
-        $orderId = $params['order_id'] ?? ($payment->order_id ?? null);
+        $orderId = $params['id'] ?? ($payment->response->id ?? null);
+        $currency = $params['currency'] ?? ($payment->response->currency ?? null);
 
         if (!$orderId) {
             return array_merge($refundRequest, ['message' => 'order_id is required for refund']);
         }
 
+        if (!$currency) {
+            return array_merge($refundRequest, ['message' => 'currency is required for refund']);
+        }
+
         $payload = [];
         if (!empty($params['amount'])) $payload['amount'] = (int) $params['amount']; // minor
+        if (!empty($currency)) $payload['currency'] = $currency;
 
         $resp = $this->postReq($this->url, '/orders/'.urlencode($orderId).'/refund', $payload, $this->headers, 'json', $this->mode);
+
         $data = is_string($resp) ? (array) json_decode($resp, true) : (array) $resp;
 
-        $status  = self::RESPONSE_STATUS_ERROR;
-        $message = 'Refund failed';
+        $status  = self::RESPONSE_STATUS_SUCCESS;
+        $message = 'Refunded successfully';
+        $revolutMessageObject = isset($data['message']) ? json_decode($data['message'], true) : [];
 
-        if (!isset($data['error'])) {
-            $payment?->update([
+        $paymentPayload = [];
+
+
+        if(isset($data['code'])) {
+            $status = self::RESPONSE_STATUS_ERROR;
+        } else {
+            $payment->update([
                 'status'   => $this->getStatusEnum()::REFUNDED,
                 'response' => $data,
             ]);
-            $status  = self::RESPONSE_STATUS_SUCCESS;
-            $message = 'Refunded successfully';
+        }
+
+        if(isset($revolutMessageObject['message'])) {
+            $message = $revolutMessageObject['message'];
         }
 
         return array_merge($refundRequest, [
             'status'     => $status,
-            'order_data' => json_encode($data),
+            'order_data' => $data,
             'message'    => $message,
         ]);
     }
