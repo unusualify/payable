@@ -96,6 +96,21 @@ class Payable
             ->pay($payload, $paymentPayload);
     }
 
+    public function checkout($payload, $paymentPayload = [])
+    {
+        $validated = $this->validatePayload($payload);
+
+        $payload = array_merge_recursive_preserve($this->getPayloadSchema(), $payload);
+
+        $payload = $this->removeExceptional($payload);
+
+        $payment = $this->createPaymentRecord($payload, $paymentPayload);
+
+        return $this->service
+            ->setPayment($payment)
+            ->checkout($payload);
+    }
+
     /**
      * Cancel Payment
      *
@@ -236,7 +251,6 @@ class Payable
             'order_id' => $payload['order_id'],
             'payment_gateway' => $this->slug,
             'status' => $this->statusEnum::PENDING,
-
             'parameters' => Arr::except($payload, [
                 'user_email',
                 'installment',

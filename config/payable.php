@@ -132,5 +132,19 @@ return [
                 'secret_key' => env('BUCKAROO_LIVE_SECRET_KEY', ''),
             ],
         ],
+        'revolut' => [
+            'mode' => env('REVOLUT_MODE', 'sandbox'),
+            'api_version' => env('REVOLUT_API_VERSION', '2024-05-01'),
+            'sandbox' => [
+                'api_url' => env('REVOLUT_SANDBOX_API_URL', ''),
+                'public_key' => env('REVOLUT_SANDBOX_PUBLIC_KEY', ''),
+                'secret_key' => env('REVOLUT_SANDBOX_SECRET_KEY', ''),
+            ],
+            'live' => [
+                'api_url' => env('REVOLUT_LIVE_API_URL', ''),
+                'public_key' => env('REVOLUT_LIVE_PUBLIC_KEY', ''),
+                'secret_key' => env('REVOLUT_LIVE_SECRET_KEY', ''),
+            ],
+        ],
     ],
 ];
