@@ -2,6 +2,28 @@
 
 All notable changes to `payable` will be documented in this file
 
+## v0.12.0 - 2025-09-01
+
+### :rocket: Features
+
+- add revolut payment gateway integration by @ramazanayyildiz in https://github.com/unusualify/payable/commit/fe181a08081d50402b9bc987422546654abae970
+- add ShouldEmbedForm interface for payment integration by @OoBook in https://github.com/unusualify/payable/commit/0f2c75003a64058136282a960b77180ce9571889
+- implement built-in form handling in PaymentService by @OoBook in https://github.com/unusualify/payable/commit/f4a0e4b2de8ad65d805ef8ccdb4b0ca8a6c5e344
+- add checkout method for payment processing by @OoBook in https://github.com/unusualify/payable/commit/e75fd13c218e837f2dbcecd6bbca1b4c0ad27f0b
+- enhance RevolutService with checkout payload handling and order management by @OoBook in https://github.com/unusualify/payable/commit/78dd5a91145f9795a4873185ec46c6a28f477467
+
+### :wrench: Bug Fixes
+
+- enhance error handling for GuzzleHttp exceptions by @OoBook in https://github.com/unusualify/payable/commit/eecfb6cf5172861ce9b803a71d75312ce30cc883
+
+### :memo: Documentation
+
+- add revolut payment integration guide by @ramazanayyildiz in https://github.com/unusualify/payable/commit/1040a0dea19d56f80f2c254a66385ba7f5e1ef2c
+
+### :lipstick: Styling
+
+- lint coding styles for v0.11.0 by @invalid-email-address in https://github.com/unusualify/payable/commit/7d145370bd31fd5161af42e96f1990a736270b82
+
 ## v0.11.0 - 2025-07-28
 
 ### :recycle: Refactors
