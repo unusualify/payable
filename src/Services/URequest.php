@@ -91,6 +91,7 @@ abstract class URequest implements URequestInterface
         try {
             if ($type == 'json') {
                 // dd($this->client);
+
                 if (count($headers) < 1) {
                     $headers = [
                         'Content-Type' => 'application/json',
@@ -106,6 +107,7 @@ abstract class URequest implements URequestInterface
                     // );
                 }
                 // dd($postFields, "{$url}{$endPoint}", $this->headers);
+
                 $res = $this->client->post("{$url}{$endPoint}", [
                     'headers' => $headers,
                     'json' => $postFields,
@@ -170,7 +172,32 @@ abstract class URequest implements URequestInterface
             // dd($safeData);
             return $safeData;
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            if($e instanceof \GuzzleHttp\Exception\ClientException) {
+                if($e->getResponse()->getStatusCode() == 422) {
+                    return [
+                        'status' => 'error',
+                        'code' => $e->getResponse()->getStatusCode(),
+                        'message' => $e->getResponse()->getBody()->getContents(),
+                    ];
+                } else if($e->getResponse()->getStatusCode() == 400) {
+                    return [
+                        'status' => 'error',
+                        'code' => $e->getResponse()->getStatusCode(),
+                        'message' => $e->getResponse()->getBody()->getContents(),
+                    ];
+                } else if($e->getResponse()->getStatusCode() == 404) {
+                    return [
+                        'status' => 'error',
+                        'code' => $e->getResponse()->getStatusCode(),
+                        'message' => $e->getResponse()->getBody()->getContents(),
+                    ];
+                }
+            }
+            return [
+                'status' => 'error',
+                'code' => $e->getResponse()->getStatusCode(),
+                'message' => $e->getMessage(),
+            ];
         }
     }
 
