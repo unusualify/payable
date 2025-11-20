@@ -2,6 +2,12 @@
 
 All notable changes to `payable` will be documented in this file
 
+## v0.12.1 - 2025-11-20
+
+### :wrench: Bug Fixes
+
+- update return route handling in web.php by @OoBook in https://github.com/unusualify/payable/commit/f5c0125bb0aff4f2f2b55f8a6e4b7dee0607ad9f
+
 ## v0.12.0 - 2025-09-01
 
 ### :rocket: Features
