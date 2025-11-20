@@ -24,14 +24,8 @@ class LaravelServiceProvider extends ServiceProvider
             ], 'config');
             $this->publishMigrations();
         }
-        // dd(__DIR__.'/../routes/web.php');
-        $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
 
-        // $this->loadMigrationsFrom(
-        //     __DIR__ . '/../src/Database/Migrations'
-        // );
-        // $this->loadViewsFrom(__DIR__ . '/views', 'unusual_form');
-        // $this->bootViews();
+        $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
 
     }
 
@@ -42,7 +36,6 @@ class LaravelServiceProvider extends ServiceProvider
      */
     public function register()
     {
-
         $this->registerHelpers();
 
         $this->macros();
@@ -74,7 +67,6 @@ class LaravelServiceProvider extends ServiceProvider
         $this->publishes([$sourcePathBlade => resource_path('views/vendor/')], 'views');
 
         $this->publishes([$sourcePathJS => public_path('vendor/payable/js')], 'js');
-
     }
 
     /**
@@ -118,21 +110,4 @@ class LaravelServiceProvider extends ServiceProvider
             $stubPath => $targetPath,
         ], 'migrations');
     }
-
-    /**
-     * Register facades
-     */
-
-    //  protected function registerFacades(){
-    //     dd('here');
-    //     $this->app->singleton('zoho', function () {
-    //         return new Facades\Zoho;
-    //     });
-    //     dd('here');
-    //     $this->app->singleton('movie', function () {
-    //         return new Facades\Movie;
-    //     });
-
-    //  }
-
 }

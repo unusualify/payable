@@ -27,6 +27,6 @@ Route::controller(PaymentController::class)
             Route::get('/refund/{payment}', 'refund')->name('refund');
         });
 
+        Route::get('/return', 'response')->name('response.get');
         Route::post('/return', 'response')->name('response');
-        Route::get('/return', 'response')->name('response');
     });
