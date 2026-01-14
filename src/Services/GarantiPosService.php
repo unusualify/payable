@@ -548,8 +548,8 @@ class GarantiPosService extends PaymentService
             return ! in_array($key, $paramsToRemoved);
         }, ARRAY_FILTER_USE_KEY);
 
-        $responseStatus = $request->mdstatus == 1 ? self::RESPONSE_STATUS_SUCCESS : self::RESPONSE_STATUS_ERROR;
-        $recordStatus = $request->mdstatus == 1 ? $this->getStatusEnum()::COMPLETED : $this->getStatusEnum()::FAILED;
+        $responseStatus = $request->mdstatus == 1 && strtoupper($request->response) == "APPROVED" ? self::RESPONSE_STATUS_SUCCESS : self::RESPONSE_STATUS_ERROR;
+        $recordStatus = $request->mdstatus == 1  && strtoupper($request->response) == "APPROVED" ? $this->getStatusEnum()::COMPLETED : $this->getStatusEnum()::FAILED;
         $responseMessage = $this->mdStatuses[$request->mdstatus];
 
         $this->payment->update([
