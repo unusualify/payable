@@ -2,6 +2,16 @@
 
 All notable changes to `payable` will be documented in this file
 
+## v0.12.2 - 2026-02-16
+
+### :wrench: Bug Fixes
+
+- add processing return codes and enhance response handling by @oguzhanbukcuoglu in https://github.com/unusualify/payable/commit/6fda4ff96df789cd0be05a351b4a308b3eefa310
+
+### :green_heart: Workflow
+
+- update action references for tagging and release processes by @oguzhanbukcuoglu in https://github.com/unusualify/payable/commit/3cf2ab04f77290d47aeea2ca2c065114e50a6847
+
 ## v0.12.1 - 2025-11-20
 
 ### :wrench: Bug Fixes
