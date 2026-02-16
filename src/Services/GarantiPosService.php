@@ -78,6 +78,23 @@ class GarantiPosService extends PaymentService
         9 => 'Üye işyeri 3D-Secure üyesi değil',
     ];
 
+    public $procReturnCodes = [
+        '00' => 'İşlem başarıyla onaylandı.',
+        '01' => 'Bankanızı arayın.',
+        '05' => 'İşlem onaylanmadı (Kartınız internet alışverişine kapalı olabilir).',
+        '12' => 'Geçersiz işlem.',
+        '41' => 'Kayıp kart, işleme izin verilmedi.',
+        '43' => 'Çalıntı kart, işleme izin verilmedi.',
+        '51' => 'Limit yetersiz, bakiye kontrolü yapınız.',
+        '54' => 'Kartın son kullanma tarihi geçmiş.',
+        '57' => 'Kart sahibinin bu işlemi yapmaya yetkisi yok.',
+        '58' => 'Terminale izin verilmeyen işlem.',
+        '62' => 'Sınırlandırılmış kart.',
+        '65' => 'Günlük işlem limiti aşıldı.',
+        '91' => 'Kartı veren banka geçici olarak ulaşılamıyor.',
+        '96' => 'Sistem hatası, lütfen sonra tekrar deneyiniz.'
+    ];
+
     public function __construct($mode = null)
     {
         parent::__construct();
@@ -548,9 +565,10 @@ class GarantiPosService extends PaymentService
             return ! in_array($key, $paramsToRemoved);
         }, ARRAY_FILTER_USE_KEY);
 
-        $responseStatus = $request->mdstatus == 1 ? self::RESPONSE_STATUS_SUCCESS : self::RESPONSE_STATUS_ERROR;
-        $recordStatus = $request->mdstatus == 1 ? $this->getStatusEnum()::COMPLETED : $this->getStatusEnum()::FAILED;
-        $responseMessage = $this->mdStatuses[$request->mdstatus];
+
+        $responseStatus = $request->mdstatus == 1 && $request->procreturncode == '00' ? self::RESPONSE_STATUS_SUCCESS : self::RESPONSE_STATUS_ERROR;
+        $recordStatus = $request->mdstatus == 1 && $request->procreturncode == '00' ? $this->getStatusEnum()::COMPLETED : $this->getStatusEnum()::FAILED;
+        $responseMessage = $request->mdstatus !== 1 ? $this->mdStatuses[$request->mdstatus] : $request->errmsg ?? 'Unknown error';
 
         $this->payment->update([
             'status' => $recordStatus,
