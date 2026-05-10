@@ -2,6 +2,10 @@
 
 All notable changes to `payable` will be documented in this file
 
+## v12.0.0 - 2026-05-10
+
+**Full Changelog**: https://github.com/unusualify/payable/compare/v0.12.2...v12.0.0
+
 ## v0.12.2 - 2026-02-16
 
 ### :wrench: Bug Fixes
