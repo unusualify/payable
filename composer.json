@@ -12,7 +12,7 @@
     "require": {
         "laravel/framework": "^10.0|^11.0|^12.0",
         "guzzlehttp/guzzle": "^7.0",
-        "oobook/post-redirector": "^1.0",
+        "oobook/post-redirector": "^1.0||^12.0",
 		"buckaroo/sdk": "^1.0"
     },
     "require-dev": {
